@@ -87,27 +87,8 @@ export default function AdminLayout({
         router.push('/admin');
       }
 
-      // Silent Supabase Authentication Fallback (if they didn't go through login page)
-      if (isAuth) {
-        const { data: { user }, error: userError } = await supabase.auth.getUser();
-        if (userError || !user || user.email !== 'admin@farmersfactory.com') {
-          await supabase.auth.signOut();
-          const { error } = await supabase.auth.signInWithPassword({
-            email: 'admin@farmersfactory.com',
-            password: 'AdminPassword123!'
-          });
-          
-          if (error) {
-            console.error('Admin auto-login failed:', error);
-            localStorage.removeItem('admin_auth');
-            router.push('/admin/login');
-            return;
-          }
-        }
-        setIsSessionReady(true);
-      } else {
-        setIsSessionReady(true);
-      }
+      // Session is ready — auth is managed via localStorage + cookie only
+      setIsSessionReady(true);
       
       setIsAuthChecked(true);
     };
@@ -319,7 +300,7 @@ export default function AdminLayout({
                 <p className="text-xs text-muted-foreground">Main Store</p>
               </div>
               <div className="w-10 h-10 bg-muted rounded-full overflow-hidden border border-border">
-                <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=admin" alt="Admin" />
+                <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=admin" alt="Admin" loading="lazy" />
               </div>
             </div>
           </div>

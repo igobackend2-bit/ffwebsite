@@ -1,16 +1,18 @@
 'use client';
 
 import React from 'react';
+import dynamic from 'next/dynamic';
 import Navbar from '@/components/Navbar';
 import HeroSlider from '@/components/HeroSlider';
 import DeliveryStrip from '@/components/DeliveryStrip';
 import FeaturedCategories from '@/components/FeaturedCategories';
 import FeaturedProducts from '@/components/FeaturedProducts';
-import WhyChooseUs from '@/components/WhyChooseUs';
-import FarmStories from '@/components/FarmStories';
-import LiveFarmStream from '@/components/LiveFarmStream';
 import Footer from '@/components/Footer';
-import { motion } from 'framer-motion';
+
+// Lazy-load heavy below-the-fold components for faster initial page load
+const WhyChooseUs = dynamic(() => import('@/components/WhyChooseUs'), { ssr: false });
+const FarmStories = dynamic(() => import('@/components/FarmStories'), { ssr: false });
+const LiveFarmStream = dynamic(() => import('@/components/LiveFarmStream'), { ssr: false });
 
 export default function Home() {
   return (

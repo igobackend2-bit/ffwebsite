@@ -21,8 +21,7 @@ export default function Hero({ greeting = 'Welcome' }: HeroProps) {
         <img 
           src="/seasonal_harvest_bg.png" 
           alt="Farm Background" 
-          className="w-full h-full object-cover opacity-30 md:opacity-40 scale-105"
-        />
+          className="w-full h-full object-cover opacity-30 md:opacity-40 scale-105" loading="lazy" />
         <div className="absolute inset-0 bg-gradient-to-r from-white via-white/80 md:via-white/60 to-transparent" />
       </div>
 
@@ -37,18 +36,15 @@ export default function Hero({ greeting = 'Welcome' }: HeroProps) {
           <img 
             src="/Vegetables/ooty-carrot.jpg" 
             alt="Fresh Carrots" 
-            className="absolute top-[15%] right-[10%] w-64 h-64 object-cover rounded-[3rem] shadow-2xl rotate-6 border-8 border-white"
-          />
+            className="absolute top-[15%] right-[10%] w-64 h-64 object-cover rounded-[3rem] shadow-2xl rotate-6 border-8 border-white" loading="lazy" />
           <img 
             src="/Fruits/apple.jfif" 
             alt="Fresh Apples" 
-            className="absolute top-[45%] right-[25%] w-56 h-56 object-cover rounded-[3rem] shadow-2xl -rotate-12 border-8 border-white"
-          />
+            className="absolute top-[45%] right-[25%] w-56 h-56 object-cover rounded-[3rem] shadow-2xl -rotate-12 border-8 border-white" loading="lazy" />
           <img 
             src="/Vegetables/TomatoCountry.jfif" 
             alt="Fresh Tomatoes" 
-            className="absolute bottom-[10%] right-[5%] w-72 h-72 object-cover rounded-[3rem] shadow-2xl rotate-3 border-8 border-white"
-          />
+            className="absolute bottom-[10%] right-[5%] w-72 h-72 object-cover rounded-[3rem] shadow-2xl rotate-3 border-8 border-white" loading="lazy" />
         </motion.div>
       </div>
 

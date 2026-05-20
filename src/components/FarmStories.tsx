@@ -70,14 +70,13 @@ export default function FarmStories() {
               className="flex-shrink-0 w-72 h-[480px] rounded-[2.5rem] relative overflow-hidden group cursor-pointer shadow-2xl shadow-black/10"
             >
               {activeVideo === story.video_url && story.video_url ? (
-                <video src={story.video_url} autoPlay controls className="w-full h-full object-cover" />
+                <video src={story.video_url} autoPlay controls className="w-full h-full object-cover" / preload="none">
               ) : (
                 <>
                   <img 
                     src={story.image_url} 
                     alt={story.title} 
-                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-1000"
-                  />
+                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-1000" loading="lazy" />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-60 group-hover:opacity-80 transition-opacity" />
                   
                   <div className="absolute inset-0 flex items-center justify-center pointer-events-none">

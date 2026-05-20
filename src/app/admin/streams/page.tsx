@@ -192,9 +192,9 @@ export default function AdminStreams() {
             >
               <div className="relative aspect-video bg-black flex items-center justify-center overflow-hidden">
                 {stream.video_url.toLowerCase().includes('.mp4') || stream.video_url.toLowerCase().includes('.webm') ? (
-                  <video src={stream.video_url} muted loop className="w-full h-full object-cover opacity-60" />
+                  <video src={stream.video_url} muted loop className="w-full h-full object-cover opacity-60" / preload="none">
                 ) : (
-                  <img src={stream.video_url} alt="" className="w-full h-full object-cover opacity-60" />
+                  <img src={stream.video_url} alt="" className="w-full h-full object-cover opacity-60" loading="lazy" />
                 )}
                 <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent" />
                 <div className="absolute top-4 left-4 flex items-center gap-2 bg-red-600 px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest text-white">

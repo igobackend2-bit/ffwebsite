@@ -63,8 +63,7 @@ export default function LoginPromptPopup() {
               <img 
                 src="/login_prompt_bg.png" 
                 alt="Farm Context" 
-                className="absolute inset-0 w-full h-full object-cover opacity-20"
-              />
+                className="absolute inset-0 w-full h-full object-cover opacity-20" loading="lazy" />
               <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -mr-16 -mt-16 blur-2xl" />
               <div className="absolute bottom-0 left-0 w-32 h-32 bg-black/10 rounded-full -ml-16 -mb-16 blur-2xl" />
               

@@ -833,8 +833,7 @@ function ProductsContent() {
                     <img 
                       src={product.image_url} 
                       alt={product.name} 
-                      className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" 
-                    />
+                      className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" loading="lazy" />
                   ) : (
                     <div className="w-full h-full flex items-center justify-center text-muted-foreground bg-slate-50">
                       <ImageIcon size={48} strokeWidth={1} />
@@ -989,7 +988,7 @@ function ProductsContent() {
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-3">
                         <div className="w-10 h-10 bg-slate-100 rounded-lg overflow-hidden flex-shrink-0">
-                          <img src={product.image_url} alt="" className="w-full h-full object-cover" />
+                          <img src={product.image_url} alt="" className="w-full h-full object-cover" loading="lazy" />
                         </div>
                         <span className="font-bold text-sm">{product.name}</span>
                       </div>
@@ -1090,8 +1089,7 @@ function ProductsContent() {
                     <img 
                       src={preview} 
                       alt="Preview" 
-                      className="w-full h-full object-cover transition-transform group-hover:scale-110"
-                    />
+                      className="w-full h-full object-cover transition-transform group-hover:scale-110" loading="lazy" />
                   ) : (
                     <div className="text-center p-6">
                       <ImageIcon size={48} className="text-slate-300 mx-auto mb-2" />
@@ -1427,7 +1425,7 @@ function ProductsContent() {
                 {products.filter(p => selectedProducts.includes(p.id)).map(p => (
                   <div key={p.id} className="flex items-center gap-4 p-4 bg-slate-50 rounded-2xl border border-slate-100">
                     <div className="w-12 h-12 rounded-lg overflow-hidden flex-shrink-0">
-                      <img src={p.image_url} alt="" className="w-full h-full object-cover" />
+                      <img src={p.image_url} alt="" className="w-full h-full object-cover" loading="lazy" />
                     </div>
                     <div className="flex-1 min-w-0">
                       <p className="font-bold text-sm truncate">{p.name}</p>

@@ -85,8 +85,7 @@ export default function CartPage() {
                       <img
                         src={item.products.image_url}
                         alt={item.products.name}
-                        className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
-                      />
+                        className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" loading="lazy" />
                     </div>
 
                     {/* Details */}
@@ -387,7 +386,7 @@ function RecommendedProducts({ cartItems }: { cartItems: any[] }) {
             className="bg-white rounded-[2rem] p-5 border border-border/60 shadow-sm hover:shadow-2xl hover:shadow-primary/10 transition-all duration-500 group cursor-pointer"
           >
             <div className="aspect-square rounded-[1.5rem] overflow-hidden mb-5 bg-muted/20 relative">
-              <img src={product.image_url} alt={product.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
+              <img src={product.image_url} alt={product.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" loading="lazy" />
               <button 
                 onClick={(e) => {
                   e.stopPropagation();

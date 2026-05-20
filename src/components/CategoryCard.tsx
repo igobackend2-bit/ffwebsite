@@ -29,8 +29,7 @@ export default function CategoryCard({ name, image, count, color }: CategoryCard
           <img 
             src={image} 
             alt={name} 
-            className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110"
-          />
+            className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110" loading="lazy" />
           {/* Enhanced Overlay */}
           <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent opacity-80" />
         </div>

@@ -236,7 +236,7 @@ export default function OrderDetailsPage({ params }: { params: Promise<{ id: str
                 
                 <div className="flex items-center gap-6 relative z-10">
                   <div className="w-20 h-20 rounded-2xl overflow-hidden bg-primary/20 p-1">
-                    <img src="https://images.unsplash.com/photo-1633332755192-727a05c4013d" alt="Driver" className="w-full h-full object-cover rounded-xl" />
+                    <img src="https://images.unsplash.com/photo-1633332755192-727a05c4013d" alt="Driver" className="w-full h-full object-cover rounded-xl" loading="lazy" />
                   </div>
                   <div>
                     <p className="text-[10px] font-black text-primary uppercase tracking-widest mb-1">{t('order_details.delivery_partner')}</p>
@@ -281,7 +281,7 @@ export default function OrderDetailsPage({ params }: { params: Promise<{ id: str
                     className="p-8 flex flex-col md:flex-row items-center gap-8 group"
                   >
                     <div className="w-32 h-32 rounded-[2.5rem] overflow-hidden bg-muted flex-shrink-0 relative">
-                      <img src={item.products?.image_url} alt={item.products?.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
+                      <img src={item.products?.image_url} alt={item.products?.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" loading="lazy" />
                       <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
                         <ExternalLink size={24} className="text-white" />
                       </div>

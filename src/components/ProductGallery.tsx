@@ -59,7 +59,7 @@ export default function ProductGallery({ images, videoUrl, name }: ProductGaller
         controls
         autoPlay
         className="w-full h-full object-contain"
-      />
+      / preload="none">
     );
   };
 
@@ -94,8 +94,7 @@ export default function ProductGallery({ images, videoUrl, name }: ProductGaller
             <img 
               src={url} 
               alt={`${name} view ${idx + 1}`} 
-              className="w-full h-full object-contain p-2"
-            />
+              className="w-full h-full object-contain p-2" loading="lazy" />
           </button>
         ))}
         {videoUrl && (
@@ -144,8 +143,7 @@ export default function ProductGallery({ images, videoUrl, name }: ProductGaller
                 <img 
                   src={validImages[selectedIndex]} 
                   alt={name} 
-                  className="w-full h-full object-contain p-8 md:p-12"
-                />
+                  className="w-full h-full object-contain p-8 md:p-12" loading="lazy" />
               )}
             </motion.div>
           </AnimatePresence>
@@ -227,8 +225,7 @@ export default function ProductGallery({ images, videoUrl, name }: ProductGaller
                 <img 
                   src={validImages[selectedIndex]} 
                   alt={name} 
-                  className="max-w-full max-h-full object-contain drop-shadow-2xl"
-                />
+                  className="max-w-full max-h-full object-contain drop-shadow-2xl" loading="lazy" />
               </motion.div>
 
               <button 
@@ -249,7 +246,7 @@ export default function ProductGallery({ images, videoUrl, name }: ProductGaller
                     selectedIndex === idx ? 'border-primary scale-110 shadow-lg' : 'border-slate-100 opacity-50 hover:opacity-100'
                   }`}
                 >
-                  <img src={url} alt="" className="w-full h-full object-cover" />
+                  <img src={url} alt="" className="w-full h-full object-cover" loading="lazy" />
                 </button>
               ))}
             </div>

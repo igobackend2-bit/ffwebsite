@@ -47,7 +47,7 @@ export default function Footer() {
 
         <div className="flex items-center justify-center gap-4 mb-8">
           <div className="w-12 h-12 rounded-2xl overflow-hidden shadow-lg border border-border">
-            <img src="/logo.png" alt="Logo" className="w-full h-full object-cover" />
+            <img src="/logo.png" alt="Logo" className="w-full h-full object-cover" loading="lazy" />
           </div>
           <span className="text-2xl font-black uppercase tracking-tighter text-foreground">FARMERS FACTORY</span>
         </div>

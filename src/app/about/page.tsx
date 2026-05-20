@@ -17,7 +17,7 @@ export default function AboutPage() {
       {/* Hero Section */}
       <section className="relative pt-40 pb-24 overflow-hidden bg-[#f9f9f7]">
         <div className="absolute top-0 right-0 w-1/2 h-full opacity-10 pointer-events-none">
-          <img src="https://images.unsplash.com/photo-1500651230702-0e2d8a49d4ad?q=80&w=2070&auto=format&fit=crop" alt="Farm" className="w-full h-full object-cover" />
+          <img src="https://images.unsplash.com/photo-1500651230702-0e2d8a49d4ad?q=80&w=2070&auto=format&fit=crop" alt="Farm" className="w-full h-full object-cover" loading="lazy" />
         </div>
         
         <div className="container mx-auto px-6 md:px-10 relative z-10">
@@ -70,7 +70,7 @@ export default function AboutPage() {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-20 items-center">
             <div className="relative">
               <div className="aspect-square rounded-[4rem] overflow-hidden shadow-2xl">
-                <img src="https://images.unsplash.com/photo-1595113316349-9fa4eb24f884?q=80&w=2072&auto=format&fit=crop" alt="Farmers" className="w-full h-full object-cover" />
+                <img src="https://images.unsplash.com/photo-1595113316349-9fa4eb24f884?q=80&w=2072&auto=format&fit=crop" alt="Farmers" className="w-full h-full object-cover" loading="lazy" />
               </div>
               <div className="absolute -bottom-10 -right-10 bg-primary text-white p-12 rounded-[3rem] shadow-2xl max-w-xs">
                 <p className="text-lg font-bold italic">{t('about.quote')}</p>

@@ -143,8 +143,7 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
                           <img 
                             src={item.products?.image_url || '/placeholder_product.png'} 
                             alt={item.products?.name} 
-                            className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
-                          />
+                            className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" loading="lazy" />
                         </div>
                         <div className="flex-1 flex flex-col justify-between py-0.5">
                           <div>

@@ -147,8 +147,7 @@ export default function LiveFarmStream() {
                 <img 
                   src={activeStream.video_url || activeStream.thumbnail_url} 
                   alt={activeStream.name} 
-                  className="w-full h-full object-cover transition-transform duration-[10s] ease-linear group-hover:scale-110" 
-                />
+                  className="w-full h-full object-cover transition-transform duration-[10s] ease-linear group-hover:scale-110" loading="lazy" />
               )}
               <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-transparent to-black/40" />
               
@@ -208,13 +207,12 @@ export default function LiveFarmStream() {
                     muted 
                     playsInline 
                     className="absolute inset-0 w-full h-full object-cover"
-                  />
+                  / preload="none">
                 ) : (
                   <img 
                     src={stream.thumbnail_url || stream.video_url} 
                     alt={stream.name} 
-                    className="absolute inset-0 w-full h-full object-cover" 
-                  />
+                    className="absolute inset-0 w-full h-full object-cover" loading="lazy" />
                 )}
                 <div className="absolute inset-0 bg-black/60 group-hover:bg-black/40 transition-colors" />
                 <div className="relative p-6 flex flex-col justify-end h-full">

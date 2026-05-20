@@ -425,7 +425,7 @@ function OrdersContent() {
                       <div className="flex items-center gap-3">
                         <div className="w-10 h-10 bg-muted rounded-full flex items-center justify-center text-primary font-black overflow-hidden">
                           {order.customer?.avatar_url ? (
-                            <img src={order.customer.avatar_url} alt="" className="w-full h-full object-cover" />
+                            <img src={order.customer.avatar_url} alt="" className="w-full h-full object-cover" loading="lazy" />
                           ) : (
                             <User size={20} />
                           )}
@@ -524,7 +524,7 @@ function OrdersContent() {
                 <div className="flex items-center gap-4">
                   <div className="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center font-black text-2xl overflow-hidden border-2 border-white/30">
                     {selectedCustomer?.avatar_url ? (
-                      <img src={selectedCustomer.avatar_url} alt="" className="w-full h-full object-cover" />
+                      <img src={selectedCustomer.avatar_url} alt="" className="w-full h-full object-cover" loading="lazy" />
                     ) : (
                       <User size={32} />
                     )}
@@ -637,7 +637,7 @@ function OrdersContent() {
                             <div className="flex items-center gap-4">
                               <div className="w-16 h-16 bg-white rounded-2xl overflow-hidden border border-border flex-shrink-0">
                                 {item.products?.image_url ? (
-                                  <img src={item.products.image_url} alt="" className="w-full h-full object-cover" />
+                                  <img src={item.products.image_url} alt="" className="w-full h-full object-cover" loading="lazy" />
                                 ) : (
                                   <div className="w-full h-full flex items-center justify-center text-muted-foreground">
                                     <ShoppingBag size={24} />

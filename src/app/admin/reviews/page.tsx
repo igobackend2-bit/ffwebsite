@@ -128,7 +128,7 @@ export default function AdminReviews() {
                 <div className="w-full md:w-64 flex-shrink-0">
                   <div className="flex items-center gap-3 mb-3">
                     <div className="w-12 h-12 bg-muted rounded-xl overflow-hidden border border-border">
-                      <img src={review.products?.image_urls?.[0] || '/placeholder.png'} alt="" className="w-full h-full object-cover" />
+                      <img src={review.products?.image_urls?.[0] || '/placeholder.png'} alt="" className="w-full h-full object-cover" loading="lazy" />
                     </div>
                     <div>
                       <p className="text-xs font-black uppercase tracking-widest text-primary mb-1">Product</p>

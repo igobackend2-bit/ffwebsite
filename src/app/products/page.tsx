@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import dynamic from 'next/dynamic';
 import Navbar from '@/components/Navbar';
 import ProductCard from '@/components/ProductCard';
 import { supabase } from '@/lib/supabase';
@@ -14,7 +15,7 @@ import { useTranslation } from '@/context/TranslationContext';
 
 import { VERIFIED_INVENTORY } from '@/lib/constants';
 import Footer from '@/components/Footer';
-import ThreeHero from '@/components/ThreeHero';
+const ThreeHero = dynamic(() => import('@/components/ThreeHero'), { ssr: false, loading: () => <div className='h-[500px] bg-gradient-to-br from-primary/10 to-muted animate-pulse rounded-3xl' /> });
 
 function ProductsContent() {
   const { t } = useTranslation();
@@ -173,8 +174,7 @@ function ProductsContent() {
           <img 
             src="/banner-organic.png" 
             alt="Organic Harvest" 
-            className="w-full h-full object-cover opacity-100"
-          />
+            className="w-full h-full object-cover opacity-100" loading="lazy" />
           <div className="absolute inset-0 bg-gradient-to-r from-white via-white/80 to-transparent" />
         </div>
         

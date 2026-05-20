@@ -24,8 +24,7 @@ export default function FarmerCard({ name, location, bio, experience, specializa
         <img 
           src={image_url} 
           alt={name} 
-          className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-1000"
-        />
+          className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-1000" loading="lazy" />
         <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
         <div className="absolute bottom-6 left-6 right-6 flex items-end justify-between">
           <div>

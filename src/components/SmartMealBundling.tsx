@@ -65,7 +65,7 @@ export default function SmartMealBundling({ currentProduct, onAddSuccess }: Smar
             className="flex items-center gap-4 bg-white p-4 rounded-2xl border border-border shadow-sm group hover:border-primary/30 transition-all"
           >
             <div className="w-16 h-16 rounded-xl bg-muted/20 overflow-hidden flex-shrink-0">
-              <img src={item.image_url} alt={item.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
+              <img src={item.image_url} alt={item.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" loading="lazy" />
             </div>
             <div className="flex-1">
               <h4 className="text-xs font-black uppercase tracking-tight mb-0.5">{item.name}</h4>

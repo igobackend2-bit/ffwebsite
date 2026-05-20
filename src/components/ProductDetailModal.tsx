@@ -143,7 +143,7 @@ export default function ProductDetailModal({ isOpen, onClose, product }: Product
                   loop 
                   playsInline
                   className="w-full h-full object-cover"
-                />
+                / preload="none">
               ) : !imageError ? (
                 <img 
                   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -184,7 +184,7 @@ export default function ProductDetailModal({ isOpen, onClose, product }: Product
                 <div className="mt-8 flex flex-col gap-6">
                   <TraceabilityBadge productId={currentProduct.id} productName={currentProduct.name} />
                   <div className="bg-muted/20 p-6 rounded-[2rem] border border-border/40 flex items-center gap-6">
-                     <div className="w-16 h-16 rounded-2xl overflow-hidden shadow-lg shadow-black/5"><img src={currentProduct.category === 'Fruits' ? '/farmers/meera.png' : currentProduct.category === 'Vegetables' ? '/farmers/arjun.png' : '/farmers/senthil.png'} alt="Farmer" className="w-full h-full object-cover" /></div>
+                     <div className="w-16 h-16 rounded-2xl overflow-hidden shadow-lg shadow-black/5"><img src={currentProduct.category === 'Fruits' ? '/farmers/meera.png' : currentProduct.category === 'Vegetables' ? '/farmers/arjun.png' : '/farmers/senthil.png'} alt="Farmer" className="w-full h-full object-cover" loading="lazy" /></div>
                      <div className="flex-1"><p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest mb-1">{t('product.details.harvested_by')}</p><h4 className="text-lg font-black text-foreground">{currentProduct.category === 'Fruits' ? 'Meera Reddy' : currentProduct.category === 'Vegetables' ? 'Arjun Kumar' : 'Senthil V.'}</h4><p className="text-xs text-primary font-bold">{t('product.details.verified_farmer')}</p></div>
                      <button className="p-3 bg-white hover:bg-primary/5 rounded-xl border border-border transition-all"><Info size={18} className="text-muted-foreground" /></button>
                   </div>

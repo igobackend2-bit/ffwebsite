@@ -122,7 +122,7 @@ export default function AdminFarmers() {
                 <div className="flex items-center gap-6 mb-8">
                   <div className="w-20 h-20 rounded-2xl bg-muted/20 overflow-hidden border border-border flex items-center justify-center">
                     {farmer.image_url ? (
-                      <img src={farmer.image_url} alt="" className="w-full h-full object-cover" />
+                      <img src={farmer.image_url} alt="" className="w-full h-full object-cover" loading="lazy" />
                     ) : (
                       <User className="text-muted-foreground/30" size={32} />
                     )}

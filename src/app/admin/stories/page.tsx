@@ -186,7 +186,7 @@ export default function AdminStories() {
               className="bg-white rounded-3xl border border-border overflow-hidden shadow-sm hover:shadow-xl transition-all group relative h-80 flex flex-col"
             >
               <div className="absolute inset-0 z-0">
-                  <img src={story.image_url || 'https://images.unsplash.com/photo-1500382017468-9049fed747ef'} className="w-full h-full object-cover" />
+                  <img src={story.image_url || 'https://images.unsplash.com/photo-1500382017468-9049fed747ef'} className="w-full h-full object-cover" loading="lazy" />
                   <div className="absolute inset-0 bg-black/60" />
               </div>
               

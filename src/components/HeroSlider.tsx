@@ -230,8 +230,7 @@ export default function HeroSlider() {
               <img
                 src={currentSlide.media_url}
                 alt={currentSlide.title}
-                className="w-full h-full object-cover"
-              />
+                className="w-full h-full object-cover" loading="lazy" />
             )}
           </motion.div>
           
