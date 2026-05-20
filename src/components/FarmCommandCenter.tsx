@@ -26,6 +26,7 @@ export default function FarmCommandCenter() {
       if (error) throw error;
       toast.success("Live Status Pushed to Website Ticker!", { icon: '📢' });
       setDescription('');
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {
       toast.error("Failed to push update");
     } finally {

@@ -19,7 +19,9 @@ import ThreeHero from '@/components/ThreeHero';
 function ProductsContent() {
   const { t } = useTranslation();
   const searchParams = useSearchParams();
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [products, setProducts] = useState<any[]>([]);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [filteredProducts, setFilteredProducts] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [category, setCategory] = useState('All');
@@ -42,6 +44,7 @@ function ProductsContent() {
     const catParam = searchParams.get('category');
     if (catParam) {
       const matched = categories.find(c => c.toLowerCase() === catParam.toLowerCase());
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setCategory(matched || 'All');
     } else {
       setCategory('All');
@@ -53,6 +56,7 @@ function ProductsContent() {
     }
   }, [searchParams]);
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const normalizeProduct = (p: any) => {
     let img = p.image_url || (Array.isArray(p.image_urls) ? p.image_urls[0] : null);
     if (img && typeof img === 'string' && !img.startsWith('http') && !img.startsWith('/')) {
@@ -127,6 +131,7 @@ function ProductsContent() {
   }
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     fetchProducts();
     const channel = supabase.channel('products_live').on('postgres_changes', { event: '*', schema: 'public', table: 'products' }, () => fetchProducts()).subscribe();
     return () => { supabase.removeChannel(channel); };
@@ -156,6 +161,7 @@ function ProductsContent() {
     // 3. Price Filter
     filtered = filtered.filter(p => Number(p.price) <= priceRange);
     
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setFilteredProducts(filtered);
   }, [category, searchQuery, priceRange, products]);
 

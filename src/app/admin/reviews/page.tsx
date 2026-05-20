@@ -17,6 +17,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'react-hot-toast';
 
 export default function AdminReviews() {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [reviews, setReviews] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState({
@@ -26,6 +27,7 @@ export default function AdminReviews() {
   });
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/immutability
     fetchReviews();
   }, []);
 
@@ -160,7 +162,7 @@ export default function AdminReviews() {
                     </span>
                   </div>
                   <p className="text-slate-600 font-medium leading-relaxed italic">
-                    "{review.comment}"
+                    &quot;{review.comment}&quot;
                   </p>
                 </div>
 

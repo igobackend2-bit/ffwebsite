@@ -100,6 +100,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       .limit(5000);
 
     if (!error && data) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       productRoutes = data.map((p: any) => ({
         url: `${SITE_URL}/products/${p.id}`,
         lastModified: p.updated_at

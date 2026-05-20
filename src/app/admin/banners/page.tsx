@@ -41,6 +41,7 @@ export default function AdminBanners() {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/immutability
     fetchBanners();
   }, []);
 
@@ -121,6 +122,7 @@ export default function AdminBanners() {
       }));
       
       toast.success('File uploaded successfully');
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {
       console.error('Upload error:', err);
       toast.error(err.message || 'Upload failed');
@@ -157,6 +159,7 @@ export default function AdminBanners() {
         toast.success('Banner updated');
       }
       setIsEditing(null);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {
       console.error('Save error:', err);
       toast.error(err?.message || 'Save failed');

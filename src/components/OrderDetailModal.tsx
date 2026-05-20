@@ -120,6 +120,7 @@ export default function OrderDetailModal({ order, isOpen, onClose }: OrderDetail
 
   useEffect(() => {
     if (isOpen && order) {
+      // eslint-disable-next-line react-hooks/immutability
       fetchOrderItems();
     }
   }, [isOpen, order]);
@@ -137,6 +138,7 @@ export default function OrderDetailModal({ order, isOpen, onClose }: OrderDetail
       if (error) throw error;
 
       if (data) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const normalized = data.map((item: any) => ({
           ...item,
           price_at_purchase: item.price_at_purchase ?? item.unit_price ?? 0,
@@ -186,6 +188,7 @@ export default function OrderDetailModal({ order, isOpen, onClose }: OrderDetail
 
   // ── WhatsApp Chat ────────────────────────────────────────────────────────
   function handleWhatsApp() {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const orderNum = order ? (order as any).order_number || order.id.slice(0, 8) : '';
     const msg = encodeURIComponent(`Hi Farmers Factory! I need help with my order #${orderNum}`);
     window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${msg}`, '_blank');

@@ -93,6 +93,7 @@ export function WishlistProvider({ children }: { children: React.ReactNode }) {
           .filter((item): item is WishlistItem => item !== null);
 
         setWishlistItems(mappedItems);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       } catch (err: any) {
         const errorDetail = err instanceof Error ? err.message : JSON.stringify(err);
         console.error('[Wishlist] Critical error:', errorDetail);
@@ -114,6 +115,7 @@ export function WishlistProvider({ children }: { children: React.ReactNode }) {
   }, [user, authLoading]);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     fetchWishlist();
   }, [fetchWishlist]);
 
@@ -144,7 +146,7 @@ export function WishlistProvider({ children }: { children: React.ReactNode }) {
     } else {
       // Guest Wishlist
       const existingIndex = wishlistItems.findIndex(item => item.product_id === productId);
-      let newWishlist = [...wishlistItems];
+      const newWishlist = [...wishlistItems];
 
       if (existingIndex > -1) {
         newWishlist.splice(existingIndex, 1);

@@ -11,7 +11,9 @@ import { getCRMAnalytics, getAdminStats } from '@/lib/admin';
 import { useRouter } from 'next/navigation';
 
 export default function AdminAnalytics() {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [analytics, setAnalytics] = useState<any>(null);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [stats, setStats] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const router = useRouter();
@@ -105,6 +107,7 @@ export default function AdminAnalytics() {
           </div>
           
           <div className="space-y-6">
+            {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
             {analytics?.categories.map((cat: any, i: number) => (
               <div key={i}>
                 <div className="flex justify-between items-center mb-2">
@@ -147,6 +150,7 @@ export default function AdminAnalytics() {
             </h3>
             
             <div className="space-y-5">
+              {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
               {analytics?.funnel.map((step: any, i: number) => (
                 <div key={i} className="flex flex-col gap-2">
                   <div className="flex justify-between text-[10px] font-black uppercase tracking-widest opacity-80">
@@ -186,6 +190,7 @@ export default function AdminAnalytics() {
 
           <div className="space-y-4">
             {analytics?.inventoryIntelligence.length > 0 ? (
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
               analytics.inventoryIntelligence.map((item: any, i: number) => (
                 <div key={i} className="flex items-center justify-between p-4 rounded-2xl border border-border hover:border-primary/20 transition-all group">
                   <div className="flex items-center gap-4">

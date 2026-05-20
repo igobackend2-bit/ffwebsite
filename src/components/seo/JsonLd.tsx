@@ -12,11 +12,12 @@ const SITE_URL =
 const SITE_NAME = 'Farmers Factory';
 const LOGO_URL = `${SITE_URL}/logo.png`;
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function jsonLdScript(data: Record<string, any>) {
   return (
     <script
       type="application/ld+json"
-      // eslint-disable-next-line react/no-danger
+       
       dangerouslySetInnerHTML={{ __html: JSON.stringify(data) }}
     />
   );
@@ -123,6 +124,7 @@ export function ProductJsonLd({
   ratingValue?: number;
   reviewCount?: number;
 }) {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const data: Record<string, any> = {
     '@context': 'https://schema.org',
     '@type': 'Product',

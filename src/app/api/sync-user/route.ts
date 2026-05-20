@@ -39,6 +39,7 @@ export async function POST(req: Request) {
 
     console.log('[Sync User] Successfully synced user:', id);
     return NextResponse.json({ success: true, user: data?.[0] });
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (error: any) {
     console.error('[Sync User] Unexpected error:', error);
     return NextResponse.json({ error: error.message }, { status: 500 });

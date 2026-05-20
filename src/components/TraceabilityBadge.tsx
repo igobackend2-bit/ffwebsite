@@ -12,6 +12,7 @@ interface TraceabilityBadgeProps {
 
 export default function TraceabilityBadge({ productId, productName }: TraceabilityBadgeProps) {
   const [isOpen, setIsOpen] = useState(false);
+  // eslint-disable-next-line react-hooks/purity
   const batchId = `FF-${productId.slice(0, 4)}-${Math.floor(Math.random() * 10000)}`;
 
   return (

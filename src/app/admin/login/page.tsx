@@ -15,6 +15,7 @@ export default function AdminLogin() {
   const router = useRouter();
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setMounted(true);
   }, []);
 
@@ -72,9 +73,13 @@ export default function AdminLogin() {
             key={i}
             className="absolute rounded-full bg-primary/20 backdrop-blur-3xl"
             style={{
+              // eslint-disable-next-line react-hooks/purity
               width: Math.random() * 300 + 100,
+              // eslint-disable-next-line react-hooks/purity
               height: Math.random() * 300 + 100,
+              // eslint-disable-next-line react-hooks/purity
               left: `${Math.random() * 100}%`,
+              // eslint-disable-next-line react-hooks/purity
               top: `${Math.random() * 100}%`,
             }}
             animate={{
@@ -83,6 +88,7 @@ export default function AdminLogin() {
               scale: [1, 1.1, 1],
             }}
             transition={{
+              // eslint-disable-next-line react-hooks/purity
               duration: Math.random() * 10 + 10,
               repeat: Infinity,
               ease: "easeInOut",

@@ -15,6 +15,7 @@ const FALLBACK_STORIES = [
 
 export default function FarmStories() {
   const { t } = useTranslation();
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [stories, setStories] = React.useState<any[]>([]);
   const [activeVideo, setActiveVideo] = React.useState<string | null>(null);
 

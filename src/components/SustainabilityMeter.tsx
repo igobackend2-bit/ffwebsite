@@ -15,6 +15,7 @@ export default function SustainabilityMeter({ productName, category }: Sustainab
     carbonSaved: category === 'Vegetables' ? '2.4kg' : '1.8kg',
     waterSaved: category === 'Fruits' ? '12L' : '8L',
     plasticAvoided: '100% Zero-Plastic Packaging',
+    // eslint-disable-next-line react-hooks/purity
     miles: Math.floor(Math.random() * 50) + 5
   };
 

@@ -61,7 +61,7 @@ export default function FarmerCard({ name, location, bio, experience, specializa
         </div>
         
         <p className="text-muted-foreground text-sm font-medium leading-relaxed mb-8 italic">
-          "{bio}"
+          &quot;{bio}&quot;
         </p>
         
         <div className="pt-6 border-t border-border/60 flex items-center justify-between">

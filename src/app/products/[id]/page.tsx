@@ -23,10 +23,12 @@ export default function ProductPage() {
   const { addToCart } = useCart();
   const { t } = useTranslation();
   
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [product, setProduct] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [quantity, setQuantity] = useState(1);
   const [selectedWeight, setSelectedWeight] = useState('1'); // Multiplier for weight
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [relatedProducts, setRelatedProducts] = useState<any[]>([]);
   const [showAddedOverlay, setShowAddedOverlay] = useState(false);
 

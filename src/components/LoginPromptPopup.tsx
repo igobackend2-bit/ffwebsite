@@ -13,6 +13,7 @@ export default function LoginPromptPopup() {
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setMounted(true);
     if (user) return; // Don't show if already logged in
 
@@ -124,7 +125,7 @@ export default function LoginPromptPopup() {
                 onClick={handleClose}
                 className="w-full text-center text-[10px] font-black text-muted-foreground/40 hover:text-muted-foreground uppercase tracking-widest transition-colors"
               >
-                I'll do this later, thanks
+                I&apos;ll do this later, thanks
               </button>
             </div>
           </motion.div>

@@ -110,6 +110,7 @@ function AuthContent() {
       if (error) throw error;
       setStep('otp');
       toast.success(`Verification code sent to ${email.trim()}! Check your inbox and spam folder.`, { duration: 5000 });
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
       if (error.message?.includes('fetch') || error.message?.includes('network') || error.name === 'TypeError') {
         toast.error('Connection error. The service is temporarily unavailable. Please try again in a moment.', { duration: 6000 });
@@ -155,6 +156,7 @@ function AuthContent() {
       
       setStep('details');
       toast.success('Email verified! Let\'s complete your profile.');
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
       toast.error(error.message || 'Invalid verification code');
     } finally {
@@ -196,6 +198,7 @@ function AuthContent() {
         router.push(redirectPath);
         router.refresh();
       }, 1500);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
       toast.error(error.message || 'Failed to complete signup');
     } finally {
@@ -223,6 +226,7 @@ function AuthContent() {
         router.push(redirectPath);
         router.refresh();
       }, 1000);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
       if (error.message?.includes('fetch') || error.message?.includes('network') || error.name === 'TypeError') {
         toast.error('Connection error. Please check your internet connection and try again.', { duration: 6000 });

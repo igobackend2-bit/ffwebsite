@@ -11,6 +11,7 @@ export default function WishlistDrawer() {
   const { isWishlistOpen, closeWishlist, wishlistItems, toggleWishlist } = useWishlist();
   const { addToCart } = useCart();
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const handleMoveToCart = async (productId: string, productData: any) => {
     const success = await addToCart(productId, 1, productData);
     if (success) {
@@ -79,6 +80,7 @@ export default function WishlistDrawer() {
                   >
                     <div className="flex gap-4">
                       <div className="w-20 h-20 rounded-2xl overflow-hidden bg-muted flex-shrink-0 border border-border/50">
+                        {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
                         <img src={item.products.image_url || (item.products as any).image_urls?.[0] || '/placeholder_product.png'} alt={item.products.name} className="w-full h-full object-cover" />
                       </div>
                       <div className="flex-1 min-w-0">

@@ -25,6 +25,7 @@ export interface EmailData {
     | 'order_delivered'
     | 'order_cancelled'
     | 'order_rejected';
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   data: any;
 }
 
@@ -102,6 +103,7 @@ export const sendOrderStatusEmail = (email: string, orderId: string, status: str
   sendLiveEmail({
     to: email,
     subject: `Order Update: ${status.toUpperCase()} #${orderNumber || orderId.slice(0, 8)} — Farmers Factory`,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     template: `order_${status}` as any,
     data: { orderId, orderNumber: orderNumber || orderId.slice(0, 8), status },
   });

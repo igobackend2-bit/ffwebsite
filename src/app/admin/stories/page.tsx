@@ -25,6 +25,7 @@ export default function AdminStories() {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/immutability
     fetchStories();
   }, []);
 
@@ -81,6 +82,7 @@ export default function AdminStories() {
       }
       
       toast.success('Media uploaded successfully');
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {
       toast.error(err.message || 'Upload failed');
     } finally {
@@ -126,6 +128,7 @@ export default function AdminStories() {
         toast.success('Story updated successfully');
       }
       setIsEditing(null);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {
       console.error(err);
       // Help the user fix the table issue

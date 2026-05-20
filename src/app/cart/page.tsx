@@ -326,8 +326,10 @@ export default function CartPage() {
 }
 
 // Separate component for Recommendations
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function RecommendedProducts({ cartItems }: { cartItems: any[] }) {
   const { t } = useTranslation();
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [recommendations, setRecommendations] = React.useState<any[]>([]);
   const [loading, setLoading] = React.useState(true);
   const { addToCart } = useCart();

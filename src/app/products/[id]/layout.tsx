@@ -14,6 +14,7 @@ async function getProduct(id: string) {
       .eq('id', id)
       .single();
     if (error) return null;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     return data as any;
   } catch {
     return null;

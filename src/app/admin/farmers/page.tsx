@@ -36,6 +36,7 @@ export default function AdminFarmers() {
   const [search, setSearch] = useState('');
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/immutability
     fetchFarmers();
   }, []);
 

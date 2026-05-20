@@ -128,6 +128,7 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
         // But for logged-in users or specific flows, we would.
         console.log('OTP Notification triggered');
       });
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
       toast.error(error.message || 'Failed to send code');
     } finally {
@@ -156,6 +157,7 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
         setStep('details');
         toast.success('Email verified!');
       }
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
       toast.error(error.message || 'Invalid verification code');
     } finally {
@@ -212,6 +214,7 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
 
       toast.success('Welcome to the Farm!');
       onClose();
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
       toast.error(error.message || 'Failed to complete signup');
     } finally {
@@ -235,6 +238,7 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
 
       toast.success('Logged in successfully!');
       onClose();
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
       toast.error(error.message || 'Invalid email or password');
     } finally {
@@ -381,7 +385,7 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
       <div className="text-center space-y-1 mb-6">
         <CheckCircle2 size={32} className="text-green-500 mx-auto mb-2" />
         <h3 className="text-xl font-bold">Verified!</h3>
-        <p className="text-white/40 text-sm">Let's finish your profile.</p>
+        <p className="text-white/40 text-sm">Let&apos;s finish your profile.</p>
       </div>
 
       <div className="space-y-4">

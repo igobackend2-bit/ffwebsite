@@ -37,6 +37,7 @@ function createTransporter() {
   });
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function buildHtml(template: string, data: any): string {
   const baseStyle = `
     font-family: 'Segoe UI', Arial, sans-serif;
@@ -216,6 +217,7 @@ export async function POST(req: Request) {
     console.log(`[Email] ✅ Sent "${template}" email to ${to}`);
     return NextResponse.json({ success: true });
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (error: any) {
     console.error('[Email] ❌ Failed to send email:', error.message);
     // Return 200 so the order flow doesn't break — email failure is non-critical

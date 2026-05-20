@@ -126,7 +126,7 @@ export default function GroupBuyingSection() {
                     Start a <span className="text-primary italic font-serif lowercase">New</span> Group
                  </h2>
                  <p className="text-white/60 text-lg font-medium">
-                    Can't find your neighborhood? Create a new group and be the 'Freshness Ambassador' for your area. Earn 500 FF Coins for every successful group order!
+                    Can&apos;t find your neighborhood? Create a new group and be the &apos;Freshness Ambassador&apos; for your area. Earn 500 FF Coins for every successful group order!
                  </p>
               </div>
               <button className="bg-primary text-white px-12 py-6 rounded-[2rem] font-black uppercase tracking-widest text-sm hover:scale-105 transition-all shadow-2xl shadow-primary/30 flex items-center gap-3">

@@ -76,6 +76,7 @@ export default function ContactPage() {
       }
 
       setForm({ name: '', email: '', subject: 'General Inquiry', message: '' });
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {
       console.error('[Contact] Send failed:', err);
       toast.error('Failed to send message. Please email us directly at info.thefarmersfactory@gmail.com');

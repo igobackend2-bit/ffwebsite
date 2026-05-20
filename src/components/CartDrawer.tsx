@@ -18,6 +18,7 @@ interface CartDrawerProps {
 
 export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
   const { cartItems, cartTotal, loading, updateQuantity, removeItem } = useCart();
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [relatedProducts, setRelatedProducts] = React.useState<any[]>([]);
   const [fetchingRelated, setFetchingRelated] = React.useState(false);
   const [selectedSlot, setSelectedSlot] = React.useState('morning');

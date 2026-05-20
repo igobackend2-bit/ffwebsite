@@ -22,6 +22,7 @@ export function LoyaltyProvider({ children }: { children: React.ReactNode }) {
       // Mock initial balance for demo
       const savedBalance = localStorage.getItem(`ff_loyalty_${user.id}`);
       if (savedBalance) {
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         setBalance(parseInt(savedBalance));
       } else {
         const initial = 50; // Welcome bonus

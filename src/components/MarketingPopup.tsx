@@ -16,6 +16,7 @@ export default function MarketingPopup() {
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setMounted(true);
     // Check if user has already seen/closed the popup
     const hasSeen = localStorage.getItem('ff_marketing_popup_seen');
@@ -203,11 +204,11 @@ export default function MarketingPopup() {
                     <CheckCircle2 size={40} />
                   </div>
                   <div>
-                    <h2 className="text-3xl font-black text-foreground mb-2">YOU'RE IN!</h2>
+                    <h2 className="text-3xl font-black text-foreground mb-2">YOU&apos;RE IN!</h2>
                     <p className="text-muted-foreground font-bold">Use code <span className="text-primary text-xl px-3 py-1 bg-primary/5 rounded-lg ml-1">HARVEST10</span> at checkout.</p>
                   </div>
                   <p className="text-sm text-muted-foreground max-w-xs mx-auto font-medium">
-                    We've sent a confirmation email with your discount details. Happy harvesting!
+                    We&apos;ve sent a confirmation email with your discount details. Happy harvesting!
                   </p>
                   <button 
                     onClick={handleClose}

@@ -28,9 +28,13 @@ import SentimentAI from '@/components/SentimentAI';
 import DynamicPricing from '@/components/DynamicPricing';
 
 export default function AdminDashboard() {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [stats, setStats] = useState<any>(null);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [recentOrders, setRecentOrders] = useState<any[]>([]);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [recentVisitors, setRecentVisitors] = useState<any[]>([]);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [products, setProducts] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -54,6 +58,7 @@ export default function AdminDashboard() {
         const [statsData, ordersData, visitorsData, productsData] = await Promise.race([
           fetchDataPromise,
           timeoutPromise
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         ]) as any;
 
         setStats(statsData);

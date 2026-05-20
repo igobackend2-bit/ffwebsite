@@ -52,7 +52,9 @@ const isVideoUrl = (url: string) => {
 
 export default function LiveFarmStream() {
   const { t } = useTranslation();
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [streams, setStreams] = useState<any[]>([]);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [activeStream, setActiveStream] = useState<any>(null);
   const [loading, setLoading] = useState(true);
 

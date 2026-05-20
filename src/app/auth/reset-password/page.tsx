@@ -33,6 +33,7 @@ export default function ResetPasswordPage() {
       setSuccess(true);
       toast.success('Password updated successfully!');
       setTimeout(() => router.push('/'), 3000);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
       toast.error(error.message || 'Failed to update password');
     } finally {

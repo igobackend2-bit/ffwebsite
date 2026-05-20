@@ -8,6 +8,7 @@ import { useTranslation } from '@/context/TranslationContext';
 
 export default function FeaturedProducts() {
   const { t } = useTranslation();
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [products, setProducts] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 

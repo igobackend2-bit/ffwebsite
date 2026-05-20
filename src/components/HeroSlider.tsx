@@ -73,6 +73,7 @@ export default function HeroSlider() {
           .order('display_order', { ascending: true });
 
         if (!error && data && data.length > 0) {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           const dynamicSlides: Slide[] = data.map((b: any) => ({
             id: b.id,
             title: b.title || 'Organic Freshness',

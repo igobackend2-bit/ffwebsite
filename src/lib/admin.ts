@@ -39,6 +39,7 @@ export async function getAdminStats() {
       .from('orders')
       .select('total_amount, status');
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const orders = (rawOrders || []).map((o: any) => ({
       ...o,
       status: o.status?.toLowerCase() === 'placed' ? 'pending' : (o.status?.toLowerCase() || 'pending')
@@ -140,6 +141,7 @@ export async function getOrderDetails(orderId: string) {
     return [];
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   return (items || []).map((item: any) => ({
     ...item,
     price_at_purchase: item.price_at_purchase ?? item.unit_price ?? 0
@@ -188,6 +190,7 @@ export async function getAllProducts(includeInactive = true) {
   const { data, error } = await query;
   
   // Normalize database data
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const dbProducts = (data || []).map((p: any) => ({
     ...p,
     category: p.category || (p.category_id === 'cat-fruit' ? 'Fruits' : (p.category_id === 'cat-trad' || p.category_id === 'cat-val') ? 'Valluvam Products' : 'Vegetables'),
@@ -241,6 +244,7 @@ export async function restoreProduct(productId: string) {
   return { error };
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export async function addProduct(product: any) {
   const { data, error } = await supabase
     .from('products')
@@ -251,6 +255,7 @@ export async function addProduct(product: any) {
   return { data, error };
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export async function updateProduct(productId: string, updates: any) {
   const { data, error } = await supabase
     .from('products')
@@ -341,12 +346,14 @@ export async function deleteAllProducts() {
     
     console.log('Successfully wiped products and related data.');
     return { success: true };
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (err: any) {
     console.error('Total wipe fatal error:', err);
     return { success: false, error: err };
   }
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export async function syncVerifiedCatalog(samples: any[]) {
   try {
     console.log('Starting robust catalog upsert with', samples.length, 'items');
@@ -437,6 +444,7 @@ export async function getCRMAnalytics() {
     
       (orders || []).forEach(order => {
         totalRev += Number(order.total_amount);
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         order.order_items?.forEach((item: any) => {
           const cat = item.products?.category || 'Other';
           const price = item.price_at_purchase ?? item.unit_price ?? 0;

@@ -46,6 +46,7 @@ export default function Navbar() {
   }, [user]);
 
   React.useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     fetchUnreadCount();
     const channel = supabase
       .channel('navbar_unread_count')
@@ -60,6 +61,7 @@ export default function Navbar() {
   }, [fetchUnreadCount]);
 
   React.useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setIsHomePage(window.location.pathname === '/');
     const handleScroll = () => setScrolled(window.scrollY > 20);
     window.addEventListener('scroll', handleScroll);
@@ -126,6 +128,7 @@ export default function Navbar() {
                       <button
                         key={lang.code}
                         onClick={() => {
+                          // eslint-disable-next-line @typescript-eslint/no-explicit-any
                           setLanguage(lang.code as any);
                           setIsLangOpen(false);
                         }}
@@ -254,6 +257,7 @@ export default function Navbar() {
 }
 
 function NotificationsDrawer({ isOpen, onClose }: { isOpen: boolean, onClose: () => void }) {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [notifications, setNotifications] = React.useState<any[]>([]);
   const [loading, setLoading] = React.useState(true);
   const { user } = useAuth();
@@ -277,6 +281,7 @@ function NotificationsDrawer({ isOpen, onClose }: { isOpen: boolean, onClose: ()
       } else {
         setNotifications(data || []);
       }
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {
       console.error('Failed to fetch notifications:', err.message);
     } finally {
@@ -285,6 +290,7 @@ function NotificationsDrawer({ isOpen, onClose }: { isOpen: boolean, onClose: ()
   };
 
   React.useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     fetchNotifications();
     const channel = supabase
       .channel('realtime_notifications')

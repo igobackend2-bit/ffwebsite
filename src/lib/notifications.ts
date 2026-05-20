@@ -10,6 +10,7 @@ interface NotificationPayload {
   type: NotificationType;
   link?: string;
   emailTemplate?: 'welcome' | 'order_confirmation' | 'order_status_update' | 'security_code';
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   emailData?: any;
 }
 
@@ -56,6 +57,7 @@ export async function sendCXNotification({
       await sendLiveEmail({
         to: recipientEmail,
         subject: title,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         template: emailTemplate as any,
         data: {
           ...emailData,

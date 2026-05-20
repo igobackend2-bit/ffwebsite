@@ -70,7 +70,7 @@ export default function SustainabilityDashboard({ stats = { carbon_saved: 12.4, 
            </div>
            <div className="flex-1">
               <h4 className="text-lg font-black text-foreground mb-1">Sustainable Achievement Unlocked!</h4>
-              <p className="text-sm text-muted-foreground font-medium">You've saved more carbon this month than 85% of users in your area. Share your impact to earn 50 FF Coins!</p>
+              <p className="text-sm text-muted-foreground font-medium">You&apos;ve saved more carbon this month than 85% of users in your area. Share your impact to earn 50 FF Coins!</p>
            </div>
            <button className="px-8 py-4 bg-black text-white rounded-xl font-black text-xs uppercase tracking-widest hover:bg-primary transition-all shadow-xl">
               Share Impact

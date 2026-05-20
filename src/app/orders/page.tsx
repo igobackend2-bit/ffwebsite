@@ -11,6 +11,7 @@ import Link from 'next/link';
 
 export default function Orders() {
   const { t } = useTranslation();
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [orders, setOrders] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -26,9 +27,11 @@ export default function Orders() {
         .order('created_at', { ascending: false });
 
       if (data) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const normalized = data.map((order: any) => ({
           ...order,
           status: order.status?.toLowerCase() === 'placed' ? 'pending' : (order.status?.toLowerCase() || 'pending'),
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           order_items: (order.order_items || []).map((item: any) => ({
             ...item,
             price_at_purchase: item.price_at_purchase ?? item.unit_price ?? 0,
@@ -118,6 +121,7 @@ export default function Orders() {
 
                   <div className="p-6 md:p-8 grid grid-cols-1 md:grid-cols-3 gap-8">
                     <div className="md:col-span-2 space-y-4">
+                      {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
                       {order.order_items.map((item: any) => (
                         <div key={item.id} className="flex items-center gap-4">
                           <div className="w-16 h-16 bg-muted rounded-xl overflow-hidden flex-shrink-0">

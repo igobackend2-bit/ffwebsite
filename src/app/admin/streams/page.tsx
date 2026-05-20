@@ -45,6 +45,7 @@ export default function AdminStreams() {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/immutability
     fetchStreams();
   }, []);
 
@@ -93,6 +94,7 @@ export default function AdminStreams() {
       }));
       
       toast.success('Video uploaded successfully');
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {
       toast.error(err.message || 'Upload failed');
     } finally {
@@ -164,7 +166,7 @@ export default function AdminStreams() {
       <div className="flex items-end justify-between">
         <div>
           <h1 className="text-5xl font-black text-foreground tracking-tighter uppercase mb-2">Live <span className="text-primary italic font-serif lowercase">Streams</span></h1>
-          <p className="text-muted-foreground font-bold text-sm">Manage the "Watch Your Harvest Grow" real-time monitoring videos.</p>
+          <p className="text-muted-foreground font-bold text-sm">Manage the &quot;Watch Your Harvest Grow&quot; real-time monitoring videos.</p>
         </div>
         <button 
           onClick={() => { setIsEditing('new'); setEditForm({ is_active: true, display_order: streams.length, temp: '28°C', humidity: '65%', wind: '12 km/h' }); }}

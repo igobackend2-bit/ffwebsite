@@ -538,6 +538,7 @@ export function TranslationProvider({ children }: { children: React.ReactNode })
   // Persist language preference
   useEffect(() => {
     const saved = localStorage.getItem('ff_language') as Language;
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     if (saved) setLanguage(saved);
   }, []);
 

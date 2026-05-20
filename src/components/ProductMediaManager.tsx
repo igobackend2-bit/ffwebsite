@@ -37,6 +37,7 @@ export default function ProductMediaManager({ product, onUpdate }: ProductMediaM
       toast.success('Product image updated successfully!');
       setHasChanges(false);
       if (onUpdate) onUpdate();
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {
       toast.error(err.message || 'Failed to update image');
     } finally {

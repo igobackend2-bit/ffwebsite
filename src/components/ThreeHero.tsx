@@ -8,7 +8,7 @@ import * as THREE from 'three';
 function ProductStage({ url, position, scale = 1, rotation = [0, 0, 0] }: { url: string, position: [number, number, number], scale?: number, rotation?: [number, number, number] }) {
   return (
     <Float speed={1.5} rotationIntensity={0.2} floatIntensity={1}>
-      <group position={position} rotation={rotation as any}>
+      <group position={position} rotation={rotation as [number, number, number]}>
         <mesh position={[0, -scale * 0.6, 0]} rotation={[-Math.PI / 2, 0, 0]}>
           <planeGeometry args={[scale * 1.2, scale * 1.2]} />
           <MeshTransmissionMaterial 
@@ -39,7 +39,7 @@ function ProductStage({ url, position, scale = 1, rotation = [0, 0, 0] }: { url:
 function GlassShape({ position, scale = 1, rotation = [0, 0, 0], color = "#ffffff" }: { position: [number, number, number], scale?: number, rotation?: [number, number, number], color?: string }) {
   return (
     <Float speed={2} rotationIntensity={0.5} floatIntensity={1}>
-      <mesh position={position} rotation={rotation as any} scale={scale}>
+      <mesh position={position} rotation={rotation as [number, number, number]} scale={scale}>
         <torusKnotGeometry args={[1, 0.3, 128, 32]} />
         <MeshTransmissionMaterial 
           backside

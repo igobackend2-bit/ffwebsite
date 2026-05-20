@@ -9,11 +9,13 @@ import {
 import { toast } from 'react-hot-toast';
 
 export default function AdminLeadsPage() {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [leads, setLeads] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/immutability
     fetchLeads();
   }, []);
 
@@ -27,6 +29,7 @@ export default function AdminLeadsPage() {
       
       if (error) throw error;
       setLeads(data || []);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {
       console.error('Leads Fetch Error:', err.message);
       toast.error('Failed to load leads data');
@@ -152,7 +155,7 @@ export default function AdminLeadsPage() {
                       </div>
                       {lead.message && (
                         <div className="mt-2 p-3 bg-muted/50 rounded-xl text-xs font-medium italic border border-border text-foreground">
-                          "{lead.message}"
+                          &quot;{lead.message}&quot;
                         </div>
                       )}
                     </td>

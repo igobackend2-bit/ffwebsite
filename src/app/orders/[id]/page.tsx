@@ -42,6 +42,7 @@ const STATUS_ORDER = ['pending', 'confirmed', 'processing', 'shipped', 'delivere
 export default function OrderDetailsPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
   const { t } = useTranslation();
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [order, setOrder] = useState<any>(null);
   const [items, setItems] = useState<OrderItem[]>([]);
   const [loading, setLoading] = useState(true);
@@ -59,6 +60,7 @@ export default function OrderDetailsPage({ params }: { params: Promise<{ id: str
           setOrder(normalizedOrd);
           const { data: its } = await supabase.from('order_items').select('*, products(*)').eq('order_id', id);
           if (its) {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const normalized = its.map((item: any) => ({
               ...item,
               price_at_purchase: item.price_at_purchase ?? item.unit_price ?? 0

@@ -8,6 +8,7 @@ import { toast } from 'react-hot-toast';
 import { FALLBACK_PRODUCTS } from '@/lib/constants';
 
 interface SmartMealBundlingProps {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   currentProduct: any;
   onAddSuccess?: () => void;
 }

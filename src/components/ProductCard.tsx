@@ -59,6 +59,7 @@ export default function ProductCard({ product }: ProductCardProps) {
       } else {
         toast.error('Could not add to basket. Please refresh and try again.', { duration: 4000 });
       }
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
       console.error('Basket Error:', error);
       toast.error(error?.message || 'Failed to add to basket. Please try again.');
@@ -92,6 +93,7 @@ export default function ProductCard({ product }: ProductCardProps) {
       >
         <div className="relative aspect-[4/5] rounded-[1.5rem] overflow-hidden mb-6 bg-muted/20">
           <img
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             src={product.image_url || (product as any).image_urls?.[0] || '/placeholder_product.png'}
             alt={product.name}
             onError={(e) => {

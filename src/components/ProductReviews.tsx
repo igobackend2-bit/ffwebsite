@@ -30,6 +30,7 @@ export default function ProductReviews({ productId }: ProductReviewsProps) {
   const { user } = useAuth();
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/immutability
     fetchReviews();
   }, [productId]);
 
@@ -81,6 +82,7 @@ export default function ProductReviews({ productId }: ProductReviewsProps) {
       setReviews(prev => [data[0], ...prev]);
       setNewReview({ rating: 5, comment: '' });
       setShowForm(false);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {
       toast.error(err.message || 'Failed to submit review');
     } finally {

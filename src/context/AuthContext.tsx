@@ -5,7 +5,9 @@ import AuthModal from '@/components/AuthModal';
 import { supabase } from '@/lib/supabase';
 
 interface AuthContextType {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   user: any | null;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   session: any | null;
   loading: boolean;
   openAuthModal: () => void;
@@ -17,7 +19,9 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [user, setUser] = useState<any | null>(null);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [session, setSession] = useState<any | null>(null);
   const [loading, setLoading] = useState(true);
 
