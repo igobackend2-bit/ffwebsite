@@ -1,0 +1,44 @@
+{
+  "name": "farmers-factory",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "node --max-old-space-size=8192 node_modules/next/dist/bin/next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "eslint",
+    "mobile:start": "npm start --prefix mobile"
+  },
+  "dependencies": {
+    "@react-three/drei": "^10.7.7",
+    "@react-three/fiber": "^9.6.1",
+    "@supabase/supabase-js": "^2.105.1",
+    "@types/nodemailer": "^8.0.0",
+    "@types/three": "^0.184.1",
+    "clsx": "^2.1.1",
+    "date-fns": "^4.1.0",
+    "framer-motion": "^12.38.0",
+    "jspdf": "^4.2.1",
+    "jspdf-autotable": "^5.0.7",
+    "lucide-react": "^1.14.0",
+    "next": "16.2.4",
+    "nodemailer": "^8.0.7",
+    "react": "19.2.4",
+    "react-dom": "19.2.4",
+    "react-hot-toast": "^2.6.0",
+    "resend": "^6.12.3",
+    "tailwind-merge": "^3.5.0",
+    "three": "^0.184.0",
+    "xlsx": "^0.18.5"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "^4",
+    "@types/node": "^20",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "eslint": "^9",
+    "eslint-config-next": "16.2.4",
+    "tailwindcss": "^4",
+    "typescript": "^5"
+  }
+}

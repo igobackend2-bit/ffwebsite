@@ -1,0 +1,42 @@
+import type { MetadataRoute } from 'next';
+
+/**
+ * PWA manifest — improves mobile install-ability and is read by search engines
+ * (Google, Bing) to enrich the brand presentation.
+ */
+export default function manifest(): MetadataRoute.Manifest {
+  return {
+    name: 'Farmers Factory — Fresh Organic Farm Produce',
+    short_name: 'Farmers Factory',
+    description:
+      'Farm-direct organic fruits, vegetables and Valluvam products delivered fresh from our farms to your doorstep within 24 hours.',
+    start_url: '/',
+    display: 'standalone',
+    background_color: '#ffffff',
+    theme_color: '#16a34a',
+    orientation: 'portrait',
+    scope: '/',
+    lang: 'en',
+    categories: ['shopping', 'food', 'lifestyle', 'health'],
+    icons: [
+      {
+        src: '/logo.png',
+        sizes: '192x192',
+        type: 'image/png',
+        purpose: 'any',
+      },
+      {
+        src: '/logo.png',
+        sizes: '512x512',
+        type: 'image/png',
+        purpose: 'any',
+      },
+      {
+        src: '/logo.png',
+        sizes: '512x512',
+        type: 'image/png',
+        purpose: 'maskable',
+      },
+    ],
+  };
+}
