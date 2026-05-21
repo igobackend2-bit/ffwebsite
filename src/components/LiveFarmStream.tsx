@@ -206,8 +206,9 @@ export default function LiveFarmStream() {
                     src={stream.thumbnail_url || stream.video_url} 
                     muted 
                     playsInline 
+                    preload="none"
                     className="absolute inset-0 w-full h-full object-cover"
-                  / preload="none">
+                  />
                 ) : (
                   <img 
                     src={stream.thumbnail_url || stream.video_url} 

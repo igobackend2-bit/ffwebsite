@@ -70,7 +70,7 @@ export default function FarmStories() {
               className="flex-shrink-0 w-72 h-[480px] rounded-[2.5rem] relative overflow-hidden group cursor-pointer shadow-2xl shadow-black/10"
             >
               {activeVideo === story.video_url && story.video_url ? (
-                <video src={story.video_url} autoPlay controls className="w-full h-full object-cover" / preload="none">
+                <video src={story.video_url} autoPlay controls preload="none" className="w-full h-full object-cover" />
               ) : (
                 <>
                   <img 

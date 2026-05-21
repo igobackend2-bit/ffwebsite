@@ -1,5 +1,5 @@
 # robots.txt for Farmers Factory
-# https://farmersfactory.com
+# https://famersfactory.com
 
 User-agent: *
 Allow: /
@@ -40,7 +40,7 @@ User-agent: ClaudeBot
 Disallow: /
 
 # Sitemap location
-Sitemap: https://farmersfactory.com/sitemap.xml
+Sitemap: https://famersfactory.com/sitemap.xml
 
 # Crawl delay (seconds) for polite bots
 Crawl-delay: 1

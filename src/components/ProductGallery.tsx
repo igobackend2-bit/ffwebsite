@@ -58,8 +58,9 @@ export default function ProductGallery({ images, videoUrl, name }: ProductGaller
         src={url}
         controls
         autoPlay
+        preload="none"
         className="w-full h-full object-contain"
-      / preload="none">
+      />
     );
   };
 

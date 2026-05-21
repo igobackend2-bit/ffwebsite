@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import { BreadcrumbJsonLd, OrganizationJsonLd } from '@/components/seo/JsonLd';
 
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://farmersfactory.com';
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://famersfactory.com';
 
 export const metadata: Metadata = {
   title: 'Live Farm Streams | Watch Our Farms in Real Time | Farmers Factory',

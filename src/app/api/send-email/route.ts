@@ -117,7 +117,7 @@ function buildHtml(template: string, data: any): string {
           <li>💰 Use code <strong>WELCOME10</strong> for 10% off your first order</li>
         </ul>
         <div style="text-align:center;">
-          <a href="${process.env.NEXT_PUBLIC_SITE_URL || 'https://farmersfactory.com'}" style="${btnStyle}">
+          <a href="${process.env.NEXT_PUBLIC_SITE_URL || 'https://famersfactory.com'}" style="${btnStyle}">
             Start Shopping
           </a>
         </div>

@@ -7,7 +7,7 @@ import React from 'react';
  */
 
 const SITE_URL =
-  process.env.NEXT_PUBLIC_SITE_URL || 'https://farmersfactory.com';
+  process.env.NEXT_PUBLIC_SITE_URL || 'https://famersfactory.com';
 
 const SITE_NAME = 'Farmers Factory';
 const LOGO_URL = `${SITE_URL}/logo.png`;

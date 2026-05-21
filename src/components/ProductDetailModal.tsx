@@ -142,8 +142,9 @@ export default function ProductDetailModal({ isOpen, onClose, product }: Product
                   muted 
                   loop 
                   playsInline
+                  preload="none"
                   className="w-full h-full object-cover"
-                / preload="none">
+                />
               ) : !imageError ? (
                 <img 
                   // eslint-disable-next-line @typescript-eslint/no-explicit-any

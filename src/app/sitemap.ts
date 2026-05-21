@@ -11,7 +11,7 @@ import { supabase } from '@/lib/supabase';
  */
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const SITE_URL =
-    process.env.NEXT_PUBLIC_SITE_URL || 'https://farmersfactory.com';
+    process.env.NEXT_PUBLIC_SITE_URL || 'https://famersfactory.com';
 
   const now = new Date();
 

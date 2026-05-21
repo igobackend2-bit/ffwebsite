@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://farmersfactory.com';
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://famersfactory.com';
 
 export const metadata: Metadata = {
   title: 'Sign In or Sign Up | Farmers Factory',

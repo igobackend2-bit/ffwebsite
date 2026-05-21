@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import { BreadcrumbJsonLd, ProductJsonLd } from '@/components/seo/JsonLd';
 import { supabase } from '@/lib/supabase';
 
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://farmersfactory.com';
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://famersfactory.com';
 
 type Params = { id: string };
 
