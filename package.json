@@ -7,7 +7,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "mobile:start": "npm start --prefix mobile"
+    "mobile:start": "npm start --prefix mobile",
+    "deploy": "npm run build && node scripts/deploy-ftp.js"
   },
   "dependencies": {
     "@react-three/drei": "^10.7.7",
