@@ -1,9 +1,7 @@
 import type { MetadataRoute } from 'next';
 
-/**
- * PWA manifest — improves mobile install-ability and is read by search engines
- * (Google, Bing) to enrich the brand presentation.
- */
+export const dynamic = 'force-static';
+
 export default function manifest(): MetadataRoute.Manifest {
   return {
     name: 'Farmers Factory — Fresh Organic Farm Produce',

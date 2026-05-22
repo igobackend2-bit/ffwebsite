@@ -1,0 +1,10 @@
+Options -MultiViews
+RewriteEngine On
+
+# Serve existing files and directories directly (JS, CSS, images, etc.)
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+
+# For dynamic routes (/products/id, /orders/id), fall back to index.html
+# The Next.js client router handles the rest
+RewriteRule ^ /index.html [QSA,L]

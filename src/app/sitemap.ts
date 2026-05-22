@@ -1,6 +1,8 @@
 import type { MetadataRoute } from 'next';
 import { supabase } from '@/lib/supabase';
 
+export const dynamic = 'force-static';
+
 /**
  * Dynamic sitemap for Farmers Factory.
  * Combines:
