@@ -15,7 +15,7 @@ import { createClient } from '@supabase/supabase-js';
  */
 
 const FROM_EMAIL  = process.env.EMAIL_FROM  || 'Farmers Factory <info.thefarmersfactory@gmail.com>';
-const SITE_URL    = process.env.NEXT_PUBLIC_SITE_URL || 'https://farmersfactory.com';
+const SITE_URL    = process.env.NEXT_PUBLIC_SITE_URL || 'http://famersfactory.com';
 const LOGO_URL    = `${SITE_URL}/logo.png`;
 
 // ─── Brand Constants ──────────────────────────────────────────────────────────
