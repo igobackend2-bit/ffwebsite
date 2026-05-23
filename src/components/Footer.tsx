@@ -3,7 +3,7 @@
 import React from 'react';
 import Link from 'next/link';
 import { useCart } from '@/context/CartContext';
-import { ShoppingBag, ArrowRight } from 'lucide-react';
+import { ShoppingBag, ArrowRight, Instagram, Facebook } from 'lucide-react';
 import { usePathname } from 'next/navigation';
 import { useTranslation } from '@/context/TranslationContext';
 
@@ -67,7 +67,17 @@ export default function Footer() {
           <Link href="/terms" className="hover:text-primary transition-colors">{t('terms.title')}</Link>
         </div>
 
-        <div className="mt-16 pt-8 border-t border-muted/30">
+        {/* Social Media Links */}
+        <div className="flex justify-center gap-6 mt-12">
+          <a href="https://www.instagram.com/the_farmers_factory/" target="_blank" rel="noopener noreferrer" aria-label="Instagram" className="w-12 h-12 rounded-full bg-slate-50 flex items-center justify-center text-muted-foreground hover:bg-[#E1306C] hover:text-white transition-all hover:scale-110 shadow-sm border border-border">
+            <Instagram size={20} />
+          </a>
+          <a href="https://www.facebook.com/profile.php?id=100068904620757" target="_blank" rel="noopener noreferrer" aria-label="Facebook" className="w-12 h-12 rounded-full bg-slate-50 flex items-center justify-center text-muted-foreground hover:bg-[#1877F2] hover:text-white transition-all hover:scale-110 shadow-sm border border-border">
+            <Facebook size={20} />
+          </a>
+        </div>
+
+        <div className="mt-12 pt-8 border-t border-muted/30">
           <p className="text-[10px] font-black text-muted-foreground/60 uppercase tracking-[0.3em]">
             © {new Date().getFullYear()} FARMERS FACTORY. {t('footer.copyright')}
           </p>
