@@ -47,7 +47,7 @@ export function OrganizationJsonLd() {
       {
         '@type': 'ContactPoint',
         contactType: 'customer service',
-        email: 'support@farmersfactory.com',
+        email: 'support@famersfactory.com',
         availableLanguage: ['English', 'Tamil', 'Hindi'],
       },
     ],

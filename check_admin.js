@@ -7,7 +7,7 @@ const supabase = createClient(supabaseUrl, supabaseKey);
 
 async function checkAdmin() {
   const { data: users } = await supabase.auth.admin.listUsers();
-  const adminUser = users.users.find(u => u.email === 'admin@farmersfactory.com');
+  const adminUser = users.users.find(u => u.email === 'admin@famersfactory.com');
   
   if (!adminUser) {
     console.error('Admin user not found in auth.users!');

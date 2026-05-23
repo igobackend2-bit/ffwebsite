@@ -1,0 +1,59 @@
+# DISABLED — This workflow is NOT needed.
+#
+# Hostinger is already configured as a Node.js Web App with auto-deploy from
+# the main branch. It runs: npm install → npm run build → npm start
+#
+# This old workflow was building a static export (output: 'export') and pushing
+# the out/ folder to a 'deploy' branch that Hostinger never watched. It caused
+# two problems:
+#   1. The static-export build conflicted with Hostinger's "next start" command
+#      (next start is incompatible with output: 'export'), crashing the Node.js
+#      server on startup and causing logo.png to be served at the root URL.
+#   2. The pushed 'deploy' branch was never used — wasted CI minutes.
+#
+# Hostinger handles the full build + start cycle on its own. No GitHub Actions
+# deployment workflow is required.
+#
+# To re-enable if ever needed, restore the 'on:' trigger below.
+
+name: Build & Deploy to Hostinger (DISABLED)
+
+on:
+  workflow_dispatch: # Manual trigger only — auto-deploy is handled by Hostinger
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    if: false # Never runs automatically
+
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Create .env for build
+        run: |
+          echo "NEXT_PUBLIC_SUPABASE_URL=${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}" >> .env
+          echo "NEXT_PUBLIC_SUPABASE_ANON_KEY=${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}" >> .env
+          echo "SUPABASE_SERVICE_ROLE_KEY=${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}" >> .env
+          echo "NEXT_PUBLIC_SITE_URL=https://famersfactory.com" >> .env
+          echo "SMTP_HOST=${{ secrets.SMTP_HOST }}" >> .env
+          echo "SMTP_PORT=${{ secrets.SMTP_PORT }}" >> .env
+          echo "SMTP_USER=${{ secrets.SMTP_USER }}" >> .env
+          echo "SMTP_PASS=${{ secrets.SMTP_PASS }}" >> .env
+          echo "EMAIL_FROM=${{ secrets.EMAIL_FROM }}" >> .env
+
+      - name: Build Next.js
+        run: npm run build

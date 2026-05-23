@@ -30,7 +30,7 @@ export default function AdminLogin() {
 
       // 1. Authenticate with Supabase Auth for RLS policies!
       const { error: authError } = await supabase.auth.signInWithPassword({
-        email: 'admin@farmersfactory.com',
+        email: 'admin@famersfactory.com',
         password: 'AdminPassword123!',
       });
 

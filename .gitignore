@@ -12,3 +12,6 @@ yarn-error.log*
 temp_modules/
 scratch/  
  
+out/
+audit.json
+tsconfig.tsbuildinfo

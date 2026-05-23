@@ -1,17 +1,16 @@
 import type { NextConfig } from "next";
 
-// Static export only applies to production builds (npm run build).
-// Dev mode (npm run dev) uses the full Next.js server — API routes, HMR, and
-// middleware all work normally so you get the complete local dev experience.
-const isProd = process.env.NODE_ENV === 'production';
+// Hostinger Node.js Web App deployment:
+// - Runs: npm install → npm run build → npm start (next start)
+// - "next start" requires a proper Next.js server build — NOT a static export.
+// - Static export (output: 'export') is INCOMPATIBLE with "next start" and
+//   causes the Node.js process to crash immediately on startup, which is why
+//   the site served logo.png instead of the actual HTML.
+//
+// For local dev: npm run dev works as normal — full HMR, API routes, middleware.
 
 const nextConfig: NextConfig = {
-  ...(isProd && {
-    output: 'export',    // generates out/ folder — uploadable to any static host
-    trailingSlash: true, // /products → /products/ — works with Apache directory serving
-  }),
   images: {
-    unoptimized: isProd, // only disable optimization in production static export
     remotePatterns: [
       { protocol: 'https', hostname: 'celsdwfmogpejwzbkxad.supabase.co' },
       { protocol: 'https', hostname: 'images.unsplash.com' },

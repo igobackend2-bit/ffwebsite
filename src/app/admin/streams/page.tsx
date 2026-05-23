@@ -106,10 +106,10 @@ export default function AdminStreams() {
     try {
       // Silent Session Healer: Automatically restore admin session to guarantee RLS permission
       const { data: { session } } = await supabase.auth.getSession();
-      if (!session || session.user.email !== 'admin@farmersfactory.com') {
+      if (!session || session.user.email !== 'admin@famersfactory.com') {
         console.log('Restoring admin session silently for streams...');
         const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
-          email: 'admin@farmersfactory.com',
+          email: 'admin@famersfactory.com',
           password: 'AdminPassword123!'
         });
         if (signInError || !signInData.session) {

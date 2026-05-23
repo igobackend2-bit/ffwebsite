@@ -12,7 +12,7 @@ SELECT
   au.id,
   'admin'
 FROM auth.users au
-WHERE au.email = 'admin@farmersfactory.com'
+WHERE au.email = 'admin@famersfactory.com'
 ON CONFLICT (id) DO UPDATE SET role = 'admin';
 
 -- STEP 2: Update the is_admin() function to also check by email
@@ -36,7 +36,7 @@ BEGIN
     EXISTS (
       SELECT 1 FROM auth.users
       WHERE auth.users.id = auth.uid()
-        AND auth.users.email = 'admin@farmersfactory.com'
+        AND auth.users.email = 'admin@famersfactory.com'
     )
   );
 END;

@@ -9,7 +9,7 @@ async function setupAdmin() {
   
   // 1. Create the user in auth.users
   const { data: authData, error: authError } = await supabase.auth.admin.createUser({
-    email: 'admin@farmersfactory.com',
+    email: 'admin@famersfactory.com',
     password: 'AdminPassword123!',
     email_confirm: true
   });
@@ -25,7 +25,7 @@ async function setupAdmin() {
 
   // Get the user ID (either newly created or existing)
   const { data: users } = await supabase.auth.admin.listUsers();
-  const adminUser = users.users.find(u => u.email === 'admin@farmersfactory.com');
+  const adminUser = users.users.find(u => u.email === 'admin@famersfactory.com');
   
   if (!adminUser) {
     console.error('Could not find admin user after creation attempt.');

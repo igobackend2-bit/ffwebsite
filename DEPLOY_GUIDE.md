@@ -4,7 +4,7 @@ This guide walks you through the **three things only you can do** (because they 
 
 1. Push the new SEO files to `https://github.com/igobackend2-bit/ffwebsite.git`
 2. Deploy to Vercel
-3. Connect a custom domain (e.g. `farmersfactory.com`)
+3. Connect a custom domain (e.g. `famersfactory.com`)
 
 Run every command in **PowerShell** (or **Git Bash**) from the project root: `D:\Igo-websites\Igo-Farmer Factory`.
 
@@ -150,7 +150,7 @@ Click **"Environment Variables"** before deploy and add **EVERY** value from you
 
 | Name | Value | Notes |
 |---|---|---|
-| `NEXT_PUBLIC_SITE_URL` | `https://farmersfactory.com` | Used by sitemap, canonical, OG |
+| `NEXT_PUBLIC_SITE_URL` | `https://famersfactory.com` | Used by sitemap, canonical, OG |
 | `NEXT_PUBLIC_SUPABASE_URL` | (from `.env.local`) | Required |
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | (from `.env.local`) | Required |
 | `RESEND_API_KEY` | (your Resend API key) | If using Resend emails |
@@ -193,7 +193,7 @@ Every `git push` to `main` triggers a fresh Vercel build.
 
 ### 3.2 If you bought elsewhere (e.g., GoDaddy)
 
-1. In Vercel: **Project → Settings → Domains → Add Domain** → type `farmersfactory.com` → click **Add**.
+1. In Vercel: **Project → Settings → Domains → Add Domain** → type `famersfactory.com` → click **Add**.
 2. Vercel will show you DNS records to set at your registrar. They will be either:
 
    **Option A (recommended) — Use Vercel nameservers:**
@@ -210,15 +210,15 @@ Every `git push` to `main` triggers a fresh Vercel build.
    | `A` | `@` | `76.76.21.21` | 600 |
    | `CNAME` | `www` | `cname.vercel-dns.com` | 600 |
 
-3. Also add `www.farmersfactory.com` in Vercel and choose to **redirect www → root** (or root → www, your call).
+3. Also add `www.famersfactory.com` in Vercel and choose to **redirect www → root** (or root → www, your call).
 
 4. **SSL** is automatic. Vercel issues a free Let's Encrypt cert within 5-15 min.
 
 ### 3.3 Verify
 
 After ~5-30 min:
-- Visit `https://farmersfactory.com` — should load
-- Visit `https://www.farmersfactory.com` — should redirect
+- Visit `https://famersfactory.com` — should load
+- Visit `https://www.famersfactory.com` — should redirect
 - Padlock icon = SSL working
 - Run https://search.google.com/test/rich-results on a product URL — should detect Product schema
 
@@ -230,7 +230,7 @@ After deploy + domain are live:
 
 ### 4.1 Google Search Console (free, mandatory)
 1. https://search.google.com/search-console
-2. **Add property** → Domain → enter `farmersfactory.com`
+2. **Add property** → Domain → enter `famersfactory.com`
 3. Verify ownership via DNS TXT record (Vercel makes this easy if using its nameservers — auto-verify).
 4. Submit sitemap: **Sitemaps → Add new sitemap → `sitemap.xml`** → Submit.
 

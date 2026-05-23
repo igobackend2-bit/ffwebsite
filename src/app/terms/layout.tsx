@@ -6,7 +6,7 @@ const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://famersfactory.com'
 export const metadata: Metadata = {
   title: 'Terms & Conditions | Farmers Factory',
   description:
-    'The Terms & Conditions that govern the use of farmersfactory.com — orders, payments, refunds, returns, intellectual property and user responsibilities.',
+    'The Terms & Conditions that govern the use of famersfactory.com — orders, payments, refunds, returns, intellectual property and user responsibilities.',
   alternates: { canonical: `${SITE_URL}/terms` },
   robots: { index: true, follow: true },
   openGraph: {

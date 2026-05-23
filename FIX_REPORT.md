@@ -107,7 +107,7 @@ On your Windows machine `.env.local` (or `.env`) should contain:
 NEXT_PUBLIC_SUPABASE_URL=https://celsdwfmogpejwzbkxad.supabase.co
 NEXT_PUBLIC_SUPABASE_ANON_KEY=<new-anon-key>
 SUPABASE_SERVICE_ROLE_KEY=<new-service-role-key>
-NEXT_PUBLIC_SITE_URL=https://farmersfactory.com
+NEXT_PUBLIC_SITE_URL=https://famersfactory.com
 ```
 (Yours already has the URL + anon key. Just add `NEXT_PUBLIC_SITE_URL` and update keys after rotation.)
 

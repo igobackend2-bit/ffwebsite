@@ -7,7 +7,7 @@ const supabase = createClient(
 
 async function run() {
   const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
-    email: 'admin@farmersfactory.com',
+    email: 'admin@famersfactory.com',
     password: 'AdminPassword123!'
   });
   if (authError) {

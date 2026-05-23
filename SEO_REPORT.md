@@ -1,6 +1,6 @@
 # Farmers Factory — Full SEO Audit & Implementation Report
 
-**Domain:** https://farmersfactory.com
+**Domain:** https://famersfactory.com
 **Framework:** Next.js 16 (App Router) + React 19 + Supabase
 **Date:** 2026-05-20
 **Scope:** Full SEO foundation without modifying any existing project files.
@@ -103,7 +103,7 @@ These are tiny, safe edits you can do yourself when ready. None are required for
 1. **Root layout enhancement (`src/app/layout.tsx`)** — currently has only `title` + `description`. To add site-wide Open Graph, Twitter, `metadataBase`, canonical and inject Organization JSON-LD on every page, replace its `export const metadata` with a richer object and import the JSON-LD components. Sample drop-in:
    ```ts
    export const metadata: Metadata = {
-     metadataBase: new URL('https://farmersfactory.com'),
+     metadataBase: new URL('https://famersfactory.com'),
      title: {
        default: 'Farmers Factory | Fresh Organic Farm Produce Directly to Your Doorstep',
        template: '%s | Farmers Factory',
@@ -116,7 +116,7 @@ These are tiny, safe edits you can do yourself when ready. None are required for
      alternates: { canonical: '/' },
      openGraph: {
        type: 'website', siteName: 'Farmers Factory', locale: 'en_IN',
-       url: 'https://farmersfactory.com',
+       url: 'https://famersfactory.com',
        title: 'Farmers Factory — Farm-Direct, Pure, Sustainable',
        description: '24-hour delivery from our farms to your kitchen.',
        images: [{ url: '/banner-organic.png', width: 1200, height: 630, alt: 'Farmers Factory' }],
@@ -136,7 +136,7 @@ These are tiny, safe edits you can do yourself when ready. None are required for
 
 4. **Add `apple-touch-icon-180.png`** to `/public/` (180×180 PNG) — for crisp iOS home-screen icons.
 
-5. **Set environment variable** `NEXT_PUBLIC_SITE_URL=https://farmersfactory.com` in your deployment platform (Vercel/etc). Every new SEO file reads this variable and falls back to the hard-coded production URL.
+5. **Set environment variable** `NEXT_PUBLIC_SITE_URL=https://famersfactory.com` in your deployment platform (Vercel/etc). Every new SEO file reads this variable and falls back to the hard-coded production URL.
 
 6. **Submit to search engines** — see post-deploy checklist below.
 
@@ -146,13 +146,13 @@ These are tiny, safe edits you can do yourself when ready. None are required for
 
 After your next deploy:
 
-1. ✅ Visit `https://farmersfactory.com/robots.txt` — verify it loads.
-2. ✅ Visit `https://farmersfactory.com/sitemap.xml` — verify product URLs appear.
-3. ✅ Visit `https://farmersfactory.com/manifest.webmanifest` — verify icons.
+1. ✅ Visit `https://famersfactory.com/robots.txt` — verify it loads.
+2. ✅ Visit `https://famersfactory.com/sitemap.xml` — verify product URLs appear.
+3. ✅ Visit `https://famersfactory.com/manifest.webmanifest` — verify icons.
 4. ✅ Test a product page with https://search.google.com/test/rich-results — should report Product, Breadcrumb valid.
 5. ✅ Test homepage with the same tool — should report WebSite + Organization valid.
 6. ✅ Test https://www.opengraph.xyz on `/products` and a product detail — preview should look correct.
-7. **Google Search Console:** add the property, verify ownership, submit `https://farmersfactory.com/sitemap.xml`.
+7. **Google Search Console:** add the property, verify ownership, submit `https://famersfactory.com/sitemap.xml`.
 8. **Bing Webmaster Tools:** add the property, import from GSC, submit the same sitemap.
 9. **Google Analytics 4:** install GA4 (separate task — not added to avoid editing existing files).
 10. **Google Business Profile:** if you have a physical address, claim it — then provide it and we can populate `LocalBusinessJsonLd`.

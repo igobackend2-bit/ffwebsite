@@ -16,7 +16,7 @@ const supabase = createClient(NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANO
 async function run() {
   console.log("Logging in...");
   const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
-    email: 'admin@farmersfactory.com',
+    email: 'admin@famersfactory.com',
     password: 'AdminPassword123!'
   });
   
