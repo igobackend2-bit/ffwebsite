@@ -161,7 +161,7 @@ export default function ProductDetailModal({ isOpen, onClose, product }: Product
               )}
               <div className="absolute top-6 left-6 bg-white/90 backdrop-blur-sm px-4 py-2 rounded-2xl flex items-center gap-2 shadow-xl border border-border"><Star size={18} className="fill-primary text-primary" /><span className="font-black text-lg">5.0</span></div>
             </div>
-            <div className="w-full md:w-1/2 p-8 md:p-14 lg:p-20 overflow-y-auto custom-scrollbar flex flex-col bg-white">
+            <div className="w-full md:w-1/2 p-6 md:p-10 lg:p-12 overflow-y-auto custom-scrollbar flex flex-col bg-white min-h-0">
               <div className="mb-10">
                 <p className="text-primary font-black uppercase tracking-[0.3em] text-xs mb-3">{currentProduct.category}</p>
                 <h2 className="text-3xl md:text-5xl font-black text-foreground mb-6 leading-tight tracking-tight">{currentProduct.name}</h2>

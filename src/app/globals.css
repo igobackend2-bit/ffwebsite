@@ -151,3 +151,18 @@ body {
 .animate-slow-zoom {
   animation: slow-zoom 20s ease-in-out infinite;
 }
+
+/* ── IGO Brands infinite-scroll marquee ──────────────────────────────────── */
+@keyframes igo-brands-scroll {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-50%); }
+}
+
+.igo-brands-track {
+  animation: igo-brands-scroll 60s linear infinite;
+  will-change: transform;
+}
+
+.igo-brands-track:hover {
+  animation-play-state: paused;
+}

@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import { Search, X, Leaf, Star, ArrowRight, Loader2, Mic, MicOff, Sparkles } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useRouter } from 'next/navigation';
@@ -12,6 +13,7 @@ import { useTranslation } from '@/context/TranslationContext';
 
 export default function SmartSearch({ isSolid = false }: { isSolid?: boolean }) {
   const { t } = useTranslation();
+  const [mounted, setMounted] = useState(false);
   const [query, setQuery] = useState('');
   const [isOpen, setIsOpen] = useState(false);
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -28,6 +30,7 @@ export default function SmartSearch({ isSolid = false }: { isSolid?: boolean }) 
   const router = useRouter();
 
   useEffect(() => {
+    setMounted(true);
     const handleClickOutside = (event: MouseEvent) => {
       if (searchRef.current && !searchRef.current.contains(event.target as Node)) {
         setIsOpen(false);
@@ -181,10 +184,10 @@ export default function SmartSearch({ isSolid = false }: { isSolid?: boolean }) 
           onChange={(e) => setQuery(e.target.value)} 
           onFocus={() => query.length > 1 && setIsOpen(true)} 
           placeholder={t('search.placeholder')} 
-          className={`w-full backdrop-blur-3xl border rounded-full py-2.5 pl-12 pr-20 focus:outline-none focus:ring-4 focus:ring-primary/10 focus:border-primary/40 focus:bg-white transition-all shadow-lg text-sm font-bold ${
+          className={`w-full backdrop-blur-3xl border rounded-full py-2.5 pl-12 pr-20 focus:outline-none focus:ring-4 focus:ring-primary/10 focus:border-primary/40 focus:bg-white focus:text-slate-900 transition-all shadow-lg text-sm font-bold ${
             isSolid 
               ? 'bg-slate-50 border-slate-200 placeholder:text-slate-400 text-slate-800' 
-              : 'bg-white/10 border-white/20 placeholder:text-white/40 text-white group-focus-within:text-foreground'
+              : 'bg-white/10 border-white/20 placeholder:text-white/40 text-white'
           }`} 
         />
         <Search className={`absolute left-4 top-1/2 -translate-y-1/2 transition-colors ${isSolid ? 'text-slate-300' : 'text-white/40'} group-focus-within:text-primary`} size={18} strokeWidth={2} />
@@ -214,7 +217,10 @@ export default function SmartSearch({ isSolid = false }: { isSolid?: boolean }) 
           </motion.div>
         )}
       </AnimatePresence>
-      <ProductDetailModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} product={selectedProduct} />
+      {mounted && typeof document !== 'undefined' && createPortal(
+        <ProductDetailModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} product={selectedProduct} />,
+        document.body
+      )}
     </div>
   );
 }

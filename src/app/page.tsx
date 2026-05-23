@@ -8,6 +8,7 @@ import DeliveryStrip from '@/components/DeliveryStrip';
 import FeaturedCategories from '@/components/FeaturedCategories';
 import FeaturedProducts from '@/components/FeaturedProducts';
 import Footer from '@/components/Footer';
+import IgoBrandsScroll from '@/components/IgoBrandsScroll';
 
 // Lazy-load heavy below-the-fold components for faster initial page load
 const WhyChooseUs = dynamic(() => import('@/components/WhyChooseUs'), { ssr: false });
@@ -41,6 +42,10 @@ export default function Home() {
       <div className="bg-white py-24">
         <WhyChooseUs />
       </div>
+
+      {/* IGO Group – 26 brands scrolling marquee */}
+      <IgoBrandsScroll />
+
       <Footer />
     </main>
   );
