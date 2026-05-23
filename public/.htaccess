@@ -1,0 +1,45 @@
+Options -MultiViews -Indexes
+RewriteEngine On
+
+# MIME TYPES - Critical: Hostinger Apache must serve JS as application/javascript
+# Without this, browsers block JS execution -> blank pages / spinners that never resolve
+AddType application/javascript .js .mjs
+AddType text/css .css
+AddType application/json .json
+AddType application/manifest+json .webmanifest
+AddType font/woff2 .woff2
+AddType font/woff .woff
+
+# ROUTING
+# Serve existing files and directories directly (JS, CSS, images, etc.)
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+
+# Do NOT rewrite /api/ paths -- let them 404 naturally so fetch() gets a real
+# error response instead of the SPA shell (which breaks res.json() parsing)
+RewriteCond %{REQUEST_URI} !^/api/
+
+# For all other dynamic routes (/products/id, /orders/id), fall back to index.html
+# The Next.js client router handles rendering the correct page
+RewriteRule ^ /index.html [QSA,L]
+
+# CACHE CONTROL (Crucial for Hostinger SPA Deployments)
+<IfModule mod_headers.c>
+    # 1. Never cache HTML files -- ensures users always get fresh chunk URLs after deploy
+    <FilesMatch "\.(html|htm)$">
+        Header set Cache-Control "no-cache, no-store, must-revalidate, max-age=0"
+        Header set Pragma "no-cache"
+        Header set Expires "0"
+    </FilesMatch>
+
+    # 2. Short cache for manifest / sitemap / robots (can change but not often)
+    <FilesMatch "\.(webmanifest|xml|txt)$">
+        Header set Cache-Control "public, max-age=86400"
+    </FilesMatch>
+
+    # 3. Aggressively cache hashed static assets -- Next.js content-hashes every filename
+    #    so these URLs never collide between deploys; safe to cache for 1 year
+    <FilesMatch "\.(css|js|mjs|woff|woff2|ttf|otf|eot|png|jpe?g|jpg|gif|svg|ico|webp|avif|mp4)$">
+        Header set Cache-Control "public, max-age=31536000, immutable"
+    </FilesMatch>
+</IfModule>
