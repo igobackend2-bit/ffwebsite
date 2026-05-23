@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
@@ -30,21 +31,23 @@ export default function AdminInventory() {
   const [isMuted, setIsMuted] = useState(true);
   const [editingStocks, setEditingStocks] = useState<{ [key: string]: number }>({});
 
+  const searchParams = useSearchParams();
+
   useEffect(() => {
     fetchInventory();
+  }, []);
 
+  useEffect(() => {
     // Auto-parse URL search query params on mount for interactive KPI redirects
     try {
-      const params = new URLSearchParams(window.location.search);
-      const filterParam = params.get('filter');
-      const searchParam = params.get('search');
-      // eslint-disable-next-line react-hooks/set-state-in-effect
+      const filterParam = searchParams.get('filter');
+      const searchParam = searchParams.get('search');
       if (filterParam) setFilter(filterParam);
       if (searchParam) setSearch(searchParam);
     } catch (e) {
       console.warn('URL parsing fallback:', e);
     }
-  }, []);
+  }, [searchParams]);
 
   async function fetchInventory() {
     try {
