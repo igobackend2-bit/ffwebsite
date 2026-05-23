@@ -10,9 +10,7 @@ import type { NextConfig } from "next";
 // For local dev: npm run dev works as normal — full HMR, API routes, middleware.
 
 const nextConfig: NextConfig = {
-  output: 'export',
   images: {
-    unoptimized: true,
     remotePatterns: [
       { protocol: 'https', hostname: 'celsdwfmogpejwzbkxad.supabase.co' },
       { protocol: 'https', hostname: 'images.unsplash.com' },
