@@ -3,7 +3,7 @@
 import React from 'react';
 import Link from 'next/link';
 import { useCart } from '@/context/CartContext';
-import { ShoppingBag, ArrowRight, Instagram, Facebook } from 'lucide-react';
+import { ShoppingBag, ArrowRight } from 'lucide-react';
 import { usePathname } from 'next/navigation';
 import { useTranslation } from '@/context/TranslationContext';
 
@@ -70,10 +70,10 @@ export default function Footer() {
         {/* Social Media Links */}
         <div className="flex justify-center gap-6 mt-12">
           <a href="https://www.instagram.com/the_farmers_factory/" target="_blank" rel="noopener noreferrer" aria-label="Instagram" className="w-12 h-12 rounded-full bg-slate-50 flex items-center justify-center text-muted-foreground hover:bg-[#E1306C] hover:text-white transition-all hover:scale-110 shadow-sm border border-border">
-            <Instagram size={20} />
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="20" height="20" x="2" y="2" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" x2="17.51" y1="6.5" y2="6.5"/></svg>
           </a>
           <a href="https://www.facebook.com/profile.php?id=100068904620757" target="_blank" rel="noopener noreferrer" aria-label="Facebook" className="w-12 h-12 rounded-full bg-slate-50 flex items-center justify-center text-muted-foreground hover:bg-[#1877F2] hover:text-white transition-all hover:scale-110 shadow-sm border border-border">
-            <Facebook size={20} />
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg>
           </a>
         </div>
 
