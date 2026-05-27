@@ -66,36 +66,7 @@ export default function AdminLogin() {
         <div className="absolute inset-0 bg-black/40 backdrop-blur-[2px]" />
       </div>
 
-      {/* Floating Particles/Elements for Aesthetic */}
-      <div className="absolute inset-0 z-0 pointer-events-none">
-        {mounted && [...Array(6)].map((_, i) => (
-          <motion.div
-            key={i}
-            className="absolute rounded-full bg-primary/20 backdrop-blur-3xl"
-            style={{
-              // eslint-disable-next-line react-hooks/purity
-              width: Math.random() * 300 + 100,
-              // eslint-disable-next-line react-hooks/purity
-              height: Math.random() * 300 + 100,
-              // eslint-disable-next-line react-hooks/purity
-              left: `${Math.random() * 100}%`,
-              // eslint-disable-next-line react-hooks/purity
-              top: `${Math.random() * 100}%`,
-            }}
-            animate={{
-              y: [0, 50, 0],
-              x: [0, 30, 0],
-              scale: [1, 1.1, 1],
-            }}
-            transition={{
-              // eslint-disable-next-line react-hooks/purity
-              duration: Math.random() * 10 + 10,
-              repeat: Infinity,
-              ease: "easeInOut",
-            }}
-          />
-        ))}
-      </div>
+
 
       {/* Login Card */}
       <motion.div
