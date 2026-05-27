@@ -77,20 +77,29 @@ export default function AdminLayout({
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setMounted(true);
     const checkAuth = async () => {
-      const auth = localStorage.getItem('admin_auth');
-      const isAuth = auth === 'true';
-      setIsAuthenticated(isAuth);
-      
-      if (!isAuth && pathname !== '/admin/login') {
-        router.push('/admin/login');
-      } else if (isAuth && pathname === '/admin/login') {
-        router.push('/admin');
+      try {
+        let isAuth = false;
+        try {
+          const auth = localStorage.getItem('admin_auth');
+          isAuth = auth === 'true';
+        } catch (e) {
+          console.warn('LocalStorage is not accessible:', e);
+        }
+        
+        setIsAuthenticated(isAuth);
+        
+        if (!isAuth && pathname !== '/admin/login') {
+          router.push('/admin/login');
+        } else if (isAuth && pathname === '/admin/login') {
+          router.push('/admin');
+        }
+      } catch (error) {
+        console.error('Error during authentication check:', error);
+      } finally {
+        // Session is ready — auth is managed via localStorage + cookie only
+        setIsSessionReady(true);
+        setIsAuthChecked(true);
       }
-
-      // Session is ready — auth is managed via localStorage + cookie only
-      setIsSessionReady(true);
-      
-      setIsAuthChecked(true);
     };
 
     checkAuth();
