@@ -291,6 +291,10 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   const updateQuantity = async (cartItemId: string, newQty: number) => {
     if (newQty < 0) return;
     
+    const targetItem = cartItems.find(item => item.id === cartItemId);
+    if (!targetItem) return;
+    const productId = targetItem.product_id;
+
     // ── Optimistic Update ──
     let newCart;
     if (newQty === 0) {
@@ -306,10 +310,10 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     if (user) {
       try {
         if (newQty === 0) {
-          const { error } = await supabase.from('cart').delete().eq('id', cartItemId);
+          const { error } = await supabase.from('cart').delete().eq('product_id', productId).eq('user_id', user.id);
           if (error) throw error;
         } else {
-          const { error } = await supabase.from('cart').update({ quantity: newQty }).eq('id', cartItemId);
+          const { error } = await supabase.from('cart').update({ quantity: newQty }).eq('product_id', productId).eq('user_id', user.id);
           if (error) throw error;
         }
         // Background sync
@@ -327,6 +331,10 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   };
 
   const removeItem = async (cartItemId: string) => {
+    const targetItem = cartItems.find(item => item.id === cartItemId);
+    if (!targetItem) return;
+    const productId = targetItem.product_id;
+
     // ── Optimistic Update ──
     const newCart = cartItems.filter(item => item.id !== cartItemId);
     setCartItems(newCart);
@@ -336,7 +344,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
 
     if (user) {
       try {
-        const { error } = await supabase.from('cart').delete().eq('id', cartItemId);
+        const { error } = await supabase.from('cart').delete().eq('product_id', productId).eq('user_id', user.id);
         if (error) throw error;
         // Background sync
         fetchCart();
