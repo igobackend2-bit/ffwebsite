@@ -6,10 +6,12 @@ export const dynamic = 'force-static';
 /**
  * Dynamic sitemap for Farmers Factory.
  * Combines:
- *   1. Static public routes
- *   2. Dynamic product detail pages pulled from Supabase
+ *   1. Static public canonical routes (no query-string URLs — those conflict
+ *      with the /products canonical and send mixed signals to Google).
+ *   2. Dynamic product detail pages pulled from Supabase.
  *
- * Safe-fails: if Supabase is unreachable at build time, only static routes are returned.
+ * Safe-fails: if Supabase is unreachable at build time, only static routes
+ * are returned so the build never breaks.
  */
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const SITE_URL =
@@ -66,31 +68,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       changeFrequency: 'yearly',
       priority: 0.3,
     },
-    // Category filter pages (deep linkable)
-    {
-      url: `${SITE_URL}/products?category=Fruits`,
-      lastModified: now,
-      changeFrequency: 'daily',
-      priority: 0.85,
-    },
-    {
-      url: `${SITE_URL}/products?category=Vegetables`,
-      lastModified: now,
-      changeFrequency: 'daily',
-      priority: 0.85,
-    },
-    {
-      url: `${SITE_URL}/products?category=Valluvam%20Products`,
-      lastModified: now,
-      changeFrequency: 'daily',
-      priority: 0.85,
-    },
-    {
-      url: `${SITE_URL}/products?category=Seasonal`,
-      lastModified: now,
-      changeFrequency: 'daily',
-      priority: 0.8,
-    },
   ];
 
   let productRoutes: MetadataRoute.Sitemap = [];
@@ -99,6 +76,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     const { data, error } = await supabase
       .from('products')
       .select('id, updated_at, created_at')
+      .eq('is_active', true)
       .limit(5000);
 
     if (!error && data) {

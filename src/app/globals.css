@@ -64,13 +64,6 @@ body {
 }
 
 /* Custom Utilities */
-.glass {
-  background: rgba(255, 255, 255, 0.7);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.3);
-}
-
 .organic-gradient {
   background: linear-gradient(135deg, #2e7d32 0%, #1b5e20 100%);
 }
@@ -165,4 +158,29 @@ body {
 
 .igo-brands-track:hover {
   animation-play-state: paused;
+}
+
+/* ── Performance Utilities ───────────────────────────────────────────────── */
+
+/* Defer rendering of below-fold sections until near viewport */
+.below-fold {
+  content-visibility: auto;
+  contain-intrinsic-size: 0 500px;
+}
+
+/* Ensure font swap is applied globally to avoid invisible text during load */
+@font-face {
+  font-display: swap;
+}
+
+/* Reduce motion for users who prefer it — disables all animations */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }

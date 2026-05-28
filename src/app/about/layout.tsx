@@ -26,14 +26,14 @@ export const metadata: Metadata = {
     siteName: 'Farmers Factory',
     type: 'website',
     images: [
-      { url: `${SITE_URL}/banner-organic.png`, width: 1200, height: 630, alt: 'About Farmers Factory' },
+      { url: `${SITE_URL}/banner-organic.webp`, width: 1200, height: 630, alt: 'About Farmers Factory' },
     ],
   },
   twitter: {
     card: 'summary_large_image',
     title: 'About Farmers Factory',
     description: 'Farm-direct, organic, sustainable — meet the team behind your fresh produce.',
-    images: [`${SITE_URL}/banner-organic.png`],
+    images: [`${SITE_URL}/banner-organic.webp`],
   },
 };
 

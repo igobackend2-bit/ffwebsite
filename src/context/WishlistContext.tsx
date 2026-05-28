@@ -84,7 +84,7 @@ export function WishlistProvider({ children }: { children: React.ReactNode }) {
                 id: product.id,
                 name: product.name,
                 price: Number(product.price),
-                image_url: product.image_url || product.image_urls?.[0] || '/placeholder_product.png',
+                image_url: product.image_url || product.image_urls?.[0] || '/placeholder_product.webp',
                 unit: product.unit || '1 kg',
                 category: product.category || 'General'
               }
@@ -171,7 +171,7 @@ export function WishlistProvider({ children }: { children: React.ReactNode }) {
             id: product.id,
             name: product.name,
             price: Number(product.price),
-            image_url: product.image_url || product.image_urls?.[0] || '/placeholder_product.png',
+            image_url: product.image_url || product.image_urls?.[0] || '/placeholder_product.webp',
             unit: product.unit || '1 kg',
             category: product.category || 'General'
           }

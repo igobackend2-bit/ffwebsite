@@ -331,7 +331,7 @@ function AuthContent() {
   return (
     <div className="min-h-screen flex items-center justify-center p-4 md:p-6 relative overflow-hidden bg-black font-geist">
       <div className="absolute inset-0 z-0">
-        <div className="absolute inset-0 bg-cover bg-center grayscale-[0.2] scale-105 transition-transform duration-[20s] animate-pulse" style={{ backgroundImage: 'url("/auth-bg.png")' }} />
+        <div className="absolute inset-0 bg-cover bg-center grayscale-[0.2] scale-105 transition-transform duration-[20s] animate-pulse" style={{ backgroundImage: 'url("/auth-bg.webp")' }} />
         <div className="absolute inset-0 bg-black/60 backdrop-blur-[8px]" />
       </div>
       <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="relative z-10 w-full max-w-2xl">

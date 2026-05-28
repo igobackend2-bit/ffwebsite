@@ -39,8 +39,8 @@ export default function Orders() {
               ...item.products,
               image_url: item.products.image_url ||
                 (Array.isArray(item.products.image_urls) ? item.products.image_urls[0] : null) ||
-                '/placeholder_product.png'
-            } : { name: 'Fresh Farm Produce', image_url: '/placeholder_product.png' }
+                '/placeholder_product.webp'
+            } : { name: 'Fresh Farm Produce', image_url: '/placeholder_product.webp' }
           }))
         }));
         setOrders(normalized);
@@ -126,10 +126,10 @@ export default function Orders() {
                         <div key={item.id} className="flex items-center gap-4">
                           <div className="w-16 h-16 bg-muted rounded-xl overflow-hidden flex-shrink-0">
                             <img
-                              src={item.products?.image_url || '/placeholder_product.png'}
+                              src={item.products?.image_url || '/placeholder_product.webp'}
                               alt={item.products?.name}
                               className="w-full h-full object-cover"
-                              onError={(e) => { (e.target as HTMLImageElement).src = '/placeholder_product.png'; }}
+                              onError={(e) => { (e.target as HTMLImageElement).src = '/placeholder_product.webp'; }}
                             />
                           </div>
                           <div className="flex-1 min-w-0">

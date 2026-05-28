@@ -11,9 +11,10 @@ interface CategoryCardProps {
   image: string;
   count: string;
   color: string;
+  priority?: boolean; // true for above-fold cards (first 2)
 }
 
-export default function CategoryCard({ name, image, count, color }: CategoryCardProps) {
+export default function CategoryCard({ name, image, count, color, priority = false }: CategoryCardProps) {
   const { t } = useTranslation();
 
   return (
@@ -26,10 +27,13 @@ export default function CategoryCard({ name, image, count, color }: CategoryCard
         className="relative overflow-hidden rounded-[2.5rem] bg-white shadow-xl hover:shadow-2xl transition-all duration-500 aspect-[4/5]"
       >
         <div className="absolute inset-0">
-          <img 
-            src={image} 
-            alt={name} 
-            className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110" loading="lazy" />
+          <img
+            src={image}
+            alt={name}
+            className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110"
+            loading={priority ? "eager" : "lazy"}
+            fetchPriority={priority ? "high" : "auto"}
+          />
           {/* Enhanced Overlay */}
           <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent opacity-80" />
         </div>

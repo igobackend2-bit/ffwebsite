@@ -19,7 +19,7 @@ export default function Hero({ greeting = 'Welcome' }: HeroProps) {
       <div className="absolute inset-0 z-[-1] overflow-hidden">
         <div className="absolute inset-0 bg-black/40 z-10 md:hidden" /> {/* Mobile overlay */}
         <img 
-          src="/seasonal_harvest_bg.png" 
+          src="/seasonal_harvest_bg.webp" 
           alt="Farm Background" 
           className="w-full h-full object-cover opacity-30 md:opacity-40 scale-105" loading="lazy" />
         <div className="absolute inset-0 bg-gradient-to-r from-white via-white/80 md:via-white/60 to-transparent" />

@@ -46,7 +46,7 @@ export default function ProductClient() {
 
         const normalized = {
           ...data,
-          image_url: data.image_url || (data.image_urls && data.image_urls[0]) || '/placeholder_product.png',
+          image_url: data.image_url || (data.image_urls && data.image_urls[0]) || '/placeholder_product.webp',
           image_urls: data.image_urls || [data.image_url].filter(Boolean) || []
         };
         setProduct(normalized);

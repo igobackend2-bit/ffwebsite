@@ -10,19 +10,19 @@ export default function FeaturedCategories() {
   const CATEGORIES = [
     {
       name: 'Vegetables',
-      image: '/category_vegetables.png',
+      image: '/category_vegetables.webp',
       count: t('categories.veg_count'),
       color: 'bg-green-50'
     },
     {
       name: 'Fruits',
-      image: '/category_fruits.png',
+      image: '/category_fruits.webp',
       count: t('categories.fruit_count'),
       color: 'bg-orange-50'
     },
     {
       name: 'Valluvam Products',
-      image: '/category_valluvam.png',
+      image: '/category_valluvam.webp',
       count: t('categories.val_count'),
       color: 'bg-yellow-50'
     }
@@ -44,8 +44,8 @@ export default function FeaturedCategories() {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-        {CATEGORIES.map((cat) => (
-          <CategoryCard key={cat.name} {...cat} />
+        {CATEGORIES.map((cat, i) => (
+          <CategoryCard key={cat.name} {...cat} priority={i < 2} />
         ))}
       </div>
     </section>

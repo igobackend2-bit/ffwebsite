@@ -148,7 +148,7 @@ export default function ProductDetailModal({ isOpen, onClose, product }: Product
               ) : !imageError ? (
                 <img 
                   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                  src={currentProduct.image_url || (currentProduct as any).image_urls?.[0] || '/placeholder_product.png'} 
+                  src={currentProduct.image_url || (currentProduct as any).image_urls?.[0] || '/placeholder_product.webp'} 
                   alt={currentProduct.name} 
                   onError={() => setImageError(true)} 
                   className="w-full h-full object-cover transition-transform duration-1000 hover:scale-110" 

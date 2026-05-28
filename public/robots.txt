@@ -5,6 +5,8 @@ User-agent: *
 Allow: /
 Allow: /about
 Allow: /products
+Allow: /products?category=
+Allow: /products?search=
 Allow: /contact
 Allow: /delivery
 Allow: /privacy
@@ -24,9 +26,8 @@ Disallow: /profile
 Disallow: /profile/
 Disallow: /cart
 Disallow: /api/
-Disallow: /*?*
 
-# Block aggressive AI / scraper bots (optional - remove if not desired)
+# Block aggressive AI / scraper bots
 User-agent: GPTBot
 Disallow: /
 

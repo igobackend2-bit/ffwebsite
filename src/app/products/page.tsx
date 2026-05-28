@@ -80,7 +80,7 @@ function ProductsContent() {
       ...p,
       id,
       category: cat,
-      image_url: img || '/placeholder_product.png',
+      image_url: img || '/placeholder_product.webp',
       stock: p.stock !== undefined ? p.stock : (p.in_stock ? 100 : 0),
       is_seasonal: p.is_seasonal === true || p.is_seasonal === 'true'
     };
@@ -172,7 +172,7 @@ function ProductsContent() {
       <div className="relative pt-32 pb-20 overflow-hidden">
         <div className="absolute inset-0 z-0">
           <img 
-            src="/banner-organic.png" 
+            src="/banner-organic.webp" 
             alt="Organic Harvest" 
             className="w-full h-full object-cover opacity-100" loading="lazy" />
           <div className="absolute inset-0 bg-gradient-to-r from-white via-white/80 to-transparent" />

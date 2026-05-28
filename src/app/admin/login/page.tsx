@@ -61,7 +61,7 @@ export default function AdminLogin() {
       {/* Dynamic Background Image */}
       <div 
         className="absolute inset-0 z-0 bg-cover bg-center bg-no-repeat transition-transform duration-[20s] hover:scale-110"
-        style={{ backgroundImage: "url('/auth-bg.png')" }}
+        style={{ backgroundImage: "url('/auth-bg.webp')" }}
       >
         <div className="absolute inset-0 bg-black/40 backdrop-blur-[2px]" />
       </div>

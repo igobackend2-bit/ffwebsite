@@ -10,14 +10,13 @@ const SITE_URL =
   process.env.NEXT_PUBLIC_SITE_URL || 'https://famersfactory.com';
 
 const SITE_NAME = 'Farmers Factory';
-const LOGO_URL = `${SITE_URL}/logo.png`;
+const LOGO_URL = `${SITE_URL}/logo.webp`;
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function jsonLdScript(data: Record<string, any>) {
   return (
     <script
       type="application/ld+json"
-       
       dangerouslySetInnerHTML={{ __html: JSON.stringify(data) }}
     />
   );
@@ -38,10 +37,8 @@ export function OrganizationJsonLd() {
       height: 512,
     },
     sameAs: [
-      'https://www.facebook.com/farmersfactory',
-      'https://www.instagram.com/farmersfactory',
-      'https://twitter.com/farmersfactory',
-      'https://www.youtube.com/@farmersfactory',
+      'https://www.facebook.com/profile.php?id=100068904620757',
+      'https://www.instagram.com/the_farmers_factory/',
     ],
     contactPoint: [
       {
@@ -65,7 +62,7 @@ export function WebSiteJsonLd() {
     name: SITE_NAME,
     description:
       'Farm-direct organic fruits, vegetables and Valluvam products — 24-hour delivery from our farms to your doorstep.',
-    inLanguage: 'en',
+    inLanguage: 'en-IN',
     publisher: { '@id': `${SITE_URL}/#organization` },
     potentialAction: {
       '@type': 'SearchAction',
@@ -130,8 +127,10 @@ export function ProductJsonLd({
     '@type': 'Product',
     '@id': `${SITE_URL}/products/${id}#product`,
     name,
-    description: description || `${name} - fresh, farm-direct, organic produce from ${SITE_NAME}.`,
-    image: image || `${SITE_URL}/placeholder_product.png`,
+    description:
+      description ||
+      `${name} — fresh, farm-direct, organic produce from ${SITE_NAME}.`,
+    image: image || `${SITE_URL}/placeholder_product.webp`,
     sku: sku || id,
     brand: { '@type': 'Brand', name: brand },
     url: `${SITE_URL}/products/${id}`,
@@ -146,6 +145,11 @@ export function ProductJsonLd({
       availability,
       itemCondition: 'https://schema.org/NewCondition',
       seller: { '@id': `${SITE_URL}/#organization` },
+      priceValidUntil: new Date(
+        new Date().setFullYear(new Date().getFullYear() + 1)
+      )
+        .toISOString()
+        .split('T')[0],
     };
   }
 
@@ -160,7 +164,10 @@ export function ProductJsonLd({
   return jsonLdScript(data);
 }
 
-/** LocalBusiness — optional, useful if/when address is finalized */
+/**
+ * LocalBusiness — inject when a real address is available.
+ * Do NOT use placeholder values; omit any unknown fields instead.
+ */
 export function LocalBusinessJsonLd({
   streetAddress,
   addressLocality,
@@ -176,23 +183,29 @@ export function LocalBusinessJsonLd({
   addressCountry?: string;
   telephone?: string;
 } = {}) {
-  const data = {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const data: Record<string, any> = {
     '@context': 'https://schema.org',
     '@type': 'LocalBusiness',
     '@id': `${SITE_URL}/#localbusiness`,
     name: SITE_NAME,
     image: LOGO_URL,
     url: SITE_URL,
-    telephone: telephone || '+91-00000-00000',
     priceRange: '₹₹',
     address: {
       '@type': 'PostalAddress',
-      streetAddress: streetAddress || '',
-      addressLocality: addressLocality || '',
-      addressRegion: addressRegion || '',
-      postalCode: postalCode || '',
+      ...(streetAddress && { streetAddress }),
+      ...(addressLocality && { addressLocality }),
+      ...(addressRegion && { addressRegion }),
+      ...(postalCode && { postalCode }),
       addressCountry,
     },
   };
+
+  // Only add telephone if a real number is provided
+  if (telephone) {
+    data.telephone = telephone;
+  }
+
   return jsonLdScript(data);
 }

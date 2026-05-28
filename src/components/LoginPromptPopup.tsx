@@ -61,7 +61,7 @@ export default function LoginPromptPopup() {
             {/* Header with Visual Impact */}
             <div className="bg-primary p-10 text-white relative overflow-hidden">
               <img 
-                src="/login_prompt_bg.png" 
+                src="/login_prompt_bg.webp" 
                 alt="Farm Context" 
                 className="absolute inset-0 w-full h-full object-cover opacity-20" loading="lazy" />
               <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -mr-16 -mt-16 blur-2xl" />

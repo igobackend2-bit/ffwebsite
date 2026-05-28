@@ -32,19 +32,23 @@ export default function Home() {
         </div>
       </div>
 
-      <div className="py-24">
+      <div className="py-24 below-fold">
         <FarmStories />
       </div>
 
       {/* Elite Live Transparency Section */}
-      <LiveFarmStream />
+      <div className="below-fold">
+        <LiveFarmStream />
+      </div>
 
-      <div className="bg-white py-24">
+      <div className="bg-white py-24 below-fold">
         <WhyChooseUs />
       </div>
 
       {/* IGO Group – 26 brands scrolling marquee */}
-      <IgoBrandsScroll />
+      <div className="below-fold">
+        <IgoBrandsScroll />
+      </div>
 
       <Footer />
     </main>

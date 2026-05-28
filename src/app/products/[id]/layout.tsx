@@ -45,7 +45,7 @@ export async function generateMetadata({
   const image =
     product.image_url ||
     (Array.isArray(product.images) && product.images[0]) ||
-    `${SITE_URL}/placeholder_product.png`;
+    `${SITE_URL}/placeholder_product.webp`;
 
   return {
     title,

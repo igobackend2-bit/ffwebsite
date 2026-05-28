@@ -71,14 +71,14 @@ export const metadata: Metadata = {
     siteName: 'Farmers Factory',
     type: 'website',
     images: [
-      { url: `${SITE_URL}/banner-organic.png`, width: 1200, height: 630, alt: 'Farmers Factory Shop' },
+      { url: `${SITE_URL}/banner-organic.webp`, width: 1200, height: 630, alt: 'Farmers Factory Shop' },
     ],
   },
   twitter: {
     card: 'summary_large_image',
     title: 'Shop Farm-Direct Organic Produce',
     description: 'Fresh fruits, vegetables and Valluvam essentials — straight from our farms.',
-    images: [`${SITE_URL}/banner-organic.png`],
+    images: [`${SITE_URL}/banner-organic.webp`],
   },
 };
 

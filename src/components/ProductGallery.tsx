@@ -20,7 +20,7 @@ export default function ProductGallery({ images, videoUrl, name }: ProductGaller
   const mainImageRef = useRef<HTMLDivElement>(null);
 
   const validImages = images.filter(img => img && img.trim() !== '');
-  if (validImages.length === 0) validImages.push('/placeholder_product.png');
+  if (validImages.length === 0) validImages.push('/placeholder_product.webp');
 
   const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
     if (!mainImageRef.current) return;

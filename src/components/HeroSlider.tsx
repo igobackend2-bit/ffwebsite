@@ -223,14 +223,17 @@ export default function HeroSlider() {
                 muted={isMuted}
                 loop
                 playsInline
-                preload="auto"
+                preload="metadata"
                 className="w-full h-full object-cover"
               />
             ) : (
               <img
                 src={currentSlide.media_url}
                 alt={currentSlide.title}
-                className="w-full h-full object-cover" loading="lazy" />
+                className="w-full h-full object-cover"
+                loading={currentIndex === 0 ? "eager" : "lazy"}
+                fetchPriority={currentIndex === 0 ? "high" : "low"}
+              />
             )}
           </motion.div>
           

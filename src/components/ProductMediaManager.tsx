@@ -87,7 +87,7 @@ export default function ProductMediaManager({ product, onUpdate }: ProductMediaM
             alt="Preview" 
             className={`w-full h-full object-cover transition-all duration-500 ${isUpdating ? 'opacity-50 scale-95 blur-sm' : 'group-hover:scale-105'}`}
             onError={(e) => {
-              (e.target as HTMLImageElement).src = '/placeholder_product.png';
+              (e.target as HTMLImageElement).src = '/placeholder_product.webp';
             }}
           />
           

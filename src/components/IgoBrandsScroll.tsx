@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { Package, ChevronLeft, ChevronRight } from 'lucide-react';
 
 // IGO Gold colour (exact match from igoagritechfarms.in)
@@ -161,14 +161,6 @@ const IGO_BRANDS = [
     active: false,
   },
   {
-    id: 'igo-agrimart-sub',
-    name: 'IGO AgriMart',
-    category: 'Distribution',
-    logo: '/brands/igo agri mart .webp',
-    description: 'Comprehensive agricultural distribution network supplying seeds, fertilizers, and essential farming equipment.',
-    active: true,
-  },
-  {
     id: 'india-green',
     name: 'India Green',
     category: 'Sustainability',
@@ -310,7 +302,22 @@ function BrandCard({ brand }: { brand: (typeof IGO_BRANDS)[number] }) {
 // ─── Main exported section ────────────────────────────────────────────────────
 export default function IgoBrandsScroll() {
   // Duplicate once → CSS animation translates -50% = seamless infinite loop
-  const displayBrands = [...IGO_BRANDS, ...IGO_BRANDS];
+  const trackRef = useRef<HTMLDivElement>(null);
+  const SCROLL_AMOUNT = 380; // px per button click (~1 card width)
+
+  const scrollPrev = () => {
+    if (trackRef.current) {
+      trackRef.current.style.animationPlayState = 'paused';
+      trackRef.current.scrollBy({ left: -SCROLL_AMOUNT, behavior: 'smooth' });
+    }
+  };
+
+  const scrollNext = () => {
+    if (trackRef.current) {
+      trackRef.current.style.animationPlayState = 'paused';
+      trackRef.current.scrollBy({ left: SCROLL_AMOUNT, behavior: 'smooth' });
+    }
+  };
 
   return (
     <section className="py-24 overflow-hidden border-t border-black/5" style={{ background: '#f7f6f3' }}>
@@ -374,6 +381,7 @@ export default function IgoBrandsScroll() {
         {/* Arrow nav row */}
         <div className="relative flex items-center justify-center gap-5">
           <button
+            onClick={scrollPrev}
             className="w-9 h-9 rounded-full border border-black/15 flex items-center justify-center text-gray-500 hover:border-black/40 transition-colors duration-200"
             aria-label="Previous"
           >
@@ -385,6 +393,7 @@ export default function IgoBrandsScroll() {
             Explore All 26 Verticals
           </span>
           <button
+            onClick={scrollNext}
             className="w-9 h-9 rounded-full border border-black/15 flex items-center justify-center text-gray-500 hover:border-black/40 transition-colors duration-200"
             aria-label="Next"
           >
@@ -406,11 +415,17 @@ export default function IgoBrandsScroll() {
           style={{ background: 'linear-gradient(to left, #f7f6f3 0%, transparent 100%)' }}
         />
 
-        {/* Animated strip */}
-        <div className="igo-brands-track flex gap-8 pl-8 will-change-transform select-none w-max">
-          {displayBrands.map((brand, i) => (
-            <BrandCard key={`${brand.id}-${i}`} brand={brand} />
+        {/* Animated strip — first set is real, second is aria-hidden clone for seamless loop */}
+        <div ref={trackRef} className="igo-brands-track flex gap-8 pl-8 will-change-transform select-none w-max overflow-x-auto">
+          {IGO_BRANDS.map((brand) => (
+            <BrandCard key={brand.id} brand={brand} />
           ))}
+          {/* Clone for seamless CSS loop — hidden from screen readers */}
+          <div className="flex gap-8" aria-hidden="true">
+            {IGO_BRANDS.map((brand) => (
+              <BrandCard key={`clone-${brand.id}`} brand={brand} />
+            ))}
+          </div>
         </div>
       </div>
 

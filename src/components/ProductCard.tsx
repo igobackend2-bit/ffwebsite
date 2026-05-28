@@ -94,10 +94,10 @@ export default function ProductCard({ product }: ProductCardProps) {
         <div className="relative aspect-[4/5] rounded-[1.5rem] overflow-hidden mb-6 bg-muted/20">
           <img
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            src={product.image_url || (product as any).image_urls?.[0] || '/placeholder_product.png'}
+            src={product.image_url || (product as any).image_urls?.[0] || '/placeholder_product.webp'}
             alt={product.name}
             onError={(e) => {
-              (e.target as HTMLImageElement).src = '/placeholder_product.png';
+              (e.target as HTMLImageElement).src = '/placeholder_product.webp';
             }}
             className={`w-full h-full object-cover transition-transform duration-700 group-hover:scale-110 ${
               (product.stock === 0) ? 'grayscale opacity-60' : ''

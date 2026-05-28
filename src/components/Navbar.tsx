@@ -87,7 +87,7 @@ export default function Navbar() {
           {/* Brand Logo & Name */}
           <Link href="/" className="flex items-center gap-3 group">
             <div className={`w-12 h-12 rounded-full flex items-center justify-center transition-all duration-500 group-hover:scale-110 shadow-xl overflow-hidden border ${isSolid ? 'bg-[#1a4d36] border-primary/10' : 'bg-[#1a4d36] border-white/20'}`}>
-              <img src="/logo.png" alt="Logo" className="w-[220%] h-[220%] max-w-none object-contain -mb-6" loading="lazy" />
+              <img src="/logo.webp" alt="Farmers Factory Logo" className="w-[220%] h-[220%] max-w-none object-contain -mb-6" loading="eager" fetchPriority="high" />
             </div>
             <div className="flex flex-col">
               <span className={`text-xl font-black tracking-tighter uppercase leading-none ${isSolid ? 'text-primary' : 'text-white'}`}>

@@ -4,7 +4,7 @@ import { BreadcrumbJsonLd, OrganizationJsonLd } from '@/components/seo/JsonLd';
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://famersfactory.com';
 
 export const metadata: Metadata = {
-  title: 'Contact Us | Farmers Factory — Customer Support & Farm Partnerships',
+  title: 'Contact Us — Customer Support & Farm Partnerships',
   description:
     'Get in touch with Farmers Factory for orders, partnerships, farm sourcing or support. We reply within 24 hours — your direct line to fresh, organic produce.',
   keywords: [
@@ -17,16 +17,24 @@ export const metadata: Metadata = {
   ],
   alternates: { canonical: `${SITE_URL}/contact` },
   openGraph: {
-    title: 'Contact Farmers Factory',
-    description: 'We reply within 24 hours — your direct line to fresh, organic produce.',
+    title: 'Contact Farmers Factory — Support & Partnerships',
+    description: 'We reply within 24 hours — your direct line to fresh, organic produce and farm partnerships.',
     url: `${SITE_URL}/contact`,
     siteName: 'Farmers Factory',
     type: 'website',
+    images: [
+      {
+        url: `${SITE_URL}/banner-organic.webp`,
+        width: 1200,
+        height: 630,
+        alt: 'Contact Farmers Factory',
+      },
+    ],
   },
   twitter: {
     card: 'summary',
     title: 'Contact Farmers Factory',
-    description: 'Reach out for orders, partnerships and support.',
+    description: 'Reach out for orders, partnerships and support. We reply within 24 hours.',
   },
 };
 

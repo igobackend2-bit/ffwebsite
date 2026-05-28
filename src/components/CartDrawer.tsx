@@ -141,7 +141,7 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
                       >
                         <div className="w-20 h-20 bg-muted/20 rounded-2xl overflow-hidden flex-shrink-0 relative">
                           <img 
-                            src={item.products?.image_url || '/placeholder_product.png'} 
+                            src={item.products?.image_url || '/placeholder_product.webp'} 
                             alt={item.products?.name} 
                             className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" loading="lazy" />
                         </div>

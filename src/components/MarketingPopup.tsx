@@ -102,7 +102,7 @@ export default function MarketingPopup() {
             {/* Left Side: Image */}
             <div className="relative w-full md:w-5/12 h-48 md:h-full">
               <img 
-                src="/marketing_popup_bg.png" 
+                src="/marketing_popup_bg.webp" 
                 alt="Fresh Harvest" 
                 className="w-full h-full object-cover" loading="lazy" />
               <div className="absolute inset-0 bg-gradient-to-r from-black/20 to-transparent md:bg-gradient-to-t" />

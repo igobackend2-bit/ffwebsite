@@ -110,7 +110,7 @@ function ProductsContent() {
             slug: name.toLowerCase().replace(/[^a-z0-9]+/g, '-'),
             category_id,
             category_slug,
-            image_urls: [item.Image || item.image_url || '/placeholder_product.png'],
+            image_urls: [item.Image || item.image_url || '/placeholder_product.webp'],
             in_stock: true,
             is_active: true,
             created_at: new Date().toISOString(),

@@ -1,3 +1,4 @@
+'use client';
 import { useState, useEffect } from 'react';
 import ProductCard from './ProductCard';
 import { VERIFIED_INVENTORY } from '@/lib/constants';
@@ -17,7 +18,7 @@ export default function FeaturedProducts() {
       try {
         setLoading(true);
         // Fetch all products to handle active/inactive states
-        const { data, error } = await supabase.from('products').select('*');
+        const { data, error } = await supabase.from('products').select('*').eq('is_active', true).limit(20);
         const dbProducts = data || [];
 
         const allProductsMap = new Map();
@@ -37,7 +38,7 @@ export default function FeaturedProducts() {
             allProductsMap.set(key, {
               ...p,
               category: p.category || (p.category_id === 'cat-fruit' ? 'Fruits' : (p.category_id === 'cat-trad' || p.category_id === 'cat-val') ? 'Valluvam Products' : 'Vegetables'),
-              image_url: p.image_url || (p.image_urls && p.image_urls[0]) || '/placeholder_product.png',
+              image_url: p.image_url || (p.image_urls && p.image_urls[0]) || '/placeholder_product.webp',
               stock: p.stock !== undefined ? p.stock : (p.in_stock ? 100 : 0),
               is_synced: true
             });
