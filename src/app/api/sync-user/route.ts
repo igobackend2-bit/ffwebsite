@@ -16,8 +16,8 @@ export async function POST(req: Request) {
     }
 
     if (!SUPABASE_URL || !SUPABASE_SERVICE_KEY) {
-      console.error('[Sync User] Missing Supabase environment variables');
-      return NextResponse.json({ error: 'Database credentials not configured' }, { status: 500 });
+      console.warn('[Sync User] Missing Supabase env vars — skipping sync');
+      return NextResponse.json({ success: true, skipped: true });
     }
 
     const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY);
