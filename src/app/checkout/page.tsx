@@ -188,24 +188,7 @@ export default function Checkout() {
 
       const orderNumber = 'FF-' + Math.floor(100000 + Math.random() * 900000).toString();
 
-      // Non-blocking user sync — order proceeds even if this fails
-      try {
-        const syncRes = await fetch('/api/sync-user', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            id: user.id,
-            email: user.email,
-            name: user.user_metadata?.full_name || user.email?.split('@')[0] || 'Customer'
-          })
-        });
-        if (!syncRes.ok) {
-          const syncErrData = await syncRes.json().catch(() => ({}));
-          console.warn('[Checkout] User sync skipped:', syncErrData);
-        }
-      } catch (syncErr) {
-        console.warn('[Checkout] User sync network error (non-fatal):', syncErr);
-      }
+      // User sync removed - database foreign key now points directly to auth.users
 
       const { data: order, error: orderError } = await supabase
         .from('orders')
