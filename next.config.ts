@@ -6,10 +6,9 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   // ── Performance ──────────────────────────────────────────────────────────
-  compress: true,          // Enable gzip/brotli compression on responses
-  poweredByHeader: false,  // Remove "X-Powered-By: Next.js" header (security + tiny perf)
-  
-  // Tree-shake heavy packages so only used icons/components are bundled
+  compress: true,
+  poweredByHeader: false,
+
   experimental: {
     optimizePackageImports: [
       'lucide-react',
@@ -20,9 +19,12 @@ const nextConfig: NextConfig = {
 
   // ── Images ───────────────────────────────────────────────────────────────
   images: {
-    formats: ['image/avif', 'image/webp'], // Prefer AVIF > WebP > JPEG/PNG
-    minimumCacheTTL: 31536000,             // Cache optimised images for 1 year
+    formats: ['image/avif', 'image/webp'],
+    minimumCacheTTL: 31536000,
     remotePatterns: [
+      // ✅ NEW centralized DB — product images bucket
+      { protocol: 'https', hostname: 'qwiumswrbddwmlraktvy.supabase.co' },
+      // Legacy (old website DB — keep until fully migrated)
       { protocol: 'https', hostname: 'celsdwfmogpejwzbkxad.supabase.co' },
       { protocol: 'https', hostname: 'images.unsplash.com' },
       { protocol: 'https', hostname: 'cdn.pixabay.com' },
@@ -30,27 +32,19 @@ const nextConfig: NextConfig = {
     ],
   },
 
-  // ── HTTP Cache-Control headers for static assets ─────────────────────────
+  // ── HTTP Cache-Control headers ────────────────────────────────────────────
   async headers() {
     return [
       {
-        // Immutable cache for hashed Next.js static chunks (JS/CSS/fonts)
         source: '/_next/static/:path*',
         headers: [
-          {
-            key: 'Cache-Control',
-            value: 'public, max-age=31536000, immutable',
-          },
+          { key: 'Cache-Control', value: 'public, max-age=31536000, immutable' },
         ],
       },
       {
-        // Long cache for public images, fonts, icons, video
         source: '/:path*.(webp|png|jpg|jpeg|svg|gif|ico|woff2|woff|ttf|mp4|webm)',
         headers: [
-          {
-            key: 'Cache-Control',
-            value: 'public, max-age=31536000, stale-while-revalidate=86400',
-          },
+          { key: 'Cache-Control', value: 'public, max-age=31536000, stale-while-revalidate=86400' },
         ],
       },
     ];
