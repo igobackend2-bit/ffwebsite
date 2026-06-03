@@ -180,11 +180,11 @@ export default function Navbar() {
                   className={`flex items-center gap-2 p-1 pr-4 rounded-full border transition-all duration-300 ${isSolid ? 'bg-white border-slate-100 hover:shadow-md' : 'bg-white/10 border-white/20 text-white hover:bg-white/20'}`}
                 >
                   <div className="w-9 h-9 bg-primary/10 text-primary rounded-full flex items-center justify-center overflow-hidden border border-primary/20">
-                    {user.email?.[0].toUpperCase() || 'U'}
+                    {user.email?.[0]?.toUpperCase() || 'U'}
                   </div>
                   <div className="text-left hidden sm:block">
                     <p className={`text-[9px] font-black uppercase tracking-widest leading-none mb-1 opacity-60`}>{t('nav.profile')}</p>
-                    <p className={`text-xs font-bold leading-none truncate max-w-[80px]`}>{user.email?.split('@')[0]}</p>
+                    <p className={`text-xs font-bold leading-none truncate max-w-[80px]`}>{user.email?.split('@')[0] ?? user.user_metadata?.phone ?? 'User'}</p>
                   </div>
                   <ChevronDown size={12} className="opacity-40 group-hover:opacity-100 transition-opacity ml-1" />
                 </Link>
