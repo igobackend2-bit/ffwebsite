@@ -112,7 +112,7 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
       const { error } = await supabase.auth.signInWithOtp({
         email: email.trim(),
         options: {
-          emailRedirectTo: window.location.origin,
+          shouldCreateUser: true,
         }
       });
       if (error) throw error;
