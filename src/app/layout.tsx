@@ -111,8 +111,8 @@ export default function RootLayout({
     >
       <head>
         {/* DNS prefetch + preconnect for Supabase (used on every page) */}
-        <link rel="preconnect" href="https://celsdwfmogpejwzbkxad.supabase.co" />
-        <link rel="dns-prefetch" href="https://celsdwfmogpejwzbkxad.supabase.co" />
+        <link rel="preconnect" href="https://qwiumswrbddwmlraktvy.supabase.co" />
+        <link rel="dns-prefetch" href="https://qwiumswrbddwmlraktvy.supabase.co" />
         {/* Preconnect for Google Fonts (Geist font CDN) */}
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         {/* Preload hero video so it starts playing with zero delay */}
