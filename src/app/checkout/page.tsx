@@ -160,7 +160,7 @@ export default function Checkout() {
       const totalOnionKg = onionItems.reduce((sum, item) => sum + item.quantity, 0);
       if (totalOnionKg < 5) {
         toast.error('Logistics Notice: Onion orders must be at least 5kg for bulk delivery.', {
-          icon: '🧅',
+          icon: 'ð§',
           duration: 5000
         });
         setLoading(false);
@@ -193,6 +193,7 @@ export default function Checkout() {
       const { data: order, error: orderError } = await supabase
         .from('orders')
         .insert({
+      source: 'website',
           user_id: user.id,
           order_number: orderNumber,
           subtotal: subtotal,
@@ -249,6 +250,7 @@ export default function Checkout() {
 
           if (!existingAddr) {
             await supabase.from('user_addresses').insert({
+      source: 'website',
               user_id: user.id,
               label: 'Other',
               full_address: combinedAddress,
@@ -273,8 +275,9 @@ export default function Checkout() {
       }
 
       await supabase.from('notifications').insert({
+      source: 'website',
         user_id: user.id,
-        title: 'Order Confirmed! 🌿',
+        title: 'Order Confirmed! ð¿',
         message: `Your order #${order.order_number || String(order.id).slice(0, 8)} has been successfully placed and is being prepared.`,
         type: 'order_status',
         link: `/profile?tab=orders&order=${order.order_number || String(order.id).slice(0, 8)}`
@@ -534,9 +537,9 @@ export default function Checkout() {
                     </div>
                     <div className="flex-1 min-w-0">
                       <p className="font-bold text-sm truncate">{item.products.name}</p>
-                      <p className="text-xs text-muted-foreground">{item.quantity} x ₹{item.products.price}</p>
+                      <p className="text-xs text-muted-foreground">{item.quantity} x â¹{item.products.price}</p>
                     </div>
-                    <p className="font-bold text-sm">₹{item.products.price * item.quantity}</p>
+                    <p className="font-bold text-sm">â¹{item.products.price * item.quantity}</p>
                   </div>
                 ))}
               </div>
@@ -570,12 +573,12 @@ export default function Checkout() {
               <div className="space-y-3 border-t border-border pt-6 mb-8">
                 <div className="flex justify-between text-muted-foreground">
                   <span>{t('checkout.subtotal')}</span>
-                  <span>₹{subtotal}</span>
+                  <span>â¹{subtotal}</span>
                 </div>
                 {discount > 0 && (
                   <div className="flex justify-between text-emerald-600 font-bold">
                     <span>{t('checkout.discount')}</span>
-                    <span>-₹{discount}</span>
+                    <span>-â¹{discount}</span>
                   </div>
                 )}
                 <div className="flex justify-between text-muted-foreground">
@@ -584,7 +587,7 @@ export default function Checkout() {
                 </div>
                 <div className="flex justify-between text-xl font-black pt-4">
                   <span>{t('checkout.total')}</span>
-                  <span className="text-primary">₹{total}</span>
+                  <span className="text-primary">â¹{total}</span>
                 </div>
               </div>
 
