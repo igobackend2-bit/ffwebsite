@@ -229,11 +229,11 @@ export default function LiveFarmStream() {
                 }`}
               >
                 {isVideoUrl(stream.thumbnail_url || stream.video_url) ? (
-                  <video 
-                    src={stream.thumbnail_url || stream.video_url} 
-                    muted 
-                    playsInline 
-                    preload="none"
+                  <video
+                    src={stream.thumbnail_url || stream.video_url}
+                    muted
+                    playsInline
+                    preload="metadata"
                     className="absolute inset-0 w-full h-full object-cover"
                   />
                 ) : (
