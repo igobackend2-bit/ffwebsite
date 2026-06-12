@@ -18,6 +18,22 @@ export default function Navbar() {
   const [scrolled, setScrolled] = React.useState(false);
   const [isNotificationsOpen, setIsNotificationsOpen] = React.useState(false);
   const [isLangOpen, setIsLangOpen] = React.useState(false);
+  const langRef = React.useRef<HTMLDivElement>(null);
+
+  // Close the language popup automatically when clicking anywhere outside it
+  React.useEffect(() => {
+    function handleClickOutside(e: MouseEvent | TouchEvent) {
+      if (langRef.current && !langRef.current.contains(e.target as Node)) {
+        setIsLangOpen(false);
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside);
+    document.addEventListener('touchstart', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('touchstart', handleClickOutside);
+    };
+  }, []);
   const [isHomePage, setIsHomePage] = React.useState(true);
   const { user, openAuthModal, signOut } = useAuth();
   const { isCartOpen, openCart, closeCart, cartCount } = useCart();
@@ -107,7 +123,7 @@ export default function Navbar() {
           {/* Actions Section */}
           <div className="flex items-center gap-2 sm:gap-6">
             {/* Language Switcher - Minimalist */}
-            <div className="relative">
+            <div className="relative" ref={langRef}>
               <button
                 onClick={() => setIsLangOpen(!isLangOpen)}
                 className={`flex items-center gap-2 px-3 py-2 rounded-xl transition-all font-black text-xs uppercase tracking-widest ${isSolid ? 'hover:bg-primary/5 text-foreground/80' : 'hover:bg-white/10 text-white'}`}

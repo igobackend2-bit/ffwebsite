@@ -155,15 +155,15 @@ export default function ProductDetailModal({ isOpen, onClose, product }: Product
   return (
     <AnimatePresence>
       {isOpen && (
-        <div className="fixed inset-0 z-[150] flex items-center justify-center p-4 md:p-8">
+        <div className="fixed inset-0 z-[150] flex items-center justify-center">
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={onClose} className="absolute inset-0 bg-black/80 backdrop-blur-md" />
-          <motion.div initial={{ opacity: 0, scale: 0.9, y: 40 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.9, y: 40 }} className="relative w-full max-w-6xl bg-white rounded-[2rem] md:rounded-[3rem] overflow-hidden shadow-2xl flex flex-col md:flex-row max-h-[90vh] border border-white/20">
+          <motion.div initial={{ opacity: 0, y: 40 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 40 }} className="relative w-full h-full bg-white overflow-hidden shadow-2xl flex flex-col md:flex-row">
             <button onClick={onClose} className="absolute top-4 right-4 md:top-8 md:right-8 p-2 md:p-4 bg-white/90 hover:bg-red-500 hover:text-white text-foreground rounded-full transition-all z-20 shadow-xl border border-border group"><X size={24} className="group-hover:rotate-90 transition-transform" /></button>
 
             {/* ── Product media: thumbnail rail + main image (Amazon-style) ── */}
             <div className="w-full md:w-1/2 h-[340px] md:h-auto bg-white relative overflow-hidden flex flex-row">
-              {/* Thumbnail rail */}
-              {(galleryUrls.length > 1 || hasVideo) && (
+              {/* Thumbnail rail - always visible at the side of the product */}
+              {(galleryUrls.length > 0 || hasVideo) && (
                 <div className="flex flex-col gap-2 p-3 overflow-y-auto custom-scrollbar flex-shrink-0">
                   {galleryUrls.map((url, idx) => (
                     <button
