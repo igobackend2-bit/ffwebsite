@@ -103,27 +103,15 @@ function ProductsContent() {
         .select('*');
       
       const dbProducts = (data || []).map(normalizeProduct);
-      
-      const allProductsMap = new Map();
-      
-      // 1. Seed with Local Inventory
-      VERIFIED_INVENTORY.forEach(p => {
-        allProductsMap.set(p.name.toLowerCase().trim(), normalizeProduct(p));
-      });
-      
-      // 2. Merge with Database items
-      dbProducts.forEach(p => {
-        const key = p.name.toLowerCase().trim();
-        if (p.is_active === false) {
-          // Explicitly remove if marked as inactive in DB
-          allProductsMap.delete(key);
-        } else {
-          // Overwrite with DB version
-          allProductsMap.set(key, p);
-        }
-      });
-      
-      const finalProducts = Array.from(allProductsMap.values())
+
+      // Show ONLY real database products so admin edits always reflect
+      // here immediately. The built-in local list is used only as a
+      // fallback when the database is empty or unreachable.
+      const sourceProducts = dbProducts.length > 0
+        ? dbProducts.filter(p => p.is_active !== false)
+        : VERIFIED_INVENTORY.map(normalizeProduct);
+
+      const finalProducts = sourceProducts
         .sort((a, b) => {
           const orderA = a.order_index ?? 999;
           const orderB = b.order_index ?? 999;

@@ -22,13 +22,10 @@ export default function FeaturedProducts() {
         const dbProducts = data || [];
 
         const allProductsMap = new Map();
-        
-        // 1. Seed with Local Inventory
-        VERIFIED_INVENTORY.forEach(p => {
-          allProductsMap.set(p.name.toLowerCase().trim(), { ...p, is_synced: false });
-        });
-        
-        // 2. Overwrite with DB products
+
+        // Show ONLY real database products so admin edits always reflect
+        // here immediately. The built-in local list is used only as a
+        // fallback when the database is empty or unreachable.
         dbProducts.forEach(p => {
           const key = p.name.toLowerCase().trim();
           if (p.is_active === false) {
@@ -45,7 +42,13 @@ export default function FeaturedProducts() {
           }
         });
 
-        // 3. Sort and slice
+        if (allProductsMap.size === 0) {
+          VERIFIED_INVENTORY.forEach(p => {
+            allProductsMap.set(p.name.toLowerCase().trim(), { ...p, is_synced: false });
+          });
+        }
+
+        // Sort and slice
         const finalProducts = Array.from(allProductsMap.values())
           .sort((a, b) => {
             const orderA = a.order_index ?? 999;
