@@ -68,14 +68,23 @@ export default function LiveFarmStream() {
           .order('display_order', { ascending: true });
 
         if (!error && data && data.length > 0) {
-          // Replace the default videos slot-by-slot: admin stream #1
-          // replaces local video 1, #2 replaces local video 2, etc.
-          // Slots the admin hasn't filled keep showing the defaults.
+          // Replace the default videos slot-by-slot. The admin picks the
+          // slot with Display Order: 1 = local video 1, 2 = local video 2,
+          // 3 = local video 3. Slots the admin hasn't filled keep showing
+          // the defaults; extra streams are added after them.
           const merged = [...FALLBACK_STREAMS];
+          const taken = new Set<number>();
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           data.forEach((row: any, i: number) => {
-            if (i < merged.length) merged[i] = row;
-            else merged.push(row);
+            const slot = (typeof row.display_order === 'number' && row.display_order >= 1)
+              ? row.display_order - 1
+              : i;
+            if (slot < merged.length && !taken.has(slot)) {
+              merged[slot] = row;
+              taken.add(slot);
+            } else {
+              merged.push(row);
+            }
           });
           setStreams(merged);
           setActiveStream(merged[0]);
@@ -224,4 +233,16 @@ export default function LiveFarmStream() {
                     alt={stream.name} 
                     className="absolute inset-0 w-full h-full object-cover" loading="lazy" />
                 )}
-                <div className="absolute inset-0 bg-black/60 group-hov
+                <div className="absolute inset-0 bg-black/60 group-hover:bg-black/40 transition-colors" />
+                <div className="relative p-6 flex flex-col justify-end h-full">
+                  <h4 className="text-lg font-black uppercase tracking-tight text-left">{t(stream.name)}</h4>
+                  <p className="text-[10px] font-black text-primary uppercase tracking-[0.2em] text-left">{t(stream.location)}</p>
+                </div>
+              </button>
+            ))}
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}

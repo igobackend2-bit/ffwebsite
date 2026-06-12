@@ -29,14 +29,23 @@ export default function FarmStories() {
           .order('display_order', { ascending: true });
 
         if (!error && data && data.length > 0) {
-          // Replace the default stories slot-by-slot: admin story #1
-          // replaces the first default story, #2 the second, etc.
-          // Slots the admin hasn't filled keep showing the defaults.
+          // Replace the default stories slot-by-slot. The admin picks the
+          // slot with Display Order: 1 = first story, 2 = second, etc.
+          // Slots the admin hasn't filled keep showing the defaults;
+          // extra stories are added after them.
           const merged = [...FALLBACK_STORIES];
+          const taken = new Set<number>();
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           data.forEach((row: any, i: number) => {
-            if (i < merged.length) merged[i] = row;
-            else merged.push(row);
+            const slot = (typeof row.display_order === 'number' && row.display_order >= 1)
+              ? row.display_order - 1
+              : i;
+            if (slot < merged.length && !taken.has(slot)) {
+              merged[slot] = row;
+              taken.add(slot);
+            } else {
+              merged.push(row);
+            }
           });
           setStories(merged);
         } else {
@@ -114,4 +123,18 @@ export default function FarmStories() {
                   
                   {story.is_live && (
                     <div className="absolute top-6 right-6">
-        
+                      <div className="bg-red-500 text-white px-3 py-1 rounded-full text-[8px] font-black uppercase tracking-widest flex items-center gap-1">
+                         <div className="w-1.5 h-1.5 bg-white rounded-full animate-pulse" />
+                         LIVE
+                      </div>
+                    </div>
+                  )}
+                </>
+              )}
+            </motion.div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
