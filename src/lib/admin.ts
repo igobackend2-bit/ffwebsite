@@ -210,22 +210,10 @@ export async function getAllProducts(includeInactive = true) {
     };
   });
 
-  // Create a map to merge local and DB products (prefer DB)
-  const allProductsMap = new Map();
-
-  // 1. Seed with Local Inventory
-  VERIFIED_INVENTORY.forEach(p => {
-    allProductsMap.set(p.name.toLowerCase().trim(), { ...p, is_synced: false });
-  });
-
-  // 2. Overwrite with DB products
-  dbProducts.forEach(p => {
-    allProductsMap.set(p.name.toLowerCase().trim(), p);
-  });
-
-  const finalData = Array.from(allProductsMap.values());
-
-  return { data: finalData, error };
+  // Show ONLY real database products in the admin panel.
+  // (Previously the local demo inventory was mixed in here, which made
+  // sample/demo items appear alongside real catalog products.)
+  return { data: dbProducts, error };
 }
 
 export async function updateProductStock(productId: string, inStock: boolean) {
