@@ -43,6 +43,7 @@ export default function ProductDetailModal({ isOpen, onClose, product }: Product
   const [trendingProducts, setTrendingProducts] = useState<any[]>([]);
   const [showAddedOverlay, setShowAddedOverlay] = useState(false);
   const [selectedMedia, setSelectedMedia] = useState<string | null>(null);
+  const [isLightboxOpen, setIsLightboxOpen] = useState(false);
   const router = useRouter();
   const { user } = useAuth();
   const { addToCart } = useCart();
@@ -54,6 +55,7 @@ export default function ProductDetailModal({ isOpen, onClose, product }: Product
       setQuantity(1);
       setImageError(false);
       setSelectedMedia(null);
+      setIsLightboxOpen(false);
     }
   }, [isOpen, product]);
 
@@ -202,7 +204,8 @@ export default function ProductDetailModal({ isOpen, onClose, product }: Product
                     src={mainImage}
                     alt={currentProduct.name}
                     onError={() => setImageError(true)}
-                    className="w-full h-full object-contain transition-transform duration-700 hover:scale-125 cursor-zoom-in"
+                    onClick={() => setIsLightboxOpen(true)}
+                    className="w-full h-full object-contain transition-transform duration-700 hover:scale-110 cursor-zoom-in"
                   />
                 ) : (
                   <div className="text-center p-8">
@@ -313,6 +316,50 @@ export default function ProductDetailModal({ isOpen, onClose, product }: Product
               {relatedProducts.length > 0 && <div className="border-t border-border/60 pt-12 mt-12"><QuickAddCarousel products={relatedProducts} title={t('product.details.similar_harvest')} onAddSuccess={triggerAddedOverlay} onProductClick={(p) => { setCurrentProduct(p); setQuantity(1); setImageError(false); }} /></div>}
               <ProductReviews productId={currentProduct.id} /><div className="h-4" />
             </div>
+
+            {/* ── Fullscreen image viewer (Amazon-style lightbox) ── */}
+            <AnimatePresence>
+              {isLightboxOpen && (
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  className="absolute inset-0 z-[60] bg-white flex flex-col md:flex-row"
+                >
+                  <button
+                    onClick={() => setIsLightboxOpen(false)}
+                    className="absolute top-4 right-4 p-3 hover:bg-slate-100 rounded-full transition-all z-10"
+                  >
+                    <X size={28} />
+                  </button>
+
+                  {/* Big image */}
+                  <div className="flex-1 flex items-center justify-center p-6 md:p-12 min-h-0">
+                    <img
+                      src={mainImage}
+                      alt={currentProduct.name}
+                      className="max-w-full max-h-full object-contain"
+                    />
+                  </div>
+
+                  {/* Title + thumbnail grid */}
+                  <div className="w-full md:w-72 p-6 md:pt-16 flex-shrink-0">
+                    <h3 className="text-lg font-bold text-foreground mb-4 leading-snug">{currentProduct.name}{unitLabel ? `, 1 ${unitLabel}` : ''}</h3>
+                    <div className="flex flex-wrap gap-2">
+                      {galleryUrls.map((url, idx) => (
+                        <button
+                          key={url}
+                          onClick={() => setSelectedMedia(url)}
+                          className={`w-16 h-16 rounded-lg overflow-hidden border-2 transition-all bg-white ${mainImage === url ? 'border-foreground shadow-md' : 'border-border hover:border-primary/50'}`}
+                        >
+                          <img src={url} alt={`${currentProduct.name} ${idx + 1}`} className="w-full h-full object-cover" loading="lazy" />
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
 
             <AnimatePresence>{showAddedOverlay && <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="absolute inset-0 z-50 bg-primary/95 backdrop-blur-xl flex flex-col items-center justify-center text-white text-center p-10"><motion.div initial={{ scale: 0.5, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} transition={{ type: "spring", damping: 15 }}><div className="w-32 h-32 bg-white text-primary rounded-full flex items-center justify-center mb-8 mx-auto shadow-2xl"><Check size={64} strokeWidth={4} /></div><h2 className="text-5xl font-black mb-4">{t('product.details.added')}</h2><p className="text-xl font-bold opacity-80 mb-12">{t('product.details.added_to_harvest')}</p><div className="flex flex-col gap-4 max-w-xs mx-auto"><button onClick={() => router.push('/cart')} className="bg-white text-primary px-10 py-5 rounded-[1.5rem] font-black text-lg uppercase tracking-widest hover:scale-105 transition-transform">{t('product.details.checkout_now')}</button><button onClick={() => setShowAddedOverlay(false)} className="text-white/80 font-bold uppercase tracking-widest text-sm hover:text-white">{t('product.details.continue_shopping')}</button></div></motion.div></motion.div>}</AnimatePresence>
           </motion.div>
