@@ -29,6 +29,14 @@ function ProductsContent() {
   const [searchQuery, setSearchQuery] = useState('');
   const [priceRange, setPriceRange] = useState(2000);
 
+  // Slider range follows the real product prices (instead of a fixed
+  // ₹0–₹2000) so dragging it always has a visible effect.
+  const sliderMax = React.useMemo(() => {
+    const prices = products.map(p => Number(p.price) || 0).filter(n => n > 0);
+    if (prices.length === 0) return 2000;
+    return Math.ceil(Math.max(...prices) / 50) * 50;
+  }, [products]);
+
   const categories = ['All', 'Seasonal', 'Fruits', 'Vegetables', 'Valluvam Products'];
 
   const getCategoryTranslation = (cat: string) => {
@@ -253,8 +261,9 @@ function ProductsContent() {
             </div>
             <div className="bg-white p-8 rounded-[2rem] border border-border shadow-sm">
               <h3 className="text-lg font-black mb-6">{t('products.sidebar.price')}</h3>
-              <input type="range" min="0" max="2000" step="10" value={priceRange} onChange={(e) => setPriceRange(parseInt(e.target.value))} className="w-full accent-primary h-1.5 bg-muted rounded-full appearance-none cursor-pointer mb-4" />
-              <div className="flex justify-between text-xs font-black text-muted-foreground uppercase tracking-widest"><span>₹0</span><span className="text-primary">Up to ₹{priceRange}</span></div>
+              <input type="range" min="0" max={sliderMax} step="5" value={Math.min(priceRange, sliderMax)} onChange={(e) => setPriceRange(parseInt(e.target.value))} className="w-full accent-primary h-1.5 bg-muted rounded-full appearance-none cursor-pointer mb-4" />
+              <div className="flex justify-between text-xs font-black text-muted-foreground uppercase tracking-widest"><span>₹0</span><span className="text-primary">Up to ₹{Math.min(priceRange, sliderMax)}</span></div>
+              <div className="mt-3 text-[11px] font-black uppercase tracking-widest text-muted-foreground">{filteredProducts.length} {filteredProducts.length === 1 ? 'product' : 'products'} match</div>
             </div>
           </aside>
 
