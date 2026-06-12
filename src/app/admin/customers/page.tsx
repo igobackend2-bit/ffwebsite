@@ -44,7 +44,14 @@ export default function AdminCustomersPage() {
       if (profilesRes.error) throw profilesRes.error;
       if (ordersRes.error) throw ordersRes.error;
       
-      const profiles = profilesRes.data || [];
+      // Hide internal ERP staff accounts from the store's customer list.
+      // These share the same database and must NOT be deleted (the ERP
+      // references them), but they are not website customers.
+      const STAFF_DOMAINS = ['@farmersfactory.in', '@farmersfactory.com', '@ffactory.com', '@famersfactory.com'];
+      const profiles = (profilesRes.data || []).filter(
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (c: any) => !STAFF_DOMAINS.some(d => (c.email || '').toLowerCase().endsWith(d))
+      );
       const orders = ordersRes.data || [];
 
       // Process data for CRM
