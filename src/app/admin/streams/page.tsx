@@ -124,10 +124,10 @@ export default function AdminStreams() {
         location: editForm.location || '',
         video_url: editForm.video_url || '',
         thumbnail_url: editForm.thumbnail_url || '',
-        temp: editForm.temp || '28°C',
-        humidity: editForm.humidity || '65%',
-        wind: editForm.wind || '12 km/h',
-        viewers: editForm.viewers || Math.floor(Math.random() * 200) + 50,
+        temp: editForm.temp || '',
+        humidity: editForm.humidity || '',
+        wind: editForm.wind || '',
+        viewers: editForm.viewers || null,
         is_active: editForm.is_active ?? true,
         display_order: editForm.display_order ?? 0,
       };
@@ -169,7 +169,7 @@ export default function AdminStreams() {
           <p className="text-muted-foreground font-bold text-sm">Manage the &quot;Watch Your Harvest Grow&quot; real-time monitoring videos.</p>
         </div>
         <button 
-          onClick={() => { setIsEditing('new'); setEditForm({ is_active: true, display_order: streams.length, temp: '28°C', humidity: '65%', wind: '12 km/h' }); }}
+          onClick={() => { setIsEditing('new'); setEditForm({ is_active: true, display_order: 0 }); }}
           className="bg-primary text-white px-8 py-4 rounded-2xl font-black flex items-center gap-3 hover:bg-primary/90 transition-all shadow-xl shadow-primary/20"
         >
           <Plus size={20} />
@@ -262,6 +262,20 @@ export default function AdminStreams() {
                 </div>
                 
                 <div className="space-y-6">
+                  <div className="space-y-2">
+                    <label className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em] ml-1">Replace Which Website Video?</label>
+                    <select
+                      value={editForm.display_order ?? 0}
+                      onChange={e => setEditForm({ ...editForm, display_order: parseInt(e.target.value) })}
+                      className="w-full bg-slate-50 border border-slate-100 rounded-2xl px-6 py-4 font-bold"
+                    >
+                      <option value={0}>Add as a new extra video</option>
+                      <option value={1}>Replace Video 1 — 3D AI Sprinkler System (Center Field)</option>
+                      <option value={2}>Replace Video 2 — Veggie Harvest A (North Field)</option>
+                      <option value={3}>Replace Video 3 — Fruit Harvest B (East Field)</option>
+                    </select>
+                    <p className="text-[10px] text-slate-400 font-medium ml-1">Leave Block Name / Location empty to keep the original card text — only the video will change.</p>
+                  </div>
                   <div className="grid grid-cols-2 gap-6">
                     <div className="space-y-2">
                       <label className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em] ml-1">Block Name</label>

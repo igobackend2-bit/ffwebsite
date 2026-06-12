@@ -40,8 +40,17 @@ export default function FarmStories() {
             const slot = (typeof row.display_order === 'number' && row.display_order >= 1)
               ? row.display_order - 1
               : i;
+            // Only overwrite fields the admin actually filled in, so the
+            // default story keeps its image/name and ONLY the video (or
+            // whatever was changed) is replaced.
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const filled: any = {};
+            Object.keys(row).forEach((k) => {
+              const v = row[k];
+              if (v !== null && v !== undefined && v !== '') filled[k] = v;
+            });
             if (slot < merged.length && !taken.has(slot)) {
-              merged[slot] = row;
+              merged[slot] = { ...merged[slot], ...filled };
               taken.add(slot);
             } else {
               merged.push(row);

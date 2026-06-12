@@ -113,7 +113,7 @@ export default function AdminStories() {
         image_url: editForm.image_url || '',
         video_url: editForm.video_url || '',
         is_live: editForm.is_live ?? true,
-        display_order: editForm.display_order ?? stories.length,
+        display_order: editForm.display_order ?? 0,
       };
 
       if (isEditing === 'new') {
@@ -159,7 +159,7 @@ export default function AdminStories() {
           <p className="text-muted-foreground font-bold text-sm">Manage the vertical Farm Stories on the homepage.</p>
         </div>
         <button 
-          onClick={() => { setIsEditing('new'); setEditForm({ is_live: true, display_order: stories.length }); }}
+          onClick={() => { setIsEditing('new'); setEditForm({ is_live: true, display_order: 0 }); }}
           className="bg-primary text-white px-8 py-4 rounded-2xl font-black flex items-center gap-3 hover:bg-primary/90 transition-all shadow-xl shadow-primary/20"
         >
           <Plus size={20} />
@@ -234,6 +234,22 @@ export default function AdminStories() {
                 </div>
                 
                 <div className="space-y-6">
+                  <div className="space-y-2">
+                    <label className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em] ml-1">Replace Which Website Story?</label>
+                    <select
+                      value={editForm.display_order ?? 0}
+                      onChange={e => setEditForm({ ...editForm, display_order: parseInt(e.target.value) })}
+                      className="w-full bg-slate-50 border border-slate-100 rounded-2xl px-6 py-4 font-bold"
+                    >
+                      <option value={0}>Add as a new extra story</option>
+                      <option value={1}>Replace Story 1 — Morning Harvest (Arjun)</option>
+                      <option value={2}>Replace Story 2 — Organic Secrets (Meera)</option>
+                      <option value={3}>Replace Story 3 — Oil Extraction (Senthil)</option>
+                      <option value={4}>Replace Story 4 — Soil Quality (Kiran)</option>
+                    </select>
+                    <p className="text-[10px] text-slate-400 font-medium ml-1">Leave Title / Farmer / Thumbnail empty to keep the original story look — only the video will change.</p>
+                  </div>
+
                   <div className="space-y-2">
                     <label className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em] ml-1">Title</label>
                     <input type="text" value={editForm.title || ''} onChange={e => setEditForm({ ...editForm, title: e.target.value })} className="w-full bg-slate-50 border border-slate-100 rounded-2xl px-6 py-4 font-bold" placeholder="e.g., Morning Harvest" />
