@@ -22,6 +22,17 @@ import {
 } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 
+// image_urls is stored as a JSON *string* in the database (e.g. '["https://..."]').
+// Parse it safely so each product shows its own image instead of the fallback.
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function getProductImage(p: any): string {
+  let urls = p.image_urls;
+  if (typeof urls === 'string') {
+    try { urls = JSON.parse(urls); } catch { urls = []; }
+  }
+  return (Array.isArray(urls) && urls[0]) || p.image_url || 'https://images.unsplash.com/photo-1610348725531-843dff563e2c';
+}
+
 export default function AdminInventory() {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [products, setProducts] = useState<any[]>([]);
@@ -126,7 +137,7 @@ export default function AdminInventory() {
       // Perform database updates
       const { error } = await supabase
         .from('products')
-        .update({ stock: 200 })
+        .update({ stock: 200, in_stock: true })
         .neq('id', '00000000-0000-0000-0000-000000000000'); // Standard check to update all rows in PostgREST
 
       if (error) throw error;
@@ -145,15 +156,17 @@ export default function AdminInventory() {
   // Inline adjuster save function
   const handleSaveStock = async (productId: string, val: number) => {
     const newStock = Math.max(0, val);
+    const inStock = newStock > 0;
     try {
       const { error } = await supabase
         .from('products')
-        .update({ stock: newStock })
+        .update({ stock: newStock, in_stock: inStock })
         .eq('id', productId);
       
       if (error) throw error;
       
-      setProducts(prev => prev.map(p => p.id === productId ? { ...p, stock: newStock } : p));
+      setProducts(prev => prev.map(p => p.id === productId ? { ...p, stock: newStock, in_stock: inStock } : p));
+      setEditingStocks(prev => ({ ...prev, [productId]: newStock }));
       toast.success('Stock level updated successfully');
     } catch (e) {
       toast.error('Failed to update stock');
@@ -317,7 +330,7 @@ export default function AdminInventory() {
                       <div className="flex items-center gap-4">
                         <div className="w-12 h-12 rounded-xl bg-slate-50 overflow-hidden border border-slate-100 flex-shrink-0 relative">
                           <img 
-                            src={(p.image_urls && p.image_urls[0]) || p.image_url || 'https://images.unsplash.com/photo-1610348725531-843dff563e2c'} 
+                            src={getProductImage(p)}
                             alt="" 
                             className="w-full h-full object-cover" 
                             onError={(e) => { (e.target as HTMLImageElement).src = 'https://images.unsplash.com/photo-1610348725531-843dff563e2c'; }}
@@ -397,19 +410,4 @@ export default function AdminInventory() {
                         }}
                         className="px-4 py-2 rounded-xl text-[9px] font-black uppercase tracking-widest bg-primary/5 border border-primary/10 text-primary hover:bg-primary hover:text-white transition-all active:scale-95"
                       >
-                        Reset to 200
-                      </button>
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-          {filteredProducts.length === 0 && (
-            <div className="py-20 text-center text-muted-foreground font-bold text-sm italic">No products found matching the criteria.</div>
-          )}
-        </div>
-      )}
-    </div>
-  );
-}
+                   
