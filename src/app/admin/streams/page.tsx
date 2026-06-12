@@ -31,7 +31,7 @@ interface Stream {
   temp: string;
   humidity: string;
   wind: string;
-  viewers: number;
+  viewers: number | null;
   is_active: boolean;
   display_order: number;
 }
