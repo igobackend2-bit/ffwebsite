@@ -86,16 +86,13 @@ function ProductsContent() {
           if (!name) continue;
 
           let category = item.Category || item.category || 'Vegetables';
-          let category_id = 'cat-veg';
           let category_slug = 'vegetables';
-          
+
           if (category.toLowerCase().includes('fruit')) {
             category = 'Fruits';
-            category_id = 'cat-fruit';
             category_slug = 'fruits';
           } else if (category.toLowerCase().includes('valluvam') || category.toLowerCase().includes('trad')) {
             category = 'Valluvam Products';
-            category_id = 'cat-trad';
             category_slug = 'trad';
           }
 
@@ -108,8 +105,9 @@ function ProductsContent() {
             stock: parseInt(item.Stock || item.stock || '100'),
             is_featured: !!(item.Seasonal || item.is_seasonal),
             slug: name.toLowerCase().replace(/[^a-z0-9]+/g, '-'),
-            category_id,
+            category,
             category_slug,
+            image_url: item.Image || item.image_url || '/placeholder_product.webp',
             image_urls: [item.Image || item.image_url || '/placeholder_product.webp'],
             in_stock: true,
             is_active: true,
@@ -399,14 +397,12 @@ function ProductsContent() {
     e.preventDefault();
     
     if (editingProduct) {
-      // 1. Map UI category to DB category_id/slug
-      let category_id = 'cat-veg';
+      // 1. Map UI category to DB slug (category_id is a UUID in the live
+      //    database - we save the category NAME, which the website uses)
       let category_slug = 'vegetables';
       if (editFormData.category === 'Fruits') {
-        category_id = 'cat-fruit';
         category_slug = 'fruits';
       } else if (editFormData.category === 'Valluvam Products') {
-        category_id = 'cat-trad';
         category_slug = 'trad';
       }
 
@@ -422,7 +418,9 @@ function ProductsContent() {
         video_url: editFormData.video_url,
         order_index: editFormData.order_index,
         slug: editFormData.name.toLowerCase().replace(/[^a-z0-9]+/g, '-'),
+        category: editFormData.category,
         category_slug,
+        image_url: editFormData.image_url || (editFormData.image_urls || []).find((u: string) => u && u.trim() !== '') || '',
         image_urls: [editFormData.image_url, ...(editFormData.image_urls || [])].filter(url => url && url.trim() !== ''),
         updated_at: new Date().toISOString()
       };
@@ -461,14 +459,12 @@ function ProductsContent() {
         return;
       }
 
-      // 1. Map UI category to DB category_id/slug
-      let category_id = 'cat-veg';
+      // 1. Map UI category to DB slug (category_id is a UUID in the live
+      //    database - we save the category NAME, which the website uses)
       let category_slug = 'vegetables';
       if (newProduct.category === 'Fruits') {
-        category_id = 'cat-fruit';
         category_slug = 'fruits';
       } else if (newProduct.category === 'Valluvam Products') {
-        category_id = 'cat-trad';
         category_slug = 'trad';
       }
 
@@ -484,8 +480,9 @@ function ProductsContent() {
         video_url: newProduct.video_url,
         order_index: newProduct.order_index,
         slug: newProduct.name.toLowerCase().replace(/[^a-z0-9]+/g, '-'),
-        category_id,
+        category: newProduct.category,
         category_slug,
+        image_url: newProduct.image_url || (newProduct.image_urls || []).find((u: string) => u && u.trim() !== '') || '',
         image_urls: [newProduct.image_url, ...(newProduct.image_urls || [])].filter(url => url && url.trim() !== ''),
         in_stock: true,
         is_active: true,
