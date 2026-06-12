@@ -223,7 +223,7 @@ export default function AdminStories() {
         {isEditing && (
           <div className="fixed inset-0 z-[100] flex items-center justify-center p-8">
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setIsEditing(null)} className="absolute inset-0 bg-black/60 backdrop-blur-md" />
-            <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.9 }} className="relative w-full max-w-xl bg-white rounded-[2.5rem] shadow-2xl overflow-hidden border border-white/20">
+            <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.9 }} className="relative w-full max-w-xl bg-white rounded-[2.5rem] shadow-2xl overflow-hidden border border-white/20 max-h-[90vh] overflow-y-auto">
               <div className="p-10">
                 <div className="flex items-center justify-between mb-8">
                   <h2 className="text-3xl font-black text-foreground uppercase tracking-tight">
@@ -282,10 +282,6 @@ export default function AdminStories() {
                     </div>
                   </div>
 
-                  <div className="space-y-2">
-                    <label className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em] ml-1">Video URL (Optional: mp4 plays when clicked)</label>
-                    <input type="text" value={editForm.video_url || ''} onChange={e => setEditForm({ ...editForm, video_url: e.target.value })} className="w-full bg-slate-50 border border-slate-100 rounded-2xl px-6 py-4 font-bold" placeholder="URL for the video to play..." />
-                  </div>
                 </div>
 
                 <div className="flex gap-4 mt-12">
