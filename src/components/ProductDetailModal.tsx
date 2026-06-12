@@ -44,6 +44,7 @@ export default function ProductDetailModal({ isOpen, onClose, product }: Product
   const [showAddedOverlay, setShowAddedOverlay] = useState(false);
   const [selectedMedia, setSelectedMedia] = useState<string | null>(null);
   const [isLightboxOpen, setIsLightboxOpen] = useState(false);
+  const [zoomPos, setZoomPos] = useState<{ x: number; y: number } | null>(null);
   const router = useRouter();
   const { user } = useAuth();
   const { addToCart } = useCart();
@@ -188,7 +189,18 @@ export default function ProductDetailModal({ isOpen, onClose, product }: Product
               )}
 
               {/* Main media */}
-              <div className="flex-1 bg-muted/10 relative overflow-hidden flex items-center justify-center">
+              <div
+                className="flex-1 bg-muted/10 relative overflow-hidden flex items-center justify-center"
+                onMouseMove={(e) => {
+                  if (showVideo) return;
+                  const r = e.currentTarget.getBoundingClientRect();
+                  setZoomPos({
+                    x: Math.min(100, Math.max(0, ((e.clientX - r.left) / r.width) * 100)),
+                    y: Math.min(100, Math.max(0, ((e.clientY - r.top) / r.height) * 100)),
+                  });
+                }}
+                onMouseLeave={() => setZoomPos(null)}
+              >
                 {showVideo ? (
                   <video
                     src={cp.video_url}
@@ -205,7 +217,7 @@ export default function ProductDetailModal({ isOpen, onClose, product }: Product
                     alt={currentProduct.name}
                     onError={() => setImageError(true)}
                     onClick={() => setIsLightboxOpen(true)}
-                    className="w-full h-full object-contain transition-transform duration-700 hover:scale-110 cursor-zoom-in"
+                    className="w-full h-full object-contain cursor-zoom-in"
                   />
                 ) : (
                   <div className="text-center p-8">
@@ -316,6 +328,19 @@ export default function ProductDetailModal({ isOpen, onClose, product }: Product
               {relatedProducts.length > 0 && <div className="border-t border-border/60 pt-12 mt-12"><QuickAddCarousel products={relatedProducts} title={t('product.details.similar_harvest')} onAddSuccess={triggerAddedOverlay} onProductClick={(p) => { setCurrentProduct(p); setQuantity(1); setImageError(false); }} /></div>}
               <ProductReviews productId={currentProduct.id} /><div className="h-4" />
             </div>
+
+            {/* ── Hover zoom panel: magnified view over the right half (Amazon-style) ── */}
+            {zoomPos && !showVideo && !imageError && !isLightboxOpen && (
+              <div
+                className="hidden md:block absolute top-0 right-0 w-1/2 h-full z-40 pointer-events-none bg-white border-l border-border"
+                style={{
+                  backgroundImage: `url(${mainImage})`,
+                  backgroundRepeat: 'no-repeat',
+                  backgroundSize: '200%',
+                  backgroundPosition: `${zoomPos.x}% ${zoomPos.y}%`,
+                }}
+              />
+            )}
 
             {/* ── Fullscreen image viewer (Amazon-style lightbox) ── */}
             <AnimatePresence>

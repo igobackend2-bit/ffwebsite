@@ -79,7 +79,7 @@ export default function QuickAddCarousel({ products, title = "You might also lik
                   onError={(e) => {
                     (e.target as HTMLImageElement).src = '/placeholder_product.webp';
                   }}
-                  className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                  className="w-full h-full object-contain group-hover:scale-105 transition-transform duration-500"
                 />
               </div>
 
