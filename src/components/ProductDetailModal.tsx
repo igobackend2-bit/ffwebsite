@@ -42,6 +42,7 @@ export default function ProductDetailModal({ isOpen, onClose, product }: Product
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [trendingProducts, setTrendingProducts] = useState<any[]>([]);
   const [showAddedOverlay, setShowAddedOverlay] = useState(false);
+  const [selectedMedia, setSelectedMedia] = useState<string | null>(null);
   const router = useRouter();
   const { user } = useAuth();
   const { addToCart } = useCart();
@@ -52,6 +53,7 @@ export default function ProductDetailModal({ isOpen, onClose, product }: Product
       setCurrentProduct(product);
       setQuantity(1);
       setImageError(false);
+      setSelectedMedia(null);
     }
   }, [isOpen, product]);
 
@@ -91,6 +93,27 @@ export default function ProductDetailModal({ isOpen, onClose, product }: Product
   const inStock = (cp.stock === undefined || cp.stock === null) ? true : Number(cp.stock) > 0;
   const avgRating = Number(cp.average_rating) || 0;
   const reviewCount = Number(cp.review_count) || 0;
+
+  // ── Image gallery (image_urls can be a JSON string in the DB) ────────
+  let rawUrls = cp.image_urls;
+  if (typeof rawUrls === 'string') {
+    try { rawUrls = JSON.parse(rawUrls); } catch { rawUrls = []; }
+  }
+  const galleryUrls: string[] = [cp.image_url, ...(Array.isArray(rawUrls) ? rawUrls : [])]
+    .filter((u: string, i: number, a: string[]) => u && a.indexOf(u) === i);
+  const hasVideo = Boolean(cp.video_url);
+  const showVideo = hasVideo && (selectedMedia === '__video__' || (!selectedMedia && galleryUrls.length === 0));
+  const mainImage = selectedMedia && selectedMedia !== '__video__'
+    ? selectedMedia
+    : (galleryUrls[0] || '/placeholder_product.webp');
+
+  // ── Product highlight bullets ─────────────────────────────────────────
+  const highlights: string[] = [
+    ...(currentProduct.description ? [currentProduct.description] : []),
+    '100% certified organic — no chemical ripening or preservatives',
+    'Harvested fresh and delivered from farm to table within 24 hours',
+    'Sustainably grown with zero waste packaging',
+  ];
 
   const triggerAddedOverlay = () => {
     setShowAddedOverlay(true);
@@ -135,31 +158,59 @@ export default function ProductDetailModal({ isOpen, onClose, product }: Product
           <motion.div initial={{ opacity: 0, scale: 0.9, y: 40 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.9, y: 40 }} className="relative w-full max-w-6xl bg-white rounded-[2rem] md:rounded-[3rem] overflow-hidden shadow-2xl flex flex-col md:flex-row max-h-[90vh] border border-white/20">
             <button onClick={onClose} className="absolute top-4 right-4 md:top-8 md:right-8 p-2 md:p-4 bg-white/90 hover:bg-red-500 hover:text-white text-foreground rounded-full transition-all z-20 shadow-xl border border-border group"><X size={24} className="group-hover:rotate-90 transition-transform" /></button>
 
-            {/* ── Product media ── */}
-            <div className="w-full md:w-1/2 h-[300px] md:h-auto bg-muted/20 relative overflow-hidden flex items-center justify-center">
-              {cp.video_url ? (
-                <video
-                  src={cp.video_url}
-                  autoPlay
-                  muted
-                  loop
-                  playsInline
-                  preload="none"
-                  className="w-full h-full object-cover"
-                />
-              ) : !imageError ? (
-                <img
-                  src={currentProduct.image_url || cp.image_urls?.[0] || '/placeholder_product.webp'}
-                  alt={currentProduct.name}
-                  onError={() => setImageError(true)}
-                  className="w-full h-full object-cover transition-transform duration-1000 hover:scale-110"
-                />
-              ) : (
-                <div className="text-center p-8">
-                  <AlertCircle size={48} className="mx-auto opacity-20 mb-4" />
-                  <p className="font-bold">{t('product.details.image_not_available')}</p>
+            {/* ── Product media: thumbnail rail + main image (Amazon-style) ── */}
+            <div className="w-full md:w-1/2 h-[340px] md:h-auto bg-white relative overflow-hidden flex flex-row">
+              {/* Thumbnail rail */}
+              {(galleryUrls.length > 1 || hasVideo) && (
+                <div className="flex flex-col gap-2 p-3 overflow-y-auto custom-scrollbar flex-shrink-0">
+                  {galleryUrls.map((url, idx) => (
+                    <button
+                      key={url}
+                      onMouseEnter={() => setSelectedMedia(url)}
+                      onClick={() => setSelectedMedia(url)}
+                      className={`w-14 h-14 rounded-xl overflow-hidden border-2 transition-all flex-shrink-0 bg-white ${(!showVideo && mainImage === url) ? 'border-primary shadow-md' : 'border-border hover:border-primary/50'}`}
+                    >
+                      <img src={url} alt={`${currentProduct.name} ${idx + 1}`} className="w-full h-full object-cover" loading="lazy" />
+                    </button>
+                  ))}
+                  {hasVideo && (
+                    <button
+                      onMouseEnter={() => setSelectedMedia('__video__')}
+                      onClick={() => setSelectedMedia('__video__')}
+                      className={`w-14 h-14 rounded-xl overflow-hidden border-2 transition-all flex-shrink-0 bg-black flex items-center justify-center ${showVideo ? 'border-primary shadow-md' : 'border-border hover:border-primary/50'}`}
+                    >
+                      <span className="text-white text-xl">▶</span>
+                    </button>
+                  )}
                 </div>
               )}
+
+              {/* Main media */}
+              <div className="flex-1 bg-muted/10 relative overflow-hidden flex items-center justify-center">
+                {showVideo ? (
+                  <video
+                    src={cp.video_url}
+                    autoPlay
+                    muted
+                    loop
+                    playsInline
+                    preload="none"
+                    className="w-full h-full object-cover"
+                  />
+                ) : !imageError ? (
+                  <img
+                    src={mainImage}
+                    alt={currentProduct.name}
+                    onError={() => setImageError(true)}
+                    className="w-full h-full object-contain transition-transform duration-700 hover:scale-125 cursor-zoom-in"
+                  />
+                ) : (
+                  <div className="text-center p-8">
+                    <AlertCircle size={48} className="mx-auto opacity-20 mb-4" />
+                    <p className="font-bold">{t('product.details.image_not_available')}</p>
+                  </div>
+                )}
+              </div>
             </div>
 
             {/* ── Product info (Amazon-style) ── */}
@@ -223,13 +274,24 @@ export default function ProductDetailModal({ isOpen, onClose, product }: Product
                   <div className="flex flex-col items-center gap-2"><div className="w-12 h-12 rounded-full bg-slate-50 border border-border flex items-center justify-center"><ShieldCheck size={20} className="text-primary" /></div><span className="text-[10px] font-bold text-blue-700">Secure</span></div>
                 </div>
 
-                {/* Stock status */}
-                <p className={`text-lg font-black mb-4 ${inStock ? 'text-green-700' : 'text-red-600'}`}>{inStock ? 'In Stock' : 'Out of Stock'}</p>
+                {/* Stock status + seller */}
+                <p className={`text-lg font-black mb-1 ${inStock ? 'text-green-700' : 'text-red-600'}`}>{inStock ? 'In Stock' : 'Out of Stock'}</p>
+                <p className="text-sm text-slate-600 font-medium mb-4">Sold by <span className="text-blue-700 font-bold">Farmers Factory, Chennai</span> and Fulfilled by <span className="text-blue-700 font-bold">Farmers Factory</span>.</p>
 
-                {/* Description */}
-                {currentProduct.description && (
-                  <p className="text-muted-foreground text-base mb-4 font-medium leading-relaxed">{currentProduct.description}</p>
-                )}
+                {/* Vegetarian mark */}
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="w-6 h-6 border-2 border-green-700 rounded-[4px] flex items-center justify-center flex-shrink-0">
+                    <div className="w-3 h-3 bg-green-700 rounded-full" />
+                  </div>
+                  <p className="text-sm font-medium text-slate-700">This is a <span className="font-black">Vegetarian</span> product.</p>
+                </div>
+
+                {/* Product highlights */}
+                <ul className="list-disc pl-5 space-y-1.5 mb-4">
+                  {highlights.map((h, i) => (
+                    <li key={i} className="text-sm font-medium text-slate-700 leading-relaxed">{h}</li>
+                  ))}
+                </ul>
               </div>
 
               {/* Qty + actions */}
