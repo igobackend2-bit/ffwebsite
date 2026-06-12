@@ -48,6 +48,8 @@ function AuthContent() {
     searchParams.get('mode') === 'signup' ? 'signup' : 'login'
   );
   const [step, setStep] = useState<'initial' | 'otp' | 'details'>('initial');
+  const [loginMethod, setLoginMethod] = useState<'password' | 'otp'>('password');
+  const [identifier, setIdentifier] = useState('');
 
   const [phone, setPhone] = useState('');
   const [otp, setOtp] = useState('');
@@ -89,8 +91,38 @@ function AuthContent() {
       const { error } = await supabase.auth.verifyOtp({ phone: formattedPhone(), token: otp, type: 'sms' });
       if (error) throw error;
       if (mode === 'login') { toast.success('Welcome back!'); router.push(redirectPath); }
-      else { setStep('details'); toast.success('Phone verified!'); }
+      else {
+        // If this mobile number already has a completed profile, tell the
+        // customer it exists instead of re-registering.
+        const { data: { user: u } } = await supabase.auth.getUser();
+        if (u?.user_metadata?.full_name) {
+          toast.success('This mobile number is already registered — you are now logged in to your existing account.', { duration: 6000 });
+          router.push(redirectPath);
+        } else {
+          setStep('details'); toast.success('Phone verified!');
+        }
+      }
     } catch (e: unknown) { toast.error((e as Error).message || 'Invalid OTP'); }
+    finally { setLoading(false); }
+  };
+
+  const handlePasswordLogin = async () => {
+    const id = identifier.trim();
+    if (!id) { toast.error('Enter your email or mobile number'); return; }
+    if (!password) { toast.error('Enter your password'); return; }
+    setLoading(true);
+    try {
+      const isEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(id);
+      const d = id.replace(/\D/g, '');
+      const creds = isEmail
+        ? { email: id, password }
+        : { phone: d.startsWith('91') ? `+${d}` : `+91${d}`, password };
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const { error } = await supabase.auth.signInWithPassword(creds as any);
+      if (error) throw new Error('Invalid email/mobile number or password');
+      toast.success('Welcome back!');
+      router.push(redirectPath);
+    } catch (e: unknown) { toast.error((e as Error).message || 'Login failed'); }
     finally { setLoading(false); }
   };
 
@@ -134,7 +166,11 @@ function AuthContent() {
                 <h2 className="text-3xl font-black uppercase tracking-tighter mb-1">
                   {mode === 'login' ? 'Welcome Back' : 'Join the Farm'}
                 </h2>
-                <p className="text-white/40 text-sm">Enter your mobile number to get OTP</p>
+                <p className="text-white/40 text-sm">
+                  {mode === 'login' && loginMethod === 'password'
+                    ? 'Login with your email or mobile number and password'
+                    : 'Enter your mobile number to get OTP'}
+                </p>
               </div>
 
               {/* Mode toggle */}
@@ -147,24 +183,70 @@ function AuthContent() {
                 ))}
               </div>
 
-              {/* Phone input */}
-              <div className="space-y-2">
-                <label className="text-[10px] font-black uppercase tracking-widest text-white/40 ml-1">Mobile Number</label>
-                <div className="relative flex items-center">
-                  <span className="absolute left-5 text-white/50 font-bold text-sm select-none">+91</span>
-                  <input type="tel" inputMode="numeric" maxLength={10}
-                    value={phone} onChange={e => setPhone(e.target.value.replace(/\D/g, '').slice(0, 10))}
-                    onKeyDown={e => e.key === 'Enter' && handleSendOTP()}
-                    placeholder="98765 43210"
-                    className="w-full bg-white/5 border border-white/10 rounded-2xl py-4 pl-16 pr-6 focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary text-sm font-bold placeholder:text-white/20 text-white transition-all"
-                  />
+              {/* Login method toggle */}
+              {mode === 'login' && (
+                <div className="flex p-1 bg-white/5 rounded-2xl border border-white/5">
+                  {(['password', 'otp'] as const).map(m => (
+                    <button key={m} onClick={() => setLoginMethod(m)}
+                      className={`flex-1 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${loginMethod === m ? 'bg-primary text-white' : 'text-white/30'}`}>
+                      {m === 'password' ? 'Password' : 'OTP'}
+                    </button>
+                  ))}
                 </div>
-              </div>
+              )}
 
-              <button onClick={handleSendOTP} disabled={loading}
-                className="w-full bg-primary text-white py-5 rounded-2xl font-black text-xs uppercase tracking-[0.3em] flex items-center justify-center gap-3 hover:bg-primary/90 transition-all active:scale-[0.98] disabled:opacity-50">
-                {loading ? 'Sending...' : 'Send OTP'} {!loading && <ArrowRight size={18} />}
-              </button>
+              {mode === 'login' && loginMethod === 'password' ? (
+                <>
+                  {/* Email or mobile + password */}
+                  <div className="space-y-2">
+                    <label className="text-[10px] font-black uppercase tracking-widest text-white/40 ml-1">Email or Mobile Number</label>
+                    <div className="relative">
+                      <Mail className="absolute left-5 top-1/2 -translate-y-1/2 text-white/20" size={18} />
+                      <input type="text" value={identifier} onChange={e => setIdentifier(e.target.value)}
+                        placeholder="you@example.com or 98765 43210"
+                        className="w-full bg-white/5 border border-white/10 rounded-2xl py-4 pl-14 pr-6 focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary text-sm font-bold placeholder:text-white/20 text-white transition-all"
+                      />
+                    </div>
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-[10px] font-black uppercase tracking-widest text-white/40 ml-1">Password</label>
+                    <div className="relative">
+                      <input type={showPassword ? 'text' : 'password'} value={password} onChange={e => setPassword(e.target.value)}
+                        onKeyDown={e => e.key === 'Enter' && handlePasswordLogin()}
+                        placeholder="Your password"
+                        className="w-full bg-white/5 border border-white/10 rounded-2xl py-4 pl-6 pr-14 focus:outline-none focus:ring-2 focus:ring-primary/50 text-sm font-bold placeholder:text-white/20 text-white" />
+                      <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-5 top-1/2 -translate-y-1/2 text-white/20 hover:text-white/60">
+                        {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                      </button>
+                    </div>
+                  </div>
+                  <button onClick={handlePasswordLogin} disabled={loading}
+                    className="w-full bg-primary text-white py-5 rounded-2xl font-black text-xs uppercase tracking-[0.3em] flex items-center justify-center gap-3 hover:bg-primary/90 transition-all active:scale-[0.98] disabled:opacity-50">
+                    {loading ? 'Logging in...' : 'Login'} {!loading && <ArrowRight size={18} />}
+                  </button>
+                </>
+              ) : (
+                <>
+                  {/* Phone input */}
+                  <div className="space-y-2">
+                    <label className="text-[10px] font-black uppercase tracking-widest text-white/40 ml-1">Mobile Number</label>
+                    <div className="relative flex items-center">
+                      <span className="absolute left-5 text-white/50 font-bold text-sm select-none">+91</span>
+                      <input type="tel" inputMode="numeric" maxLength={10}
+                        value={phone} onChange={e => setPhone(e.target.value.replace(/\D/g, '').slice(0, 10))}
+                        onKeyDown={e => e.key === 'Enter' && handleSendOTP()}
+                        placeholder="98765 43210"
+                        className="w-full bg-white/5 border border-white/10 rounded-2xl py-4 pl-16 pr-6 focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary text-sm font-bold placeholder:text-white/20 text-white transition-all"
+                      />
+                    </div>
+                  </div>
+
+                  <button onClick={handleSendOTP} disabled={loading}
+                    className="w-full bg-primary text-white py-5 rounded-2xl font-black text-xs uppercase tracking-[0.3em] flex items-center justify-center gap-3 hover:bg-primary/90 transition-all active:scale-[0.98] disabled:opacity-50">
+                    {loading ? 'Sending...' : 'Send OTP'} {!loading && <ArrowRight size={18} />}
+                  </button>
+                </>
+              )}
 
               <p className="text-center text-[10px] text-white/20">
                 <Link href="/" className="hover:text-white/50 transition-colors">← Back to Store</Link>
