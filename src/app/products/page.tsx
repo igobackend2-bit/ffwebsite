@@ -80,6 +80,13 @@ function ProductsContent() {
       else if (p.category_id === 'cat-trad' || p.category_id === 'cat-val') cat = 'Valluvam Products';
       else cat = p.category_id;
     }
+    // The website has 3 category tabs, but the database stores traditional
+    // items under their real names (Millets, Spices, Oils, ...). Bucket
+    // everything that isn't Fruits/Vegetables into Valluvam Products so
+    // all products are reachable from the tabs.
+    if (!['fruits', 'vegetables'].includes(cat.toLowerCase().trim())) {
+      cat = 'Valluvam Products';
+    }
 
     // Ensure a unique ID exists
     const id = p.id || `temp-${p.name?.toLowerCase().replace(/[^a-z0-9]+/g, '-') || Math.random().toString(36).substr(2, 9)}`;
