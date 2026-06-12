@@ -23,6 +23,7 @@ export default function AdminStories() {
   const [editForm, setEditForm] = useState<Partial<Story>>({});
   const [uploading, setUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const videoInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     // eslint-disable-next-line react-hooks/immutability
@@ -267,6 +268,17 @@ export default function AdminStories() {
                         {uploading ? <Loader2 size={18} className="animate-spin text-primary" /> : <ImageIcon size={18} className="text-primary" />}
                       </div>
                       <input type="file" ref={fileInputRef} onChange={handleFileUpload} className="hidden" accept="image/*,video/mp4" />
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <label className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em] ml-1">Video URL (Optional: mp4 plays when clicked)</label>
+                    <div className="relative">
+                      <input type="text" value={editForm.video_url || ''} onChange={e => setEditForm({ ...editForm, video_url: e.target.value })} className="w-full bg-slate-50 border border-slate-100 rounded-2xl px-6 py-4 pr-14 font-bold" placeholder="Paste video link or upload..." />
+                      <div className="absolute right-4 top-1/2 -translate-y-1/2 flex items-center gap-2 cursor-pointer" onClick={() => videoInputRef.current?.click()}>
+                        {uploading ? <Loader2 size={18} className="animate-spin text-primary" /> : <Video size={18} className="text-primary" />}
+                      </div>
+                      <input type="file" ref={videoInputRef} onChange={handleFileUpload} className="hidden" accept="video/mp4" />
                     </div>
                   </div>
 
