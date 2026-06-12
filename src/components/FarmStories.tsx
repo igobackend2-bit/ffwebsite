@@ -29,7 +29,16 @@ export default function FarmStories() {
           .order('display_order', { ascending: true });
 
         if (!error && data && data.length > 0) {
-          setStories(data);
+          // Replace the default stories slot-by-slot: admin story #1
+          // replaces the first default story, #2 the second, etc.
+          // Slots the admin hasn't filled keep showing the defaults.
+          const merged = [...FALLBACK_STORIES];
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          data.forEach((row: any, i: number) => {
+            if (i < merged.length) merged[i] = row;
+            else merged.push(row);
+          });
+          setStories(merged);
         } else {
           setStories(FALLBACK_STORIES);
         }
@@ -105,18 +114,4 @@ export default function FarmStories() {
                   
                   {story.is_live && (
                     <div className="absolute top-6 right-6">
-                      <div className="bg-red-500 text-white px-3 py-1 rounded-full text-[8px] font-black uppercase tracking-widest flex items-center gap-1">
-                         <div className="w-1.5 h-1.5 bg-white rounded-full animate-pulse" />
-                         LIVE
-                      </div>
-                    </div>
-                  )}
-                </>
-              )}
-            </motion.div>
-          ))}
-        </div>
-      </div>
-    </section>
-  );
-}
+        

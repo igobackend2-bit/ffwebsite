@@ -68,8 +68,17 @@ export default function LiveFarmStream() {
           .order('display_order', { ascending: true });
 
         if (!error && data && data.length > 0) {
-          setStreams(data);
-          setActiveStream(data[0]);
+          // Replace the default videos slot-by-slot: admin stream #1
+          // replaces local video 1, #2 replaces local video 2, etc.
+          // Slots the admin hasn't filled keep showing the defaults.
+          const merged = [...FALLBACK_STREAMS];
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          data.forEach((row: any, i: number) => {
+            if (i < merged.length) merged[i] = row;
+            else merged.push(row);
+          });
+          setStreams(merged);
+          setActiveStream(merged[0]);
         } else {
           setStreams(FALLBACK_STREAMS);
           setActiveStream(FALLBACK_STREAMS[0]);
@@ -215,16 +224,4 @@ export default function LiveFarmStream() {
                     alt={stream.name} 
                     className="absolute inset-0 w-full h-full object-cover" loading="lazy" />
                 )}
-                <div className="absolute inset-0 bg-black/60 group-hover:bg-black/40 transition-colors" />
-                <div className="relative p-6 flex flex-col justify-end h-full">
-                  <h4 className="text-lg font-black uppercase tracking-tight text-left">{t(stream.name)}</h4>
-                  <p className="text-[10px] font-black text-primary uppercase tracking-[0.2em] text-left">{t(stream.location)}</p>
-                </div>
-              </button>
-            ))}
-          </div>
-        </div>
-      </div>
-    </section>
-  );
-}
+                <div className="absolute inset-0 bg-black/60 group-hov
