@@ -130,6 +130,11 @@ export default function RootLayout({
                   <Toaster
                     position="top-right"
                     toastOptions={{
+                      // Every popup closes automatically (well within 10s)
+                      duration: 4000,
+                      success: { duration: 4000 },
+                      error: { duration: 6000 },
+                      loading: { duration: 10000 },
                       style: {
                         fontWeight: "bold",
                         boxShadow: "0 10px 15px -3px rgb(0 0 0 / 0.1)",
