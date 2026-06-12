@@ -240,7 +240,7 @@ function ProductsContent() {
 
       <div className="container mx-auto px-6 md:px-10 py-20">
         <div className="flex flex-col lg:flex-row gap-12 lg:gap-16">
-          <aside className="w-full lg:w-72 space-y-12 h-fit lg:sticky lg:top-32">
+          <aside className="w-full lg:w-72 space-y-12 h-fit lg:self-start lg:sticky lg:top-28 lg:max-h-[calc(100vh-8rem)] lg:overflow-y-auto lg:pr-2 scrollbar-hide">
             <div>
               <div className="flex items-center gap-3 mb-8"><div className="w-8 h-8 bg-primary/10 text-primary rounded-lg flex items-center justify-center"><Filter size={18} /></div><h3 className="text-xl font-black tracking-tight">{t('products.categories')}</h3></div>
               <div className="space-y-1">

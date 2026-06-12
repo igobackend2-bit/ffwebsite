@@ -88,7 +88,7 @@ export default function ProductCard({ product }: ProductCardProps) {
         initial={{ opacity: 0, y: 20 }}
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true }}
-        onClick={() => router.push(`/products/${product.id}`)}
+        onClick={() => setIsDetailOpen(true)}
         className="group bg-white rounded-[2rem] border border-border/50 p-5 hover:shadow-2xl hover:shadow-primary/10 transition-all duration-500 cursor-pointer flex flex-col h-full"
       >
         <div className="relative aspect-[4/5] rounded-[1.5rem] overflow-hidden mb-6 bg-muted/20">
