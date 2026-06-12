@@ -22,7 +22,6 @@ const nextConfig: NextConfig = {
     formats: ['image/avif', 'image/webp'],
     minimumCacheTTL: 31536000,
     remotePatterns: [
-      // ✅ NEW centralized DB — product images bucket
       { protocol: 'https', hostname: 'qwiumswrbddwmlraktvy.supabase.co' },
       // Legacy (old website DB — keep until fully migrated)
       { protocol: 'https', hostname: 'celsdwfmogpejwzbkxad.supabase.co' },

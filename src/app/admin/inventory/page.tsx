@@ -410,4 +410,19 @@ export default function AdminInventory() {
                         }}
                         className="px-4 py-2 rounded-xl text-[9px] font-black uppercase tracking-widest bg-primary/5 border border-primary/10 text-primary hover:bg-primary hover:text-white transition-all active:scale-95"
                       >
-                   
+                        Reset to 200
+                      </button>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+          {filteredProducts.length === 0 && (
+            <div className="py-20 text-center text-muted-foreground font-bold text-sm italic">No products found matching the criteria.</div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}

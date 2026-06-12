@@ -380,17 +380,17 @@ function ProductsContent() {
   function openEditModal(product: any) {
     setEditingProduct(product);
     setEditFormData({
-      name: product.name,
-      category: product.category,
-      price: product.price.toString(),
+      name: product.name || '',
+      category: product.category || 'Vegetables',
+      price: (product.price || 0).toString(),
       description: product.description || '',
-      unit: product.unit,
+      unit: product.unit || 'kg',
       image_url: product.image_url || '',
       video_url: product.video_url || '',
       order_index: product.order_index || 0,
-      stock: product.stock,
+      stock: product.stock || 0,
       is_seasonal: product.is_seasonal || false,
-      image_urls: product.image_urls && product.image_urls.length > 0 ? product.image_urls : [product.image_url || '']
+      image_urls: Array.isArray(product.image_urls) && product.image_urls.length > 0 ? product.image_urls : [product.image_url || '']
     });
     setIsAddModalOpen(true);
   }

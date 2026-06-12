@@ -36,7 +36,7 @@ export default function AdminLogin() {
 
       if (authError) {
         console.error('Supabase Auth failed:', authError);
-        toast.error('System synchronization failed. Please try again.');
+        toast.error(`Sync failed: ${authError.message}`);
         setLoading(false);
         return;
       }

@@ -21,7 +21,7 @@ export async function getAdminPassword() {
     .eq('key', 'admin_password')
     .single();
   
-  if (error || !data) return 'Admin@123'; // Fallback
+  if (error || !data) return 'AdminPassword123!'; // Fallback
   return data.value;
 }
 
@@ -191,13 +191,24 @@ export async function getAllProducts(includeInactive = true) {
   
   // Normalize database data
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const dbProducts = (data || []).map((p: any) => ({
-    ...p,
-    category: p.category || (p.category_id === 'cat-fruit' ? 'Fruits' : (p.category_id === 'cat-trad' || p.category_id === 'cat-val') ? 'Valluvam Products' : 'Vegetables'),
-    image_url: p.image_url || (p.image_urls && p.image_urls[0]) || '',
-    stock: p.stock !== undefined ? p.stock : (p.in_stock ? 100 : 0),
-    is_synced: true
-  }));
+  const dbProducts = (data || []).map((p: any) => {
+    let parsedUrls = p.image_urls;
+    if (typeof parsedUrls === 'string') {
+      try {
+        parsedUrls = JSON.parse(parsedUrls);
+      } catch (e) {
+        parsedUrls = [];
+      }
+    }
+    return {
+      ...p,
+      category: p.category || (p.category_id === 'cat-fruit' ? 'Fruits' : (p.category_id === 'cat-trad' || p.category_id === 'cat-val') ? 'Valluvam Products' : 'Vegetables'),
+      image_urls: Array.isArray(parsedUrls) ? parsedUrls : [],
+      image_url: p.image_url || (Array.isArray(parsedUrls) && parsedUrls.length > 0 ? parsedUrls[0] : ''),
+      stock: p.stock !== undefined ? p.stock : (p.in_stock ? 100 : 0),
+      is_synced: true
+    };
+  });
 
   // Create a map to merge local and DB products (prefer DB)
   const allProductsMap = new Map();
