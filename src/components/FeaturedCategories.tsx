@@ -16,13 +16,13 @@ export default function FeaturedCategories() {
     },
     {
       name: 'Fruits',
-      image: '/category_fruits.webp',
+      image: '/banners/fruits_3d.png',
       count: t('categories.fruit_count'),
       color: 'bg-orange-50'
     },
     {
       name: 'Valluvam Products',
-      image: '/category_valluvam.webp',
+      image: '/banners/valluvam_3d.png',
       count: t('categories.val_count'),
       color: 'bg-yellow-50'
     }
