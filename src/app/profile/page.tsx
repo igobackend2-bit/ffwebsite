@@ -566,15 +566,17 @@ function ProfileContent() {
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div className="bg-white p-8 rounded-3xl border border-slate-100 shadow-sm flex flex-col items-center text-center">
                       <div className="w-14 h-14 bg-green-50 rounded-2xl flex items-center justify-center text-green-600 mb-6"><Inbox size={28} /></div>
-                      <h4 className="font-bold text-lg mb-2">{t('profile.chat_with_us')}</h4>
-                      <p className="text-slate-500 text-sm mb-6">{t('profile.chat_desc')}</p>
-                      <button className="w-full py-3 bg-primary/10 text-primary rounded-xl font-bold text-sm hover:bg-primary/20 transition-all">{t('profile.start_chat')}</button>
+                      <h4 className="font-bold text-lg mb-2">Email Support</h4>
+                      <p className="text-slate-500 text-sm mb-2">Email our farm experts and we&apos;ll get back to you quickly.</p>
+                      <p className="text-slate-700 text-sm font-bold mb-6 break-all">info.thefarmersfactory@gmail.com</p>
+                      <a href="mailto:info.thefarmersfactory@gmail.com" className="w-full py-3 bg-primary/10 text-primary rounded-xl font-bold text-sm hover:bg-primary/20 transition-all block">Email Us</a>
                     </div>
                     <div className="bg-white p-8 rounded-3xl border border-slate-100 shadow-sm flex flex-col items-center text-center">
                       <div className="w-14 h-14 bg-blue-50 rounded-2xl flex items-center justify-center text-blue-600 mb-6"><Phone size={28} /></div>
                       <h4 className="font-bold text-lg mb-2">{t('profile.call_support')}</h4>
-                      <p className="text-slate-500 text-sm mb-6">{t('profile.call_desc')}</p>
-                      <button className="w-full py-3 bg-primary/10 text-primary rounded-xl font-bold text-sm hover:bg-primary/20 transition-all">{t('profile.request_call')}</button>
+                      <p className="text-slate-500 text-sm mb-2">{t('profile.call_desc')}</p>
+                      <p className="text-slate-700 text-sm font-bold mb-6">+91 89258 78327</p>
+                      <a href="tel:+918925878327" className="w-full py-3 bg-primary/10 text-primary rounded-xl font-bold text-sm hover:bg-primary/20 transition-all block">Request Call</a>
                     </div>
                   </div>
                 </motion.div>

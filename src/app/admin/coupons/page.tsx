@@ -26,6 +26,7 @@ interface Coupon {
   discount_type: 'percentage' | 'fixed';
   discount_value: number;
   min_spend: number;
+  min_quantity: number;
   expiry_date: string;
   usage_limit: number;
   usage_count: number;
@@ -222,13 +223,25 @@ export default function AdminCoupons() {
                     </div>
                     <div>
                       <label className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em] mb-2 block">Usage Limit</label>
-                      <input 
-                        type="number" 
-                        value={editForm.usage_limit || ''} 
+                      <input
+                        type="number"
+                        value={editForm.usage_limit || ''}
                         onChange={e => setEditForm({ ...editForm, usage_limit: parseInt(e.target.value) })}
                         className="w-full bg-muted/30 border border-border rounded-2xl px-6 py-4 font-bold"
                       />
                     </div>
+                  </div>
+
+                  <div>
+                    <label className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em] mb-2 block">Min Quantity (total items / kg in cart)</label>
+                    <input
+                      type="number"
+                      value={editForm.min_quantity || ''}
+                      onChange={e => setEditForm({ ...editForm, min_quantity: parseInt(e.target.value) })}
+                      placeholder="e.g. 30"
+                      className="w-full bg-muted/30 border border-border rounded-2xl px-6 py-4 font-bold"
+                    />
+                    <p className="text-[10px] text-muted-foreground mt-2 font-medium">Coupon applies only when the cart has at least this total quantity. Leave blank for no quantity rule.</p>
                   </div>
 
                   <div>

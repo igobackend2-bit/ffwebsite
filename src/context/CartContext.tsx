@@ -375,7 +375,14 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
         removeCoupon();
         return;
       }
-      
+
+      const totalQty = cartItems.reduce((s, i) => s + (i.quantity || 0), 0);
+      if (totalQty < (appliedCoupon.min_quantity || 0)) {
+        toast.error(`Cart quantity dropped below the minimum for coupon: ${appliedCoupon.code}`);
+        removeCoupon();
+        return;
+      }
+
       if (appliedCoupon.applicable_product_id) {
         const hasProduct = cartItems.some(item => item.product_id === appliedCoupon.applicable_product_id);
         if (!hasProduct) {
@@ -420,6 +427,12 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
         // Check min spend
         if (cartTotal < (coupon.min_spend || 0)) {
           toast.error(`Min spend of ₹${coupon.min_spend} required for this promotion`);
+          return;
+        }
+        // Check min quantity (total items / kg in cart)
+        const totalQty = cartItems.reduce((s, i) => s + (i.quantity || 0), 0);
+        if (totalQty < (coupon.min_quantity || 0)) {
+          toast.error(`Add at least ${coupon.min_quantity} items to use this promotion`);
           return;
         }
         // Check applicable product
