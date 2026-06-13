@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { cache } from 'react';
 import { BreadcrumbJsonLd, ProductJsonLd } from '@/components/seo/JsonLd';
 import { supabase } from '@/lib/supabase';
 
@@ -6,20 +7,31 @@ const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://famersfactory.com'
 
 type Params = { id: string };
 
-async function getProduct(id: string) {
+const getProduct = cache(async (id: string) => {
+  // This runs during SSR (for SEO metadata / JSON-LD). If the server-side
+  // request to Supabase ever stalls, it must NOT block the whole page render
+  // forever — so we race it against a short timeout. Worst case we fall back
+  // to generic metadata and the page still loads (the product content itself
+  // is fetched client-side in ProductClient).
   try {
-    const { data, error } = await supabase
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const query = supabase
       .from('products')
       .select('id, name, description, price, image_url, images, category, stock, rating, review_count, sku')
       .eq('id', id)
-      .single();
-    if (error) return null;
+      .single()
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      .then(({ data, error }: { data: any; error: any }) => (error ? null : data));
+
+    const timeout = new Promise<null>((resolve) => setTimeout(() => resolve(null), 2500));
+
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    return data as any;
+    const data = (await Promise.race([query, timeout])) as any;
+    return data;
   } catch {
     return null;
   }
-}
+});
 
 export async function generateMetadata({
   params,
