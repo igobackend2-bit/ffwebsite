@@ -113,14 +113,26 @@ export async function getAllOrders() {
     return orders.map(order => {
       const prof = profiles.find(p => p.id === order.user_id);
       const usr = users.find(u => u.id === order.user_id);
+      // Fallback: orders store delivery_address as "name\nphone\nstreet, city - zip".
+      // This lets the admin always show the customer's name / phone / address even
+      // when the profiles table can't be read (e.g. RLS) or the user has no profile row.
+      const addrLines = String(order.delivery_address || '')
+        .split('\n')
+        .map((s: string) => s.trim())
+        .filter(Boolean);
+      const addrName = addrLines[0] || '';
+      const addrPhone = addrLines[1] || '';
+      const addrText = addrLines.length > 2 ? addrLines.slice(2).join(', ') : '';
       return {
         ...order,
         status: order.status?.toLowerCase() === 'placed' ? 'pending' : (order.status?.toLowerCase() || 'pending'),
         customer: {
-          full_name: prof?.full_name || usr?.name || 'Customer (' + (prof?.email || usr?.email || 'Unknown') + ')',
+          id: order.user_id,
+          full_name: prof?.full_name || usr?.name || addrName || 'Guest Customer',
           avatar_url: prof?.avatar_url || '',
           email: prof?.email || usr?.email || '',
-          phone: prof?.phone || ''
+          phone: prof?.phone || addrPhone || '',
+          address: addrText
         }
       };
     });

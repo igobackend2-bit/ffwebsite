@@ -220,11 +220,15 @@ function OrdersContent() {
   }
 
   const filteredOrders = orders.filter(order => {
-    const matchesSearch = 
-      (order.id || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
-      (order.customer?.full_name || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
-      (order.customer?.email || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
-      (order.delivery_address || '').toLowerCase().includes(searchTerm.toLowerCase());
+    const q = searchTerm.toLowerCase().trim();
+    const matchesSearch =
+      q === '' ||
+      (order.order_number || '').toLowerCase().includes(q) ||
+      (order.id || '').toLowerCase().includes(q) ||
+      (order.customer?.full_name || '').toLowerCase().includes(q) ||
+      (order.customer?.email || '').toLowerCase().includes(q) ||
+      (order.customer?.phone || '').toLowerCase().includes(q) ||
+      (order.delivery_address || '').toLowerCase().includes(q);
     
     const matchesStatus = statusFilter === 'all' || order.status === statusFilter;
     
@@ -560,6 +564,25 @@ function OrdersContent() {
                         </div>
                         <p className="text-3xl font-black">₹{customerStats.totalSpent.toLocaleString()}</p>
                       </div>
+                    </div>
+
+                    <div className="bg-muted/30 p-5 rounded-3xl border border-border space-y-3">
+                      <h4 className="text-sm font-black uppercase tracking-widest text-muted-foreground mb-1 flex items-center gap-2">
+                        <User size={16} />
+                        Contact Details
+                      </h4>
+                      <p className="flex items-center gap-2 text-sm font-bold text-foreground">
+                        <Mail size={15} className="text-primary" />
+                        {selectedCustomer?.email || 'No email on file'}
+                      </p>
+                      <p className="flex items-center gap-2 text-sm font-bold text-foreground">
+                        <Phone size={15} className="text-primary" />
+                        {selectedCustomer?.phone || 'No phone on file'}
+                      </p>
+                      <p className="flex items-start gap-2 text-sm font-bold text-foreground">
+                        <MapPin size={15} className="text-primary mt-0.5 flex-shrink-0" />
+                        {selectedCustomer?.address || 'No address on file'}
+                      </p>
                     </div>
 
                     <div>

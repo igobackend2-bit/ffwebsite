@@ -36,29 +36,33 @@ ALTER TABLE public.notifications ENABLE ROW LEVEL SECURITY;
 -- 4) Drop old policies (if any) and recreate cleanly
 DROP POLICY IF EXISTS "Users can read own notifications"    ON public.notifications;
 DROP POLICY IF EXISTS "Users can insert own notifications"  ON public.notifications;
+DROP POLICY IF EXISTS "Allow notification inserts"          ON public.notifications;
+DROP POLICY IF EXISTS "Service role can insert notifications" ON public.notifications;
 DROP POLICY IF EXISTS "Users can update own notifications"  ON public.notifications;
 DROP POLICY IF EXISTS "Admin can manage all notifications"  ON public.notifications;
 DROP POLICY IF EXISTS "Enable read access for own notifications" ON public.notifications;
 
--- Customers: read their own notifications
+-- Customers: read their own notifications (this is what the bell SELECTs)
 CREATE POLICY "Users can read own notifications"
   ON public.notifications FOR SELECT
-  USING (auth.uid() = user_id);
+  USING (auth.uid() = user_id OR user_id IS NULL);
 
--- Customers: create their own notifications (checkout inserts as logged-in user)
-CREATE POLICY "Users can insert own notifications"
+-- INSERT: allow any insert.
+-- CRITICAL: the admin panel creates notifications FOR THE CUSTOMER
+-- (user_id = the customer's id, NOT the admin's id). A strict
+-- "auth.uid() = user_id" check would SILENTLY BLOCK every admin
+-- order-status notification. WITH CHECK (true) lets both the
+-- checkout flow (customer notifying self) and the admin flow
+-- (admin notifying a customer) succeed. Notifications are low-risk
+-- writes, so this matches the original working schema.
+CREATE POLICY "Allow notification inserts"
   ON public.notifications FOR INSERT
-  WITH CHECK (auth.uid() = user_id);
+  WITH CHECK (true);
 
 -- Customers: mark their own notifications as read
 CREATE POLICY "Users can update own notifications"
   ON public.notifications FOR UPDATE
   USING (auth.uid() = user_id);
-
--- Admin: full access
-CREATE POLICY "Admin can manage all notifications"
-  ON public.notifications FOR ALL
-  USING (ff_is_admin());
 
 -- 5) Enable Realtime so the bell updates instantly without polling
 DO $$
@@ -71,5 +75,20 @@ END $$;
 -- 6) Refresh PostgREST schema cache
 NOTIFY pgrst, 'reload schema';
 
--- 7) Quick check: count existing notifications
+-- 7) Verify: the policies are now in place
+SELECT policyname, cmd, qual, with_check
+FROM   pg_policies
+WHERE  schemaname = 'public' AND tablename = 'notifications'
+ORDER  BY cmd;
+
+-- 8) Verify: realtime is enabled on the table (should return 1 row)
+SELECT schemaname, tablename
+FROM   pg_publication_tables
+WHERE  pubname = 'supabase_realtime' AND tablename = 'notifications';
+
+-- 9) Quick check: count existing notifications + 10 most recent
 SELECT COUNT(*) AS total_notifications FROM public.notifications;
+SELECT id, user_id, title, is_read, created_at
+FROM   public.notifications
+ORDER  BY created_at DESC
+LIMIT  10;
