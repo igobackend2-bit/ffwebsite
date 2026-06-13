@@ -549,10 +549,11 @@ function ProductsContent() {
     
     const matchesCategory = categoryFilter === 'all' || product.category === categoryFilter;
     
-    const matchesStatus = 
+    const matchesStatus =
       statusFilter === 'all' ? true :
       statusFilter === 'active' ? product.is_active !== false :
-      statusFilter === 'removed' ? product.is_active === false : true;
+      statusFilter === 'removed' ? product.is_active === false :
+      statusFilter === 'featured' ? !!product.is_featured : true;
     
     return matchesSearch && matchesCategory && matchesStatus;
   });
@@ -622,6 +623,7 @@ function ProductsContent() {
                 <option value="all">All Status</option>
                 <option value="active">Active Only</option>
                 <option value="removed">Removed Only</option>
+                <option value="featured">Freshly Harvested (Featured)</option>
               </select>
             </div>
           </div>
