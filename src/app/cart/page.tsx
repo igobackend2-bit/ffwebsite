@@ -200,31 +200,38 @@ export default function CartPage() {
                   </Link>
                   
                   {/* Coupon Field */}
-                  <div className="mt-6 p-4 bg-muted/20 border border-dashed border-border rounded-[1.5rem]">
-                    <div className="flex items-center gap-2 mb-3 px-2">
-                      <Tag size={16} className="text-primary" />
-                      <span className="text-xs font-black text-muted-foreground uppercase tracking-widest">{t('cart.promo')}</span>
+                  {/* Promo code — temporarily disabled (blurred) until admin promo codes go live.
+                      Logic preserved; remove the blur wrapper + overlay to re-enable. */}
+                  <div className="mt-6 p-4 bg-muted/20 border border-dashed border-border rounded-[1.5rem] relative overflow-hidden">
+                    <div className="blur-[3px] pointer-events-none select-none opacity-60">
+                      <div className="flex items-center gap-2 mb-3 px-2">
+                        <Tag size={16} className="text-primary" />
+                        <span className="text-xs font-black text-muted-foreground uppercase tracking-widest">{t('cart.promo')}</span>
+                      </div>
+                      <div className="flex gap-2">
+                        <input
+                          type="text"
+                          placeholder={t('cart.enter_code')}
+                          className="flex-1 bg-white border border-border rounded-xl px-4 py-3 text-sm font-black uppercase tracking-widest focus:ring-2 focus:ring-primary/20 outline-none"
+                          value={couponCode}
+                          onChange={e => setCouponCode(e.target.value)}
+                          disabled
+                        />
+                        <button
+                          onClick={appliedCoupon ? removeCoupon : applyCoupon}
+                          disabled
+                          className={`px-4 py-3 rounded-xl text-xs font-black uppercase tracking-widest transition-all ${
+                            appliedCoupon
+                              ? 'bg-red-50 text-red-600'
+                              : 'bg-primary text-white'
+                          }`}
+                        >
+                          {isValidatingCoupon ? '...' : (appliedCoupon ? t('cart.remove') : t('cart.apply'))}
+                        </button>
+                      </div>
                     </div>
-                    <div className="flex gap-2">
-                      <input 
-                        type="text" 
-                        placeholder={t('cart.enter_code')}
-                        className="flex-1 bg-white border border-border rounded-xl px-4 py-3 text-sm font-black uppercase tracking-widest focus:ring-2 focus:ring-primary/20 outline-none"
-                        value={couponCode}
-                        onChange={e => setCouponCode(e.target.value)}
-                        disabled={!!appliedCoupon}
-                      />
-                      <button 
-                        onClick={appliedCoupon ? removeCoupon : applyCoupon}
-                        disabled={isValidatingCoupon}
-                        className={`px-4 py-3 rounded-xl text-xs font-black uppercase tracking-widest transition-all ${
-                          appliedCoupon 
-                            ? 'bg-red-50 text-red-600 hover:bg-red-500 hover:text-white' 
-                            : 'bg-primary text-white hover:bg-primary/90'
-                        }`}
-                      >
-                        {isValidatingCoupon ? '...' : (appliedCoupon ? t('cart.remove') : t('cart.apply'))}
-                      </button>
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      <span className="bg-white/90 backdrop-blur-sm text-[10px] font-black uppercase tracking-[0.2em] text-primary px-4 py-2 rounded-full border border-primary/20 shadow-sm">Promo codes coming soon</span>
                     </div>
                   </div>
                 </div>

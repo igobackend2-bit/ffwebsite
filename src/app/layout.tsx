@@ -8,7 +8,6 @@ import { LoyaltyProvider } from "@/context/LoyaltyContext";
 import { TranslationProvider } from "@/context/TranslationContext";
 import { Toaster } from "react-hot-toast";
 import GlobalUI from "@/components/GlobalUI";
-import AIRecipeAssistant from "@/components/AIRecipeAssistant";
 import HarvestTicker from "@/components/HarvestTicker";
 import { OrganizationJsonLd, WebSiteJsonLd } from "@/components/seo/JsonLd";
 
@@ -143,7 +142,6 @@ export default function RootLayout({
                   />
                   <HarvestTicker />
                   <GlobalUI />
-                  <AIRecipeAssistant />
                   {children}
                 </CartProvider>
               </LoyaltyProvider>
