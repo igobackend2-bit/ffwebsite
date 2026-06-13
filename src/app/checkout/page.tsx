@@ -538,48 +538,54 @@ export default function Checkout() {
                     </div>
                     <div className="flex-1 min-w-0">
                       <p className="font-bold text-sm truncate">{item.products.name}</p>
-                      <p className="text-xs text-muted-foreground">{item.quantity} x â¹{item.products.price}</p>
+                      <p className="text-xs text-muted-foreground">{item.quantity} x ₹{item.products.price}</p>
                     </div>
-                    <p className="font-bold text-sm">â¹{item.products.price * item.quantity}</p>
+                    <p className="font-bold text-sm">₹{item.products.price * item.quantity}</p>
                   </div>
                 ))}
               </div>
 
-              {/* Coupon Field */}
-              <div className="mb-8 p-6 bg-primary/5 rounded-3xl border border-primary/10">
-                <p className="text-[10px] font-black text-primary uppercase tracking-widest mb-3">{t('checkout.promo')}</p>
-                <div className="flex gap-2">
-                  <input 
-                    type="text" 
-                    placeholder={t('checkout.enter_code')}
-                    className="flex-1 bg-white border border-border rounded-xl px-4 py-2 text-sm font-black uppercase tracking-widest focus:ring-2 focus:ring-primary/20 outline-none"
-                    value={couponCode}
-                    onChange={e => setCouponCode(e.target.value)}
-                    disabled={!!appliedCoupon}
-                  />
-                  <button 
-                    onClick={appliedCoupon ? removeCoupon : applyCoupon}
-                    disabled={isValidatingCoupon}
-                    className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${
-                      appliedCoupon 
-                        ? 'bg-red-50 text-red-600 hover:bg-red-500 hover:text-white' 
-                        : 'bg-primary text-white hover:bg-primary/90'
-                    }`}
-                  >
-                    {isValidatingCoupon ? <Loader2 size={14} className="animate-spin" /> : (appliedCoupon ? t('checkout.remove') : t('checkout.apply'))}
-                  </button>
+              {/* Coupon Field — temporarily disabled (blurred) until admin promo codes go live.
+                  The logic below is preserved; remove the blur wrapper + overlay to re-enable. */}
+              <div className="mb-8 p-6 bg-primary/5 rounded-3xl border border-primary/10 relative overflow-hidden">
+                <div className="blur-[3px] pointer-events-none select-none opacity-60">
+                  <p className="text-[10px] font-black text-primary uppercase tracking-widest mb-3">{t('checkout.promo')}</p>
+                  <div className="flex gap-2">
+                    <input
+                      type="text"
+                      placeholder={t('checkout.enter_code')}
+                      className="flex-1 bg-white border border-border rounded-xl px-4 py-2 text-sm font-black uppercase tracking-widest focus:ring-2 focus:ring-primary/20 outline-none"
+                      value={couponCode}
+                      onChange={e => setCouponCode(e.target.value)}
+                      disabled
+                    />
+                    <button
+                      onClick={appliedCoupon ? removeCoupon : applyCoupon}
+                      disabled
+                      className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${
+                        appliedCoupon
+                          ? 'bg-red-50 text-red-600'
+                          : 'bg-primary text-white'
+                      }`}
+                    >
+                      {isValidatingCoupon ? <Loader2 size={14} className="animate-spin" /> : (appliedCoupon ? t('checkout.remove') : t('checkout.apply'))}
+                    </button>
+                  </div>
+                </div>
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <span className="bg-white/90 backdrop-blur-sm text-[10px] font-black uppercase tracking-[0.2em] text-primary px-4 py-2 rounded-full border border-primary/20 shadow-sm">Promo codes coming soon</span>
                 </div>
               </div>
 
               <div className="space-y-3 border-t border-border pt-6 mb-8">
                 <div className="flex justify-between text-muted-foreground">
                   <span>{t('checkout.subtotal')}</span>
-                  <span>â¹{subtotal}</span>
+                  <span>₹{subtotal}</span>
                 </div>
                 {discount > 0 && (
                   <div className="flex justify-between text-emerald-600 font-bold">
                     <span>{t('checkout.discount')}</span>
-                    <span>-â¹{discount}</span>
+                    <span>-₹{discount}</span>
                   </div>
                 )}
                 <div className="flex justify-between text-muted-foreground">
@@ -588,7 +594,7 @@ export default function Checkout() {
                 </div>
                 <div className="flex justify-between text-xl font-black pt-4">
                   <span>{t('checkout.total')}</span>
-                  <span className="text-primary">â¹{total}</span>
+                  <span className="text-primary">₹{total}</span>
                 </div>
               </div>
 
