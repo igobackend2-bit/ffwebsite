@@ -1,7 +1,8 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, Suspense } from 'react';
 import Link from 'next/link';
+import { useSearchParams } from 'next/navigation';
 import Navbar from '@/components/Navbar';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/context/AuthContext';
@@ -62,9 +63,10 @@ function OrderCard({ order, onViewDetails }: { order: any, onViewDetails: (order
   );
 }
 
-export default function ProfilePage() {
+function ProfileContent() {
   const { t } = useTranslation();
-  
+  const searchParams = useSearchParams();
+
   const tabs = [
     { id: 'orders', label: t('profile.tab.orders'), icon: Package },
     { id: 'inbox', label: t('profile.tab.inbox'), icon: Bell },
@@ -100,24 +102,24 @@ export default function ProfilePage() {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [updatingPassword, setUpdatingPassword] = useState(false);
 
-  // Handle tab switching via URL query params
+  // Handle tab switching via URL query params (reactive — updates when the
+  // ?tab= value changes, e.g. clicking My Orders / Wallet / Settings in the navbar).
   useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    const tab = params.get('tab');
+    const tab = searchParams.get('tab');
     if (tab && tabs.some(t => t.id === tab)) {
       // eslint-disable-next-line react-hooks/set-state-in-effect
       setActiveTab(tab);
     }
-  }, []);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchParams]);
 
   // Auto-open order details modal if parsed in URL query params
   useEffect(() => {
     if (orders.length === 0) return;
-    const params = new URLSearchParams(window.location.search);
-    const orderNum = params.get('order');
+    const orderNum = searchParams.get('order');
     if (orderNum) {
-      const order = orders.find(o => 
-        (o.order_number || '').toUpperCase() === orderNum.toUpperCase() || 
+      const order = orders.find(o =>
+        (o.order_number || '').toUpperCase() === orderNum.toUpperCase() ||
         String(o.id).slice(0, 8).toUpperCase() === orderNum.toUpperCase()
       );
       if (order) {
@@ -126,7 +128,7 @@ export default function ProfilePage() {
         setIsOrderModalOpen(true);
       }
     }
-  }, [orders]);
+  }, [orders, searchParams]);
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const handleNotificationClick = async (notif: any) => {
@@ -702,5 +704,13 @@ export default function ProfilePage() {
       <Footer />
       <OrderDetailModal order={selectedOrder} isOpen={isOrderModalOpen} onClose={() => setIsOrderModalOpen(false)} />
     </main>
+  );
+}
+
+export default function ProfilePage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen flex items-center justify-center"><div className="w-10 h-10 border-4 border-primary border-t-transparent rounded-full animate-spin" /></div>}>
+      <ProfileContent />
+    </Suspense>
   );
 }
