@@ -1,12 +1,13 @@
-// Server component — owns generateStaticParams (required for static export).
-// Actual UI lives in ProductClient (client component) so it can use hooks.
+// Server component for the product detail route.
+// Deployment: Hostinger Node server (next build + node server.js), so each
+// /products/<id> is rendered on demand. No static-export generateStaticParams
+// is used here — that placeholder approach was only needed for static export
+// and prevented real product IDs from being served on the Node server.
 import ProductClient from './ProductClient';
 
-export function generateStaticParams() {
-  // The "_placeholder" entry satisfies static-export requirements.
-  // The .htaccess SPA fallback handles all real product IDs via the client router at runtime.
-  return [{ id: '_placeholder' }];
-}
+// Render every product id dynamically at request time on the Node server.
+export const dynamic = 'force-dynamic';
+export const dynamicParams = true;
 
 export default function ProductPage() {
   return <ProductClient />;
