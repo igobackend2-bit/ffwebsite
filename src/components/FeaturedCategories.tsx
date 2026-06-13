@@ -1,28 +1,61 @@
 'use client';
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import CategoryCard from './CategoryCard';
 import { useTranslation } from '@/context/TranslationContext';
+import { supabase } from '@/lib/supabase';
+
+// Default images — used unless the admin overrides them in Settings.
+const DEFAULT_CATEGORY_IMAGES = {
+  vegetables: '/category_vegetables.webp',
+  fruits: '/banners/Fruits banner.jpeg',
+  valluvam: '/banners/Valluvam banner.jpeg',
+};
 
 export default function FeaturedCategories() {
   const { t } = useTranslation();
 
+  // Admin-editable category images (stored in site_settings; falls back to defaults).
+  const [images, setImages] = useState(DEFAULT_CATEGORY_IMAGES);
+
+  useEffect(() => {
+    (async () => {
+      try {
+        const { data } = await supabase
+          .from('site_settings')
+          .select('key, value')
+          .in('key', ['category_image_vegetables', 'category_image_fruits', 'category_image_valluvam']);
+        if (data && data.length) {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          const m: any = {};
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          data.forEach((r: any) => { m[r.key] = r.value; });
+          setImages({
+            vegetables: m['category_image_vegetables'] || DEFAULT_CATEGORY_IMAGES.vegetables,
+            fruits: m['category_image_fruits'] || DEFAULT_CATEGORY_IMAGES.fruits,
+            valluvam: m['category_image_valluvam'] || DEFAULT_CATEGORY_IMAGES.valluvam,
+          });
+        }
+      } catch { /* keep defaults if settings can't be read */ }
+    })();
+  }, []);
+
   const CATEGORIES = [
     {
       name: 'Vegetables',
-      image: '/category_vegetables.webp',
+      image: images.vegetables,
       count: t('categories.veg_count'),
       color: 'bg-green-50'
     },
     {
       name: 'Fruits',
-      image: '/banners/Fruits banner.jpeg',
+      image: images.fruits,
       count: t('categories.fruit_count'),
       color: 'bg-orange-50'
     },
     {
       name: 'Valluvam Products',
-      image: '/banners/Valluvam banner.jpeg',
+      image: images.valluvam,
       count: t('categories.val_count'),
       color: 'bg-yellow-50'
     }

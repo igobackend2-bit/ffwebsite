@@ -1,20 +1,24 @@
 'use client';
 
 import React from 'react';
-import { 
-  Settings, 
-  Store, 
-  Bell, 
-  Shield, 
-  Globe, 
+import {
+  Settings,
+  Store,
+  Bell,
+  Shield,
+  Globe,
   CreditCard,
   Save,
-  Loader2
+  Loader2,
+  Image as ImageIcon,
+  Upload
 } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { toast } from 'react-hot-toast';
 import { AnimatePresence, motion } from 'framer-motion';
 import { updateAdminPassword } from '@/lib/admin';
+import { supabase } from '@/lib/supabase';
+import { uploadProductMedia } from '@/lib/storage';
 
 export default function AdminSettings() {
   const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);
@@ -44,6 +48,65 @@ export default function AdminSettings() {
     }
     setSavingPassword(false);
   };
+
+  // ── Homepage category images (Vegetables / Fruits / Valluvam) ──────────────
+  const CAT_KEYS = {
+    vegetables: 'category_image_vegetables',
+    fruits: 'category_image_fruits',
+    valluvam: 'category_image_valluvam',
+  };
+  const [catImages, setCatImages] = useState({ vegetables: '', fruits: '', valluvam: '' });
+  const [savingImages, setSavingImages] = useState(false);
+  const [uploadingKey, setUploadingKey] = useState<string | null>(null);
+
+  useEffect(() => {
+    (async () => {
+      const { data } = await supabase
+        .from('site_settings')
+        .select('key, value')
+        .in('key', Object.values(CAT_KEYS));
+      if (data) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const m: any = {};
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        data.forEach((r: any) => { m[r.key] = r.value; });
+        setCatImages({
+          vegetables: m[CAT_KEYS.vegetables] || '',
+          fruits: m[CAT_KEYS.fruits] || '',
+          valluvam: m[CAT_KEYS.valluvam] || '',
+        });
+      }
+    })();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  async function handleCatUpload(slot: 'vegetables' | 'fruits' | 'valluvam', file: File) {
+    try {
+      setUploadingKey(slot);
+      const url = await uploadProductMedia(file, 'category-images');
+      setCatImages(prev => ({ ...prev, [slot]: url }));
+      toast.success('Image uploaded — click Save Images to apply');
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    } catch (e: any) {
+      toast.error(e.message || 'Upload failed');
+    } finally {
+      setUploadingKey(null);
+    }
+  }
+
+  async function handleSaveCatImages() {
+    setSavingImages(true);
+    const rows = [
+      { key: CAT_KEYS.vegetables, value: catImages.vegetables },
+      { key: CAT_KEYS.fruits, value: catImages.fruits },
+      { key: CAT_KEYS.valluvam, value: catImages.valluvam },
+    ].filter(r => r.value && r.value.trim() !== '');
+    const { error } = await supabase.from('site_settings').upsert(rows, { onConflict: 'key' });
+    if (error) toast.error('Failed to save: ' + error.message);
+    else toast.success('Homepage category images saved');
+    setSavingImages(false);
+  }
+
   return (
     <div className="max-w-4xl space-y-8">
       <div className="bg-white rounded-[2.5rem] border border-border shadow-sm overflow-hidden">
@@ -144,6 +207,60 @@ export default function AdminSettings() {
             </button>
             <button className="w-full text-left p-4 bg-muted/30 rounded-2xl font-bold hover:bg-muted/50 transition-all">
               Manage API Keys
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* Homepage Category Images */}
+      <div className="bg-white rounded-[2.5rem] border border-border shadow-sm overflow-hidden">
+        <div className="p-8 border-b border-border">
+          <div className="flex items-center gap-3 mb-1">
+            <ImageIcon className="text-primary" size={24} />
+            <h3 className="text-xl font-black uppercase tracking-tight">Homepage Category Images</h3>
+          </div>
+          <p className="text-sm text-muted-foreground font-medium">Change the three category cards (Vegetables, Fruits, Valluvam Products) shown on the homepage. Paste an image URL or upload one, then click Save Images.</p>
+        </div>
+        <div className="p-8 space-y-6">
+          {([['vegetables', 'Vegetables'], ['fruits', 'Fruits'], ['valluvam', 'Valluvam Products']] as const).map(([slot, label]) => (
+            <div key={slot} className="flex items-center gap-4">
+              <div className="w-20 h-20 rounded-2xl overflow-hidden border border-border bg-muted flex-shrink-0">
+                {catImages[slot] ? (
+                  <img src={catImages[slot]} alt={label} className="w-full h-full object-cover" />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center text-muted-foreground"><ImageIcon size={22} /></div>
+                )}
+              </div>
+              <div className="flex-1 space-y-2">
+                <label className="text-xs font-black uppercase tracking-widest text-muted-foreground">{label}</label>
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    value={catImages[slot]}
+                    onChange={e => setCatImages(prev => ({ ...prev, [slot]: e.target.value }))}
+                    placeholder="Paste image URL or upload…"
+                    className="flex-1 bg-muted/30 border border-border rounded-xl px-4 py-2.5 text-sm font-bold outline-none focus:ring-2 focus:ring-primary/20"
+                  />
+                  <label className="px-4 py-2.5 bg-muted/50 rounded-xl font-black text-[10px] uppercase tracking-widest cursor-pointer hover:bg-muted flex items-center gap-2 whitespace-nowrap">
+                    {uploadingKey === slot ? <Loader2 size={14} className="animate-spin" /> : <Upload size={14} />} Upload
+                    <input
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      onChange={e => { const f = e.target.files?.[0]; if (f) handleCatUpload(slot, f); }}
+                    />
+                  </label>
+                </div>
+              </div>
+            </div>
+          ))}
+          <div className="flex justify-end pt-2">
+            <button
+              onClick={handleSaveCatImages}
+              disabled={savingImages}
+              className="bg-primary text-white px-8 py-4 rounded-2xl font-black uppercase tracking-widest flex items-center gap-2 hover:shadow-xl transition-all disabled:opacity-50"
+            >
+              {savingImages ? <Loader2 size={18} className="animate-spin" /> : <Save size={18} />} Save Images
             </button>
           </div>
         </div>
