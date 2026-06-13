@@ -7,6 +7,14 @@ export const metadata: Metadata = {
   title: 'Terms & Conditions',
   description:
     'The Terms & Conditions that govern the use of famersfactory.com — orders, payments, refunds, returns, intellectual property and user responsibilities.',
+  keywords: [
+    'Farmers Factory terms and conditions',
+    'terms of service',
+    'order and refund policy',
+    'returns policy organic',
+    'user agreement',
+    'famersfactory.com terms',
+  ],
   alternates: { canonical: `${SITE_URL}/terms` },
   robots: { index: true, follow: true },
   openGraph: {

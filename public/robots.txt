@@ -27,20 +27,36 @@ Disallow: /profile/
 Disallow: /cart
 Disallow: /api/
 
-# Block aggressive AI / scraper bots
+# AI / LLM crawlers — allowed for discoverability & citation in AI answers.
+# See /llms.txt for a curated, LLM-friendly summary of the site.
 User-agent: GPTBot
-Disallow: /
+Allow: /
 
-User-agent: CCBot
-Disallow: /
+User-agent: OAI-SearchBot
+Allow: /
 
-User-agent: anthropic-ai
-Disallow: /
+User-agent: ChatGPT-User
+Allow: /
 
 User-agent: ClaudeBot
-Disallow: /
+Allow: /
 
-# Sitemap location
+User-agent: Claude-Web
+Allow: /
+
+User-agent: anthropic-ai
+Allow: /
+
+User-agent: PerplexityBot
+Allow: /
+
+User-agent: Google-Extended
+Allow: /
+
+User-agent: CCBot
+Allow: /
+
+# Sitemap & LLM summary
 Sitemap: https://famersfactory.com/sitemap.xml
 
 # Crawl delay (seconds) for polite bots

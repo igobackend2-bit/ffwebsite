@@ -7,6 +7,14 @@ export const metadata: Metadata = {
   title: 'Privacy Policy',
   description:
     'How Farmers Factory collects, uses and protects your personal information. Read our transparent privacy practices, your data rights and our commitment to your security.',
+  keywords: [
+    'Farmers Factory privacy policy',
+    'data protection',
+    'personal information policy',
+    'privacy practices',
+    'organic store privacy',
+    'famersfactory.com privacy',
+  ],
   alternates: { canonical: `${SITE_URL}/privacy` },
   robots: { index: true, follow: true },
   openGraph: {

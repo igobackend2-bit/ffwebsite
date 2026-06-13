@@ -203,7 +203,7 @@ export default function AdminBanners() {
                       <Video className="text-muted-foreground" />
                     </div>
                   ) : banner.media_url ? (
-                    <img src={banner.media_url} alt="" className="w-full h-full object-cover" loading="lazy" />
+                    <img src={banner.media_url} alt="Promotional banner" className="w-full h-full object-cover" loading="lazy" />
                   ) : (
                     <ImageIcon className="text-muted-foreground/30" size={32} />
                   )}

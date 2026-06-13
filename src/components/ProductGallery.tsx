@@ -247,7 +247,7 @@ export default function ProductGallery({ images, videoUrl, name }: ProductGaller
                     selectedIndex === idx ? 'border-primary scale-110 shadow-lg' : 'border-slate-100 opacity-50 hover:opacity-100'
                   }`}
                 >
-                  <img src={url} alt="" className="w-full h-full object-cover" loading="lazy" />
+                  <img src={url} alt={`${name} thumbnail ${idx + 1}`} className="w-full h-full object-cover" loading="lazy" />
                 </button>
               ))}
             </div>

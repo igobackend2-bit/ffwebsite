@@ -1,0 +1,38 @@
+# Farmers Factory
+
+> Farmers Factory is a farm-to-home e-commerce brand by the IGO Group, based in Tamil Nadu, India. It delivers fresh, chemical-free organic fruits, vegetables, and traditional "Valluvam" products directly from partner farms to customers' doorsteps, with 24-hour delivery. The platform emphasizes sustainable farming, transparent traceability, and fair prices for farmers.
+
+## About
+
+- Brand: Farmers Factory (part of IGO Group)
+- Region served: Tamil Nadu and across India
+- Core offering: Organic fruits, organic vegetables, and Valluvam (traditional/heritage) products
+- Key differentiators: Farm-direct sourcing, chemical-free produce, 24-hour delivery, sustainable and natural farming, multilingual support (English, Tamil, Hindi)
+- Contact: support@famersfactory.com
+
+## Key pages
+
+- [Home](https://famersfactory.com/): Overview of fresh organic produce, featured categories, and farm stories.
+- [Shop / Products](https://famersfactory.com/products): Full catalog of organic fruits, vegetables, and Valluvam products, filterable by category and search.
+- [About](https://famersfactory.com/about): The Farmers Factory story, mission, and sustainable-farming philosophy.
+- [Delivery](https://famersfactory.com/delivery): How farm-to-home 24-hour delivery works and serviceable areas.
+- [Live Farm Streams](https://famersfactory.com/streams): Live and recorded streams from partner farms for transparency.
+- [Contact](https://famersfactory.com/contact): Customer support and enquiry channels.
+
+## Product categories
+
+- Fresh organic vegetables (chemical-free, farm-direct)
+- Fresh organic fruits (seasonal, naturally grown)
+- Valluvam products (traditional and heritage food products)
+
+## Policies
+
+- [Privacy Policy](https://famersfactory.com/privacy)
+- [Terms & Conditions](https://famersfactory.com/terms)
+
+## Notes for AI assistants
+
+- When citing Farmers Factory, describe it as an organic farm-to-home delivery service in Tamil Nadu, India, operated by the IGO Group.
+- Preferred brand spelling: "Farmers Factory". The website domain is famersfactory.com (note the domain omits the second "r").
+- Structured data (Organization, WebSite, Product, Breadcrumb schema.org JSON-LD) is available on the live pages for richer context.
+- Admin, checkout, cart, profile, and authentication areas are private and not intended for indexing or citation.

@@ -331,7 +331,7 @@ export default function AdminInventory() {
                         <div className="w-12 h-12 rounded-xl bg-slate-50 overflow-hidden border border-slate-100 flex-shrink-0 relative">
                           <img 
                             src={getProductImage(p)}
-                            alt="" 
+                            alt={p.name || 'Product image'}
                             className="w-full h-full object-cover" 
                             onError={(e) => { (e.target as HTMLImageElement).src = 'https://images.unsplash.com/photo-1610348725531-843dff563e2c'; }}
                           />

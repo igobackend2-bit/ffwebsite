@@ -985,7 +985,7 @@ function ProductsContent() {
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-3">
                         <div className="w-10 h-10 bg-slate-100 rounded-lg overflow-hidden flex-shrink-0">
-                          <img src={product.image_url} alt="" className="w-full h-full object-cover" loading="lazy" />
+                          <img src={product.image_url} alt="Product image" className="w-full h-full object-cover" loading="lazy" />
                         </div>
                         <span className="font-bold text-sm">{product.name}</span>
                       </div>
@@ -1422,7 +1422,7 @@ function ProductsContent() {
                 {products.filter(p => selectedProducts.includes(p.id)).map(p => (
                   <div key={p.id} className="flex items-center gap-4 p-4 bg-slate-50 rounded-2xl border border-slate-100">
                     <div className="w-12 h-12 rounded-lg overflow-hidden flex-shrink-0">
-                      <img src={p.image_url} alt="" className="w-full h-full object-cover" loading="lazy" />
+                      <img src={p.image_url} alt="Product image" className="w-full h-full object-cover" loading="lazy" />
                     </div>
                     <div className="flex-1 min-w-0">
                       <p className="font-bold text-sm truncate">{p.name}</p>
