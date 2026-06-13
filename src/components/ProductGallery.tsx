@@ -19,7 +19,28 @@ export default function ProductGallery({ images, videoUrl, name }: ProductGaller
   
   const mainImageRef = useRef<HTMLDivElement>(null);
 
-  const validImages = images.filter(img => img && img.trim() !== '');
+  // Be defensive: `images` may arrive as an array, a single string, a JSON
+  // string, or null/undefined depending on how the product row was saved.
+  // Normalising here prevents "e.filter is not a function" crashes.
+  const normalizeImages = (input: unknown): string[] => {
+    if (Array.isArray(input)) return input as string[];
+    if (typeof input === 'string') {
+      const s = input.trim();
+      if (!s) return [];
+      if (s.startsWith('[')) {
+        try {
+          const parsed = JSON.parse(s);
+          if (Array.isArray(parsed)) return parsed as string[];
+        } catch { /* not JSON — treat as a single URL */ }
+      }
+      return [s];
+    }
+    return [];
+  };
+
+  const validImages = normalizeImages(images).filter(
+    (img): img is string => typeof img === 'string' && img.trim() !== ''
+  );
   if (validImages.length === 0) validImages.push('/placeholder_product.webp');
 
   const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
