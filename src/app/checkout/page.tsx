@@ -274,14 +274,15 @@ export default function Checkout() {
         window.dispatchEvent(new Event('cart-updated'));
       }
 
-      await supabase.from('notifications').insert({
-      source: 'website',
+      const { error: notifyError } = await supabase.from('notifications').insert({
         user_id: user.id,
-        title: 'Order Confirmed! ð¿',
+        title: 'Order Confirmed! 🌿',
         message: `Your order #${order.order_number || String(order.id).slice(0, 8)} has been successfully placed and is being prepared.`,
         type: 'order_status',
-        link: `/profile?tab=orders&order=${order.order_number || String(order.id).slice(0, 8)}`
+        link: `/profile?tab=orders&order=${order.order_number || String(order.id).slice(0, 8)}`,
+        is_read: false
       });
+      if (notifyError) console.warn('[Checkout] Notification insert failed:', notifyError.message);
 
       import('@/lib/email').then(({ sendOrderConfirmation }) => {
         sendOrderConfirmation(user.email || address.name, order.id, total, order.order_number);

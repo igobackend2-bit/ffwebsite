@@ -64,9 +64,15 @@ export default function Navbar() {
   React.useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
     fetchUnreadCount();
+    if (!user?.id) return;
     const channel = supabase
-      .channel('navbar_unread_count')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'notifications' }, () => {
+      .channel(`navbar_unread_${user.id}`)
+      .on('postgres_changes', {
+        event: '*',
+        schema: 'public',
+        table: 'notifications',
+        filter: `user_id=eq.${user.id}`
+      }, () => {
         fetchUnreadCount();
       })
       .subscribe();
@@ -74,7 +80,7 @@ export default function Navbar() {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [fetchUnreadCount]);
+  }, [fetchUnreadCount, user?.id]);
 
   React.useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
@@ -169,7 +175,9 @@ export default function Navbar() {
               >
                 <Bell size={22} strokeWidth={1.5} />
                 {unreadCount > 0 && (
-                  <span className="absolute top-2 right-2 w-2 h-2 bg-red-500 rounded-full border-2 border-white animate-pulse" />
+                  <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] bg-red-500 text-white text-[9px] font-black rounded-full flex items-center justify-center border-2 border-white shadow-lg px-1 animate-pulse">
+                    {unreadCount > 9 ? '9+' : unreadCount}
+                  </span>
                 )}
               </button>
 
@@ -305,19 +313,35 @@ function NotificationsDrawer({ isOpen, onClose }: { isOpen: boolean, onClose: ()
     }
   };
 
+  // Refetch whenever the drawer is opened (so it's always fresh)
   React.useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    fetchNotifications();
+    if (isOpen) {
+      setLoading(true);
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      fetchNotifications();
+    }
+  }, [isOpen]);
+
+  // Subscribe to Realtime — filter to this user's notifications only
+  React.useEffect(() => {
+    if (!user?.id) return;
+    const channelName = `realtime_notifications_${user.id}`;
     const channel = supabase
-      .channel('realtime_notifications')
-      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'notifications' }, () => {
+      .channel(channelName)
+      .on('postgres_changes', {
+        event: '*',
+        schema: 'public',
+        table: 'notifications',
+        filter: `user_id=eq.${user.id}`
+      }, () => {
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         fetchNotifications();
       })
       .subscribe();
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [user]);
+  }, [user?.id]);
 
   const getTimeAgo = (date: string) => {
     const seconds = Math.floor((new Date().getTime() - new Date(date).getTime()) / 1000);

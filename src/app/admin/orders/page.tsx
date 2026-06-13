@@ -170,7 +170,7 @@ function OrdersContent() {
           title: `${statusEmoji[newStatus] || '📋'} Order ${newStatus.toUpperCase()} — #${orderNumber}`,
           message: statusMsg,
           type: 'order_status',
-          link: `/orders`,
+          link: `/profile?tab=orders&order=${orderNumber}`,
           is_read: false
         }).then(({ error: notifError }) => {
           if (notifError) console.warn('[Notification] Failed:', notifError.message);
