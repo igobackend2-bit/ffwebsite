@@ -20,7 +20,11 @@ export default function CartPage() {
   } = useCart();
   const router = useRouter();
 
-  const grandTotal = Math.max(0, cartTotal - discount);
+  // Free delivery on orders of ₹499 or more; otherwise a flat delivery fee applies.
+  const FREE_DELIVERY_THRESHOLD = 499;
+  const DELIVERY_FEE = 40;
+  const deliveryFee = cartTotal > 0 && cartTotal < FREE_DELIVERY_THRESHOLD ? DELIVERY_FEE : 0;
+  const grandTotal = Math.max(0, cartTotal - discount) + deliveryFee;
 
   if (loading) {
     return (
@@ -175,10 +179,14 @@ export default function CartPage() {
                   )}
                   <div className="flex justify-between items-center">
                     <span className="text-lg font-bold text-muted-foreground">{t('cart.shipping')}</span>
-                    <div className="flex items-center gap-2">
-                      <span className="text-xs font-black line-through text-muted-foreground/50">₹40</span>
-                      <span className="bg-emerald-500/10 text-emerald-500 px-3 py-1 rounded-lg text-xs font-black uppercase tracking-widest">{t('cart.free')}</span>
-                    </div>
+                    {deliveryFee === 0 ? (
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs font-black line-through text-muted-foreground/50">₹{DELIVERY_FEE}</span>
+                        <span className="bg-emerald-500/10 text-emerald-500 px-3 py-1 rounded-lg text-xs font-black uppercase tracking-widest">{t('cart.free')}</span>
+                      </div>
+                    ) : (
+                      <span className="text-xl font-black">₹{deliveryFee}</span>
+                    )}
                   </div>
                   <div className="h-px bg-dashed-border bg-[linear-gradient(to_right,#e5e7eb_50%,transparent_50%)] bg-[length:12px_1px] w-full my-8" />
                   <div className="flex justify-between items-end">

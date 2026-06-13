@@ -131,7 +131,11 @@ export default function Checkout() {
   };
 
   const subtotal = cartTotal;
-  const total = Math.max(0, subtotal - discount);
+  // Free delivery on orders of ₹499 or more; otherwise a flat delivery fee applies.
+  const FREE_DELIVERY_THRESHOLD = 499;
+  const DELIVERY_FEE = 40;
+  const deliveryFee = subtotal > 0 && subtotal < FREE_DELIVERY_THRESHOLD ? DELIVERY_FEE : 0;
+  const total = Math.max(0, subtotal - discount) + deliveryFee;
 
   const handlePlaceOrder = async () => {
     if (!user) {
@@ -614,7 +618,11 @@ export default function Checkout() {
                 )}
                 <div className="flex justify-between text-muted-foreground">
                   <span>{t('checkout.delivery')}</span>
-                  <span className="text-primary font-bold">{t('checkout.free')}</span>
+                  {deliveryFee === 0 ? (
+                    <span className="text-primary font-bold">{t('checkout.free')}</span>
+                  ) : (
+                    <span className="font-bold text-foreground">₹{deliveryFee}</span>
+                  )}
                 </div>
                 <div className="flex justify-between text-xl font-black pt-4">
                   <span>{t('checkout.total')}</span>
