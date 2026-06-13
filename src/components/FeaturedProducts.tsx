@@ -17,8 +17,13 @@ export default function FeaturedProducts() {
     async function fetchFeatured() {
       try {
         setLoading(true);
-        // Fetch all products to handle active/inactive states
-        const { data, error } = await supabase.from('products').select('*').eq('is_active', true).limit(20);
+        // Fetch active products, featured ("Freshly Harvested") ones first.
+        const { data, error } = await supabase
+          .from('products')
+          .select('*')
+          .eq('is_active', true)
+          .order('is_featured', { ascending: false })
+          .limit(20);
         const dbProducts = data || [];
 
         const allProductsMap = new Map();
@@ -48,9 +53,13 @@ export default function FeaturedProducts() {
           });
         }
 
-        // Sort and slice
+        // Sort and slice: products the admin marked as "Featured" (Freshly
+        // Harvested) come first, then by manual order_index, then newest.
         const finalProducts = Array.from(allProductsMap.values())
           .sort((a, b) => {
+            const featA = a.is_featured ? 0 : 1;
+            const featB = b.is_featured ? 0 : 1;
+            if (featA !== featB) return featA - featB;
             const orderA = a.order_index ?? 999;
             const orderB = b.order_index ?? 999;
             if (orderA !== orderB) return orderA - orderB;

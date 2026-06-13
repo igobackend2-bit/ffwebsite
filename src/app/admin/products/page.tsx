@@ -34,7 +34,8 @@ import {
   LayoutGrid,
   List,
   RefreshCw,
-  FileSpreadsheet
+  FileSpreadsheet,
+  Star
 } from 'lucide-react';
 import * as XLSX from 'xlsx';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -235,6 +236,17 @@ function ProductsContent() {
       setProducts(prev => prev.map(p => p.id === productId ? { ...p, stock: inStock ? 100 : 0 } : p));
     } else {
       toast.error('Failed to update stock status');
+    }
+  }
+
+  // Toggle whether a product appears in the "Freshly Harvested" section on the homepage.
+  async function toggleFeatured(productId: string, featured: boolean) {
+    const { error } = await updateProduct(productId, { is_featured: featured });
+    if (!error) {
+      toast.success(featured ? 'Added to Freshly Harvested' : 'Removed from Freshly Harvested');
+      setProducts(prev => prev.map(p => p.id === productId ? { ...p, is_featured: featured } : p));
+    } else {
+      toast.error('Failed to update featured status');
     }
   }
 
@@ -924,6 +936,20 @@ function ProductsContent() {
                       </button>
                     </div>
 
+                    {/* Featured (Freshly Harvested) Toggle */}
+                    <button
+                      onClick={() => toggleFeatured(product.id, !product.is_featured)}
+                      className={`w-full flex items-center justify-center gap-2 py-3 rounded-2xl font-black text-[10px] uppercase tracking-widest transition-all ${
+                        product.is_featured
+                          ? 'bg-amber-50 text-amber-600 border border-amber-200'
+                          : 'bg-white text-slate-400 border border-slate-100 hover:border-amber-200 hover:text-amber-500'
+                      }`}
+                      title="Show this product in the homepage 'Freshly Harvested' section"
+                    >
+                      <Star size={16} className={product.is_featured ? 'fill-amber-500 text-amber-500' : ''} />
+                      {product.is_featured ? 'Featured in Freshly Harvested' : 'Add to Freshly Harvested'}
+                    </button>
+
                     {/* Archive/Restore Toggle */}
                     <button 
                       onClick={() => product.is_active !== false ? handleSoftDelete(product.id) : handleRestore(product.id)}
@@ -1009,6 +1035,7 @@ function ProductsContent() {
                     </td>
                     <td className="px-6 py-4 text-right">
                       <div className="flex items-center justify-end gap-2">
+                        <button onClick={() => toggleFeatured(product.id, !product.is_featured)} title="Show in homepage 'Freshly Harvested'" className={`p-2 rounded-lg transition-all ${product.is_featured ? 'text-amber-500 bg-amber-50' : 'hover:bg-amber-50 hover:text-amber-500'}`}><Star size={16} className={product.is_featured ? 'fill-amber-500' : ''} /></button>
                         <button onClick={() => openEditModal(product)} className="p-2 hover:bg-primary/10 hover:text-primary rounded-lg transition-all"><Edit size={16} /></button>
                         <button onClick={() => handleDeleteProduct(product.id, product.name)} className="p-2 hover:bg-red-50 hover:text-red-500 rounded-lg transition-all"><Trash2 size={16} /></button>
                       </div>
