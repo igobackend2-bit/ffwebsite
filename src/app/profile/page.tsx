@@ -13,7 +13,6 @@ import {
 } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import OrderDetailModal from '@/components/OrderDetailModal';
-import LoyaltyWallet from '@/components/profile/LoyaltyWallet';
 import AddressManager from '@/components/profile/AddressManager';
 import { useWishlist } from '@/context/WishlistContext';
 import Footer from '@/components/Footer';
@@ -415,9 +414,58 @@ export default function ProfilePage() {
                     <h2 className="text-2xl font-black text-slate-900 tracking-tight">{t('profile.wallet')}</h2>
                     <p className="text-slate-500 text-sm font-medium">{t('profile.rewards_loyalty')}</p>
                   </div>
-                  <div className="bg-white rounded-3xl p-2 border border-slate-100 shadow-sm">
-                    <LoyaltyWallet coins={profile?.points || 0} referralCode={profile?.referral_code || 'FF-123'} memberStatus="Gold" />
-                  </div>
+                  {(() => {
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                    const paidOrders = orders.filter((o: any) => !['cancelled', 'rejected'].includes((o.status || '').toLowerCase()));
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                    const totalSpent = paidOrders.reduce((s: number, o: any) => s + Number(o.total_amount || 0), 0);
+                    const recent = paidOrders.slice(0, 5);
+                    const avg = paidOrders.length ? Math.round(totalSpent / paidOrders.length) : 0;
+                    return (
+                      <div className="space-y-6">
+                        <div className="bg-gradient-to-br from-primary to-emerald-700 rounded-3xl p-8 text-white shadow-lg shadow-primary/20 relative overflow-hidden">
+                          <div className="absolute -right-16 -top-16 w-56 h-56 bg-white/10 blur-3xl rounded-full" />
+                          <div className="relative z-10">
+                            <div className="flex items-center gap-3 mb-6">
+                              <div className="w-12 h-12 bg-white/15 rounded-2xl flex items-center justify-center"><Wallet size={24} /></div>
+                              <p className="text-[11px] font-black uppercase tracking-[0.2em] text-white/80">Total Spent on Farmers Factory</p>
+                            </div>
+                            <p className="text-5xl font-black tracking-tight">₹{totalSpent.toLocaleString('en-IN')}</p>
+                            <p className="mt-2 text-sm font-bold text-white/70">across {paidOrders.length} order{paidOrders.length === 1 ? '' : 's'}</p>
+                          </div>
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-4">
+                          <div className="bg-white border border-slate-100 rounded-3xl p-6 shadow-sm">
+                            <div className="flex items-center gap-2 text-primary mb-2"><ShoppingBag size={18} /><span className="text-[10px] font-black uppercase tracking-widest text-slate-400">Orders</span></div>
+                            <p className="text-3xl font-black text-slate-900">{paidOrders.length}</p>
+                          </div>
+                          <div className="bg-white border border-slate-100 rounded-3xl p-6 shadow-sm">
+                            <div className="flex items-center gap-2 text-emerald-600 mb-2"><Wallet size={18} /><span className="text-[10px] font-black uppercase tracking-widest text-slate-400">Avg / Order</span></div>
+                            <p className="text-3xl font-black text-slate-900">₹{avg.toLocaleString('en-IN')}</p>
+                          </div>
+                        </div>
+
+                        {recent.length > 0 && (
+                          <div>
+                            <h4 className="text-xs font-black uppercase tracking-widest text-slate-400 mb-3">Recent Spending</h4>
+                            <div className="space-y-2">
+                              {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
+                              {recent.map((o: any) => (
+                                <div key={o.id} className="flex items-center justify-between bg-white border border-slate-100 rounded-2xl px-5 py-3">
+                                  <div>
+                                    <p className="font-black text-slate-800 text-sm">#{o.order_number || String(o.id).slice(0, 8)}</p>
+                                    <p className="text-xs text-slate-400 font-bold">{new Date(o.created_at).toLocaleDateString()}</p>
+                                  </div>
+                                  <p className="font-black text-primary">₹{Number(o.total_amount || 0).toLocaleString('en-IN')}</p>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })()}
                 </motion.div>
               )}
 

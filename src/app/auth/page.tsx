@@ -149,7 +149,26 @@ function AuthContent() {
   };
 
   return (
-    <div className="min-h-screen bg-[#0A0A0A] flex items-center justify-center p-4">
+    <div className="min-h-screen bg-[#0A0A0A] flex flex-col lg:flex-row text-white">
+      {/* Left: brand / background image panel */}
+      <div className="relative hidden lg:flex lg:w-1/2 flex-col justify-between p-14 overflow-hidden">
+        <div className="absolute inset-0 z-0">
+          <img src="/auth-bg.webp" alt="Fresh organic produce at Farmers Factory" className="w-full h-full object-cover" />
+          <div className="absolute inset-0 bg-gradient-to-tr from-black/90 via-black/60 to-black/20" />
+        </div>
+        <div className="relative z-10 flex items-center gap-3">
+          <div className="w-10 h-10 bg-primary rounded-xl flex items-center justify-center"><Leaf size={22} className="text-white" /></div>
+          <div><p className="font-black tracking-tighter text-lg">FARMERS FACTORY</p><p className="text-[10px] text-white/50 uppercase tracking-widest">Premium Organics</p></div>
+        </div>
+        <div className="relative z-10">
+          <h1 className="text-6xl xl:text-7xl font-black leading-[0.9] tracking-tighter">Future<br />of<br />Farming</h1>
+          <p className="mt-6 text-white/60 font-medium max-w-sm leading-relaxed">Fresh, organic produce delivered farm-to-home in 24 hours. Join thousands who taste the difference.</p>
+        </div>
+        <p className="relative z-10 text-white/40 text-xs font-black uppercase tracking-[0.3em]">Purely Organic &bull; Chemical Free</p>
+      </div>
+
+      {/* Right: form panel */}
+      <div className="flex-1 flex items-center justify-center p-4 lg:p-8 min-h-screen">
       <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
         className="w-full max-w-md bg-[#111] border border-white/10 rounded-[2.5rem] p-8 md:p-12 text-white shadow-2xl">
 
@@ -319,6 +338,7 @@ function AuthContent() {
           )}
         </AnimatePresence>
       </motion.div>
+      </div>
     </div>
   );
 }

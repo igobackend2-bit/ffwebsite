@@ -116,7 +116,7 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
             </div>
             <div className="mb-8">
               <h2 className="text-3xl font-black mb-2 uppercase tracking-tighter">{mode === 'login' ? 'Welcome Back' : 'Join the Farm'}</h2>
-              <p className="text-white/40 text-sm">Enter your mobile number to get OTP.</p>
+              <p className="text-white/40 text-sm">{mode === 'login' ? 'Sign in to your account — we\'ll text you a one-time code.' : 'Create a new account — enter your mobile to get a one-time code, then your name.'}</p>
             </div>
             {step === 'initial' && (
               <div className="flex p-1 bg-white/5 rounded-2xl mb-8 border border-white/5">
