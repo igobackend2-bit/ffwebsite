@@ -269,7 +269,31 @@ export default function Checkout() {
       }
 
       toast.success('Order placed successfully!');
-      
+
+      // Play a short "order placed" success chime (Web Audio — no asset/dependency needed).
+      try {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const AC = (window as any).AudioContext || (window as any).webkitAudioContext;
+        if (AC) {
+          const ctx = new AC();
+          const start = ctx.currentTime;
+          // Rising two-note chime: G5 -> C6
+          [{ f: 783.99, t: 0 }, { f: 1046.5, t: 0.16 }].forEach(({ f, t }) => {
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
+            osc.type = 'sine';
+            osc.frequency.value = f;
+            osc.connect(gain);
+            gain.connect(ctx.destination);
+            gain.gain.setValueAtTime(0.0001, start + t);
+            gain.gain.exponentialRampToValueAtTime(0.35, start + t + 0.03);
+            gain.gain.exponentialRampToValueAtTime(0.0001, start + t + 0.5);
+            osc.start(start + t);
+            osc.stop(start + t + 0.55);
+          });
+        }
+      } catch { /* sound is best-effort; never block the order flow */ }
+
       if (typeof window !== 'undefined') {
         window.dispatchEvent(new Event('cart-updated'));
       }
