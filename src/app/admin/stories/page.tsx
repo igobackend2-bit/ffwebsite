@@ -196,9 +196,6 @@ export default function AdminStories() {
                     <span className="bg-primary text-white text-[10px] font-black uppercase px-2 py-1 rounded-lg">
                         {story.farmer}
                     </span>
-                    {story.is_live && (
-                       <span className="bg-red-500 text-white text-[10px] font-black uppercase px-2 py-1 rounded-lg animate-pulse">LIVE</span>
-                    )}
                  </div>
                  <div>
                     <h3 className="text-white font-black text-xl leading-tight">{story.title}</h3>

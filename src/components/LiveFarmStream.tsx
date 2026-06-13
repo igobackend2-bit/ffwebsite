@@ -180,10 +180,6 @@ export default function LiveFarmStream() {
               
               {/* Overlay Info */}
               <div className="absolute top-10 left-10 flex flex-col gap-4">
-                <div className="flex items-center gap-3 bg-red-600 px-5 py-2.5 rounded-full text-[10px] font-black uppercase tracking-widest shadow-xl">
-                   <div className="w-2 h-2 rounded-full bg-white animate-pulse" />
-                   LIVE: {t(activeStream.name)}
-                </div>
                 <div className="flex items-center gap-3 bg-black/60 backdrop-blur-xl px-5 py-2.5 rounded-full text-[10px] font-black uppercase tracking-widest border border-white/10">
                    <Users size={14} className="text-primary" />
                    {activeStream.viewers || 124} {t('streams.watching')}
