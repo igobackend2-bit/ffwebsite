@@ -88,10 +88,12 @@ export default function ProductDetailModal({ isOpen, onClose, product }: Product
   // ── Pricing (Amazon-style) ────────────────────────────────────────────
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const cp: any = currentProduct;
-  const price = Number(cp.price) || 0;
+  const basePrice = Number(cp.price) || 0;
+  const price = basePrice * quantity;
   const mrpRaw = Number(cp.mrp) || Number(cp.original_price) || 0;
-  const mrp = mrpRaw > price ? mrpRaw : 0;
-  const discountPct = mrp > 0 ? Math.round(((mrp - price) / mrp) * 100) : 0;
+  const baseMrp = mrpRaw > basePrice ? mrpRaw : 0;
+  const mrp = baseMrp * quantity;
+  const discountPct = baseMrp > 0 ? Math.round(((baseMrp - basePrice) / baseMrp) * 100) : 0;
   const unitLabel = cp.unit || 'kg';
   const inStock = (cp.stock === undefined || cp.stock === null) ? true : Number(cp.stock) > 0;
   const avgRating = Number(cp.average_rating) || 0;
@@ -254,7 +256,7 @@ export default function ProductDetailModal({ isOpen, onClose, product }: Product
                 <div className="flex items-end gap-3 flex-wrap mb-1">
                   {discountPct > 0 && <span className="text-3xl font-black text-red-600">-{discountPct}%</span>}
                   <span className="text-4xl font-black text-foreground">₹{price}</span>
-                  <span className="text-sm font-bold text-muted-foreground mb-1.5">(₹{price}/{unitLabel})</span>
+                  <span className="text-sm font-bold text-muted-foreground mb-1.5">(₹{basePrice}/{unitLabel})</span>
                 </div>
                 {mrp > 0 && (
                   <p className="text-sm text-muted-foreground mb-1">M.R.P.: <span className="line-through">₹{mrp}</span></p>
