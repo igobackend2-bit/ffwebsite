@@ -309,6 +309,22 @@ export default function ProductDetailModal({ isOpen, onClose, product }: Product
                 </ul>
               </div>
 
+              {/* Quick Select Options */}
+              <div className="mb-4">
+                <span className="text-sm font-bold text-slate-700 block mb-2">Select Quantity:</span>
+                <div className="flex items-center gap-2 flex-wrap">
+                  {[1, 2, 5, 10].map(w => (
+                    <button
+                      key={w}
+                      onClick={() => setQuantity(w)}
+                      className={`px-4 py-2 rounded-xl border-2 font-bold text-sm transition-all ${quantity === w ? 'border-primary bg-primary/10 text-primary shadow-sm' : 'border-border bg-white text-slate-600 hover:border-primary/50'}`}
+                    >
+                      {w} {unitLabel}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
               {/* Qty + actions */}
               <div className="flex flex-col gap-6 mb-12">
                 <div className="flex items-center gap-4">
