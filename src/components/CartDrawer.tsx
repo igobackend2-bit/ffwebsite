@@ -10,6 +10,7 @@ import { supabase } from '@/lib/supabase';
 import { toast } from 'react-hot-toast';
 import QuickAddCarousel from './QuickAddCarousel';
 import { FALLBACK_PRODUCTS, getSmartRecommendations } from '@/lib/constants';
+import { getEffectiveLineTotal } from '@/lib/pricing';
 
 interface CartDrawerProps {
   isOpen: boolean;
@@ -152,7 +153,7 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
                           </div>
                           <div className="flex items-center justify-between">
                             <div className="flex flex-col">
-                              <span className="text-xs font-black text-primary">₹{item.products?.price * item.quantity}</span>
+                              <span className="text-xs font-black text-primary">₹{getEffectiveLineTotal(item.products, item.quantity)}</span>
                             </div>
                             <div className="flex items-center gap-2 bg-muted/50 rounded-xl p-1 border border-border/50">
                               <button 

@@ -11,6 +11,7 @@ import { useWishlist } from '@/context/WishlistContext';
 import { AnimatePresence } from 'framer-motion';
 import ProductDetailModal from './ProductDetailModal';
 import { useTranslation } from '@/context/TranslationContext';
+import { cleanUnitLabel } from '@/lib/pricing';
 
 interface ProductCardProps {
   product: {
@@ -212,7 +213,7 @@ export default function ProductCard({ product }: ProductCardProps) {
             <h3 className="text-xl font-black text-foreground line-clamp-1 group-hover:text-primary transition-colors leading-tight">
               {product.name}
             </h3>
-            <p className="text-sm font-bold text-muted-foreground mt-1">1 {product.unit}</p>
+            <p className="text-sm font-bold text-muted-foreground mt-1">1 {cleanUnitLabel(product.unit)}</p>
           </div>
 
           <div className="flex items-center justify-between mt-auto pt-4 border-t border-muted/50">

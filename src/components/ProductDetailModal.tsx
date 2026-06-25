@@ -12,6 +12,7 @@ import QuickAddCarousel from './QuickAddCarousel';
 import { FALLBACK_PRODUCTS, getSmartRecommendations, getTrendingProducts } from '@/lib/constants';
 import ProductReviews from './ProductReviews';
 import { useTranslation } from '@/context/TranslationContext';
+import { normalizeWeightOptions, getEffectiveLineTotal, cleanUnitLabel } from '@/lib/pricing';
 
 // Picks the starting quantity for a product based on its admin-configured
 // weight options, instead of always defaulting to 1 (which may be hidden).
@@ -19,12 +20,8 @@ import { useTranslation } from '@/context/TranslationContext';
 function getDefaultQuantity(p: any): number {
   if (!p) return 1;
   if (p.weight_mode === 'range') return Number(p.weight_min) || 1;
-  let wo = p.weight_options;
-  if (typeof wo === 'string') {
-    try { wo = JSON.parse(wo); } catch { wo = []; }
-  }
-  const opts: number[] = Array.isArray(wo) && wo.length > 0 ? wo.map(Number).sort((a: number, b: number) => a - b) : [1, 2, 5, 10];
-  return opts[0];
+  const opts = normalizeWeightOptions(p.weight_options).sort((a, b) => a.weight - b.weight);
+  return opts.length > 0 ? opts[0].weight : 1;
 }
 
 interface ProductDetailModalProps {
@@ -110,27 +107,28 @@ export default function ProductDetailModal({ isOpen, onClose, product }: Product
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const cp: any = currentProduct;
   const basePrice = Number(cp.price) || 0;
-  const price = basePrice * quantity;
+  // Price for the selected quantity — uses the admin's special per-weight
+  // price when one is set for this exact weight, otherwise basePrice × qty.
+  const price = getEffectiveLineTotal(cp, quantity);
   const mrpRaw = Number(cp.mrp) || Number(cp.original_price) || 0;
   const baseMrp = mrpRaw > basePrice ? mrpRaw : 0;
   const mrp = baseMrp * quantity;
   const discountPct = baseMrp > 0 ? Math.round(((baseMrp - basePrice) / baseMrp) * 100) : 0;
-  const unitLabel = cp.unit || 'kg';
+  const unitLabel = cleanUnitLabel(cp.unit);
   const inStock = (cp.stock === undefined || cp.stock === null) ? true : Number(cp.stock) > 0;
   const avgRating = Number(cp.average_rating) || 0;
   const reviewCount = Number(cp.review_count) || 0;
 
   // ── Admin-configured quantity options ─────────────────────────────────
-  // 'fixed' = customer can only pick from weightOptions (e.g. only 5kg, or 5kg+10kg).
+  // 'fixed' = customer can only pick from weightOptionsList (e.g. only 5kg,
+  //           or 5kg+10kg), and each one may carry its own special price.
   // 'range' = customer can pick any whole value between weightMin and weightMax.
   const weightMode: 'fixed' | 'range' = cp.weight_mode === 'range' ? 'range' : 'fixed';
-  const weightOptions: number[] = (() => {
-    let wo = cp.weight_options;
-    if (typeof wo === 'string') {
-      try { wo = JSON.parse(wo); } catch { wo = []; }
-    }
-    return Array.isArray(wo) && wo.length > 0 ? wo.map(Number).sort((a, b) => a - b) : [1, 2, 5, 10];
+  const weightOptionsList = (() => {
+    const opts = normalizeWeightOptions(cp.weight_options).sort((a, b) => a.weight - b.weight);
+    return opts.length > 0 ? opts : [1, 2, 5, 10].map(w => ({ weight: w, price: null as number | null }));
   })();
+  const weightOptions: number[] = weightOptionsList.map(o => o.weight);
   const weightMin = Number(cp.weight_min) || 1;
   const weightMax = Number(cp.weight_max) || 10;
   const weightStep = Number(cp.weight_step) || 1;
@@ -375,15 +373,24 @@ export default function ProductDetailModal({ isOpen, onClose, product }: Product
                 <div className="mb-4">
                   <span className="text-sm font-bold text-slate-700 block mb-2">Select Quantity:</span>
                   <div className="flex items-center gap-2 flex-wrap">
-                    {weightOptions.map(w => (
-                      <button
-                        key={w}
-                        onClick={() => setQuantity(w)}
-                        className={`px-4 py-2 rounded-xl border-2 font-bold text-sm transition-all ${quantity === w ? 'border-primary bg-primary/10 text-primary shadow-sm' : 'border-border bg-white text-slate-600 hover:border-primary/50'}`}
-                      >
-                        {w} {unitLabel}
-                      </button>
-                    ))}
+                    {weightOptionsList.map(o => {
+                      const optPrice = getEffectiveLineTotal(cp, o.weight);
+                      const isOffer = o.price !== null && o.price !== undefined;
+                      const selected = quantity === o.weight;
+                      return (
+                        <button
+                          key={o.weight}
+                          onClick={() => setQuantity(o.weight)}
+                          className={`relative flex flex-col items-center px-4 py-2 rounded-xl border-2 font-bold text-sm transition-all ${selected ? 'border-primary bg-primary/10 text-primary shadow-sm' : 'border-border bg-white text-slate-600 hover:border-primary/50'}`}
+                        >
+                          {isOffer && (
+                            <span className="absolute -top-2 -right-2 bg-red-600 text-white text-[8px] font-black px-1.5 py-0.5 rounded-full uppercase tracking-wide shadow-sm">Offer</span>
+                          )}
+                          <span>{o.weight} {unitLabel}</span>
+                          <span className={`text-xs ${isOffer ? 'text-red-600 font-black' : 'text-slate-400 font-medium'}`}>₹{optPrice}</span>
+                        </button>
+                      );
+                    })}
                   </div>
                 </div>
               ) : (

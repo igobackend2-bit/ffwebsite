@@ -10,6 +10,7 @@ import { useRouter } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
 import { useCart } from '@/context/CartContext';
 import { useTranslation } from '@/context/TranslationContext';
+import { getEffectiveLineTotal, getEffectiveUnitPrice } from '@/lib/pricing';
 
 export default function Checkout() {
   const { t } = useTranslation();
@@ -230,8 +231,8 @@ export default function Checkout() {
         order_id: order.id,
         product_id: item.product_id,
         quantity: item.quantity,
-        unit_price: item.products.price,
-        total: item.quantity * item.products.price
+        unit_price: getEffectiveUnitPrice(item.products, item.quantity),
+        total: getEffectiveLineTotal(item.products, item.quantity)
       }));
 
       const { error: itemsError } = await supabase.from('order_items').insert(orderItems);
@@ -576,9 +577,9 @@ export default function Checkout() {
                     </div>
                     <div className="flex-1 min-w-0">
                       <p className="font-bold text-sm truncate">{item.products.name}</p>
-                      <p className="text-xs text-muted-foreground">{item.quantity} x ₹{item.products.price}</p>
+                      <p className="text-xs text-muted-foreground">{item.quantity} x ₹{Math.round(getEffectiveUnitPrice(item.products, item.quantity))}</p>
                     </div>
-                    <p className="font-bold text-sm">₹{item.products.price * item.quantity}</p>
+                    <p className="font-bold text-sm">₹{getEffectiveLineTotal(item.products, item.quantity)}</p>
                   </div>
                 ))}
               </div>

@@ -4,6 +4,7 @@ import React, { createContext, useContext, useState, useEffect, useCallback } fr
 import { supabase } from '@/lib/supabase';
 import { useAuth } from './AuthContext';
 import { toast } from 'react-hot-toast';
+import { getEffectiveLineTotal } from '@/lib/pricing';
 
 export interface CartItem {
   id: string;
@@ -362,8 +363,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
 
   const cartCount = cartItems.reduce((acc, item) => acc + item.quantity, 0);
   const cartTotal = cartItems.reduce((acc, item) => {
-    const price = item.products?.price || 0;
-    return acc + (price * item.quantity);
+    return acc + getEffectiveLineTotal(item.products, item.quantity);
   }, 0);
 
   // Recalculate discount whenever cartTotal changes (or cart items change)

@@ -11,6 +11,7 @@ import { supabase } from '@/lib/supabase';
 import { toast } from 'react-hot-toast';
 import ProgressiveRewardBar from '@/components/ProgressiveRewardBar';
 import { useTranslation } from '@/context/TranslationContext';
+import { getEffectiveLineTotal, cleanUnitLabel } from '@/lib/pricing';
 
 export default function CartPage() {
   const { t, language } = useTranslation();
@@ -97,7 +98,7 @@ export default function CartPage() {
                       <div className="mb-4">
                         <p className="text-[10px] font-black uppercase tracking-[0.2em] text-primary mb-1 opacity-70">{t('cart.fresh_produce')}</p>
                         <h3 className="text-2xl font-black text-foreground mb-1 group-hover:text-primary transition-colors">{item.products.name}</h3>
-                        <p className="text-muted-foreground font-bold">1 {item.products.unit}</p>
+                        <p className="text-muted-foreground font-bold">1 {cleanUnitLabel(item.products.unit)}</p>
                       </div>
                       
                       <div className="flex items-center justify-center md:justify-start gap-4">
@@ -124,7 +125,7 @@ export default function CartPage() {
                     <div className="flex flex-row md:flex-col items-center md:items-end justify-between md:justify-center gap-8 w-full md:w-auto border-t md:border-t-0 pt-6 md:pt-0">
                       <div className="text-right">
                         <p className="text-xs text-muted-foreground font-black uppercase tracking-widest mb-1 opacity-60">{t('cart.price')}</p>
-                        <p className="text-3xl font-black text-primary">₹{item.products.price * item.quantity}</p>
+                        <p className="text-3xl font-black text-primary">₹{getEffectiveLineTotal(item.products, item.quantity)}</p>
                       </div>
                       <button
                         onClick={() => removeItem(item.id)}

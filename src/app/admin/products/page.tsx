@@ -44,6 +44,7 @@ import { Suspense } from 'react';
 import { supabase, isSupabaseConfigured } from '@/lib/supabase';
 import { toast } from 'react-hot-toast';
 import { VERIFIED_INVENTORY } from '@/lib/constants';
+import { normalizeWeightOptions, type WeightOption } from '@/lib/pricing';
 
 function ProductsContent() {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -149,9 +150,15 @@ function ProductsContent() {
     is_seasonal: false,
     image_urls: [''],
     // Customer quantity options: 'fixed' = only the listed weights are
-    // selectable; 'range' = customer can pick any value between min/max.
+    // selectable, each optionally with its own special offer price;
+    // 'range' = customer can pick any value between min/max (linear price).
     weight_mode: 'fixed' as 'fixed' | 'range',
-    weight_options: [1, 2, 5, 10] as number[],
+    weight_options: [
+      { weight: 1, price: null },
+      { weight: 2, price: null },
+      { weight: 5, price: null },
+      { weight: 10, price: null }
+    ] as WeightOption[],
     weight_min: 1,
     weight_max: 10,
     weight_step: 1
@@ -170,7 +177,12 @@ function ProductsContent() {
     is_seasonal: false,
     image_urls: [''],
     weight_mode: 'fixed' as 'fixed' | 'range',
-    weight_options: [1, 2, 5, 10] as number[],
+    weight_options: [
+      { weight: 1, price: null },
+      { weight: 2, price: null },
+      { weight: 5, price: null },
+      { weight: 10, price: null }
+    ] as WeightOption[],
     weight_min: 1,
     weight_max: 10,
     weight_step: 1
@@ -417,11 +429,13 @@ function ProductsContent() {
       image_urls: Array.isArray(product.image_urls) && product.image_urls.length > 0 ? product.image_urls : [product.image_url || ''],
       weight_mode: product.weight_mode === 'range' ? 'range' : 'fixed',
       weight_options: (() => {
-        let wo = product.weight_options;
-        if (typeof wo === 'string') {
-          try { wo = JSON.parse(wo); } catch { wo = []; }
-        }
-        return Array.isArray(wo) && wo.length > 0 ? wo.map(Number) : [1, 2, 5, 10];
+        const opts = normalizeWeightOptions(product.weight_options);
+        return opts.length > 0 ? opts : [
+          { weight: 1, price: null },
+          { weight: 2, price: null },
+          { weight: 5, price: null },
+          { weight: 10, price: null }
+        ];
       })(),
       weight_min: product.weight_min ?? 1,
       weight_max: product.weight_max ?? 10,
@@ -430,12 +444,12 @@ function ProductsContent() {
     setIsAddModalOpen(true);
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   function toggleWeightOption(w: number) {
-    const current: number[] = editingProduct ? editFormData.weight_options : newProduct.weight_options;
-    const next = current.includes(w)
-      ? current.filter((x) => x !== w)
-      : [...current, w].sort((a, b) => a - b);
+    const current: WeightOption[] = editingProduct ? editFormData.weight_options : newProduct.weight_options;
+    const exists = current.some((o) => o.weight === w);
+    const next = exists
+      ? current.filter((o) => o.weight !== w)
+      : [...current, { weight: w, price: null }].sort((a, b) => a.weight - b.weight);
     if (editingProduct) setEditFormData({ ...editFormData, weight_options: next });
     else setNewProduct({ ...newProduct, weight_options: next });
   }
@@ -443,12 +457,23 @@ function ProductsContent() {
   function addCustomWeightOption() {
     const val = parseFloat(customWeightInput);
     if (!val || val <= 0) { setCustomWeightInput(''); return; }
-    const current: number[] = editingProduct ? editFormData.weight_options : newProduct.weight_options;
-    if (current.includes(val)) { setCustomWeightInput(''); return; }
-    const next = [...current, val].sort((a, b) => a - b);
+    const current: WeightOption[] = editingProduct ? editFormData.weight_options : newProduct.weight_options;
+    if (current.some((o) => o.weight === val)) { setCustomWeightInput(''); return; }
+    const next = [...current, { weight: val, price: null }].sort((a, b) => a.weight - b.weight);
     if (editingProduct) setEditFormData({ ...editFormData, weight_options: next });
     else setNewProduct({ ...newProduct, weight_options: next });
     setCustomWeightInput('');
+  }
+
+  // Sets (or clears, when priceStr is empty) the special offer price for one
+  // specific weight option. Leaving it blank means "no offer — use normal
+  // price × kg" for that weight.
+  function updateWeightOptionPrice(w: number, priceStr: string) {
+    const current: WeightOption[] = editingProduct ? editFormData.weight_options : newProduct.weight_options;
+    const price = priceStr === '' ? null : (parseFloat(priceStr) || 0);
+    const next = current.map((o) => o.weight === w ? { ...o, price } : o);
+    if (editingProduct) setEditFormData({ ...editFormData, weight_options: next });
+    else setNewProduct({ ...newProduct, weight_options: next });
   }
 
   async function handleProductSubmit(e: React.FormEvent) {
@@ -582,7 +607,12 @@ function ProductsContent() {
           is_seasonal: false,
           image_urls: [''],
           weight_mode: 'fixed',
-          weight_options: [1, 2, 5, 10],
+          weight_options: [
+            { weight: 1, price: null },
+            { weight: 2, price: null },
+            { weight: 5, price: null },
+            { weight: 10, price: null }
+          ],
           weight_min: 1,
           weight_max: 10,
           weight_step: 1
@@ -1485,8 +1515,8 @@ function ProductsContent() {
                         <p className="text-xs text-slate-500 font-medium">Tick the weights customers should be able to choose. Untick one to hide it (e.g. hide 1 kg and keep only 5 kg / 10 kg).</p>
                         <div className="flex flex-wrap gap-2">
                           {[1, 2, 3, 5, 10, 15, 20, 25, 50].map((w) => {
-                            const current: number[] = editingProduct ? editFormData.weight_options : newProduct.weight_options;
-                            const checked = current.includes(w);
+                            const current: WeightOption[] = editingProduct ? editFormData.weight_options : newProduct.weight_options;
+                            const checked = current.some((o) => o.weight === w);
                             return (
                               <button
                                 type="button"
@@ -1514,14 +1544,39 @@ function ProductsContent() {
                             Add
                           </button>
                         </div>
+
+                        {/* Per-weight special offer price: leave blank to charge the
+                            normal price × kg; fill in a rupee amount to run a special
+                            offer for that exact weight (e.g. 5 kg at ₹250 instead of ₹300). */}
                         {(editingProduct ? editFormData.weight_options : newProduct.weight_options).length > 0 && (
-                          <div className="flex flex-wrap gap-2">
-                            {(editingProduct ? editFormData.weight_options : newProduct.weight_options).map((w: number) => (
-                              <span key={w} className="flex items-center gap-1 px-3 py-1.5 bg-primary/10 text-primary rounded-full text-xs font-bold">
-                                {w} kg
-                                <button type="button" onClick={() => toggleWeightOption(w)} className="hover:text-red-500"><X size={12} /></button>
-                              </span>
-                            ))}
+                          <div className="space-y-2">
+                            <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">Special Price (₹) — optional, per weight</label>
+                            {(editingProduct ? editFormData.weight_options : newProduct.weight_options)
+                              .slice()
+                              .sort((a: WeightOption, b: WeightOption) => a.weight - b.weight)
+                              .map((o: WeightOption) => {
+                                const base = parseFloat(editingProduct ? editFormData.price : newProduct.price) || 0;
+                                const defaultPrice = base * o.weight;
+                                return (
+                                  <div key={o.weight} className="flex items-center gap-2 bg-white border-2 border-slate-100 rounded-xl px-3 py-2">
+                                    <span className="font-bold text-sm text-slate-700 w-16 flex-shrink-0">{o.weight} kg</span>
+                                    <span className="text-slate-300 font-bold">₹</span>
+                                    <input
+                                      type="number"
+                                      min="0"
+                                      step="0.01"
+                                      placeholder={`Normal: ${defaultPrice ? defaultPrice.toFixed(0) : '0'}`}
+                                      className="flex-1 px-3 py-1.5 rounded-lg border-2 border-slate-100 focus:border-primary/30 outline-none font-bold text-sm"
+                                      value={o.price === null || o.price === undefined ? '' : o.price}
+                                      onChange={(e) => updateWeightOptionPrice(o.weight, e.target.value)}
+                                    />
+                                    {o.price !== null && o.price !== undefined && (
+                                      <span className="text-[9px] font-black uppercase tracking-wide text-red-600 bg-red-50 px-2 py-1 rounded-full flex-shrink-0">Offer</span>
+                                    )}
+                                    <button type="button" onClick={() => toggleWeightOption(o.weight)} className="text-slate-300 hover:text-red-500 flex-shrink-0"><X size={14} /></button>
+                                  </div>
+                                );
+                              })}
                           </div>
                         )}
                         {(editingProduct ? editFormData.weight_options : newProduct.weight_options).length === 0 && (
