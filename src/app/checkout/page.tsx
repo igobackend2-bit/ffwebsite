@@ -137,9 +137,19 @@ export default function Checkout() {
   const deliveryFee = subtotal > 0 && subtotal < FREE_DELIVERY_THRESHOLD ? DELIVERY_FEE : 0;
   const total = Math.max(0, subtotal - discount) + deliveryFee;
 
+  // Minimum order value: customers can only place an order once their cart subtotal is ₹600 or more.
+  const MIN_ORDER_VALUE = 600;
+  const isBelowMinOrder = subtotal < MIN_ORDER_VALUE;
+  const amountToReachMin = MIN_ORDER_VALUE - subtotal;
+
   const handlePlaceOrder = async () => {
     if (!user) {
       toast.error('Session expired. Please login again.');
+      return;
+    }
+
+    if (isBelowMinOrder) {
+      toast.error(`Minimum order value is ₹${MIN_ORDER_VALUE}. Add ₹${amountToReachMin} more to place your order.`, { duration: 5000 });
       return;
     }
 
@@ -638,9 +648,15 @@ export default function Checkout() {
                 </div>
               </div>
 
-              <button 
+              {isBelowMinOrder && (
+                <div className="mb-4 px-4 py-3 rounded-xl bg-amber-50 border border-amber-200 text-amber-700 text-xs font-bold text-center">
+                  Minimum order value is ₹{MIN_ORDER_VALUE}. Add ₹{amountToReachMin} more to place your order.
+                </div>
+              )}
+
+              <button
                 onClick={handlePlaceOrder}
-                disabled={loading}
+                disabled={loading || isBelowMinOrder}
                 className="w-full bg-primary text-white py-4 rounded-2xl font-bold text-lg flex items-center justify-center gap-2 hover:bg-primary/90 transition-all transform active:scale-[0.98] disabled:opacity-50"
               >
                 {loading ? t('checkout.processing') : t('checkout.place_order')}
