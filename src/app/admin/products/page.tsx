@@ -147,7 +147,14 @@ function ProductsContent() {
     order_index: 0,
     stock: 100,
     is_seasonal: false,
-    image_urls: ['']
+    image_urls: [''],
+    // Customer quantity options: 'fixed' = only the listed weights are
+    // selectable; 'range' = customer can pick any value between min/max.
+    weight_mode: 'fixed' as 'fixed' | 'range',
+    weight_options: [1, 2, 5, 10] as number[],
+    weight_min: 1,
+    weight_max: 10,
+    weight_step: 1
   });
 
   const [editFormData, setEditFormData] = useState({
@@ -161,8 +168,15 @@ function ProductsContent() {
     order_index: 0,
     stock: 100,
     is_seasonal: false,
-    image_urls: ['']
+    image_urls: [''],
+    weight_mode: 'fixed' as 'fixed' | 'range',
+    weight_options: [1, 2, 5, 10] as number[],
+    weight_min: 1,
+    weight_max: 10,
+    weight_step: 1
   });
+
+  const [customWeightInput, setCustomWeightInput] = useState('');
 
   const searchParams = useSearchParams();
   const initialSearch = searchParams.get('search') || '';
@@ -400,9 +414,41 @@ function ProductsContent() {
       order_index: product.order_index || 0,
       stock: product.stock || 0,
       is_seasonal: product.is_seasonal || false,
-      image_urls: Array.isArray(product.image_urls) && product.image_urls.length > 0 ? product.image_urls : [product.image_url || '']
+      image_urls: Array.isArray(product.image_urls) && product.image_urls.length > 0 ? product.image_urls : [product.image_url || ''],
+      weight_mode: product.weight_mode === 'range' ? 'range' : 'fixed',
+      weight_options: (() => {
+        let wo = product.weight_options;
+        if (typeof wo === 'string') {
+          try { wo = JSON.parse(wo); } catch { wo = []; }
+        }
+        return Array.isArray(wo) && wo.length > 0 ? wo.map(Number) : [1, 2, 5, 10];
+      })(),
+      weight_min: product.weight_min ?? 1,
+      weight_max: product.weight_max ?? 10,
+      weight_step: product.weight_step ?? 1
     });
     setIsAddModalOpen(true);
+  }
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  function toggleWeightOption(w: number) {
+    const current: number[] = editingProduct ? editFormData.weight_options : newProduct.weight_options;
+    const next = current.includes(w)
+      ? current.filter((x) => x !== w)
+      : [...current, w].sort((a, b) => a - b);
+    if (editingProduct) setEditFormData({ ...editFormData, weight_options: next });
+    else setNewProduct({ ...newProduct, weight_options: next });
+  }
+
+  function addCustomWeightOption() {
+    const val = parseFloat(customWeightInput);
+    if (!val || val <= 0) { setCustomWeightInput(''); return; }
+    const current: number[] = editingProduct ? editFormData.weight_options : newProduct.weight_options;
+    if (current.includes(val)) { setCustomWeightInput(''); return; }
+    const next = [...current, val].sort((a, b) => a - b);
+    if (editingProduct) setEditFormData({ ...editFormData, weight_options: next });
+    else setNewProduct({ ...newProduct, weight_options: next });
+    setCustomWeightInput('');
   }
 
   async function handleProductSubmit(e: React.FormEvent) {
@@ -434,6 +480,11 @@ function ProductsContent() {
         category_slug,
         image_url: editFormData.image_url || (editFormData.image_urls || []).find((u: string) => u && u.trim() !== '') || '',
         image_urls: [editFormData.image_url, ...(editFormData.image_urls || [])].filter(url => url && url.trim() !== ''),
+        weight_mode: editFormData.weight_mode,
+        weight_options: editFormData.weight_options,
+        weight_min: Number(editFormData.weight_min) || 1,
+        weight_max: Number(editFormData.weight_max) || 10,
+        weight_step: Number(editFormData.weight_step) || 1,
         updated_at: new Date().toISOString()
       };
 
@@ -496,6 +547,11 @@ function ProductsContent() {
         category_slug,
         image_url: newProduct.image_url || (newProduct.image_urls || []).find((u: string) => u && u.trim() !== '') || '',
         image_urls: [newProduct.image_url, ...(newProduct.image_urls || [])].filter(url => url && url.trim() !== ''),
+        weight_mode: newProduct.weight_mode,
+        weight_options: newProduct.weight_options,
+        weight_min: Number(newProduct.weight_min) || 1,
+        weight_max: Number(newProduct.weight_max) || 10,
+        weight_step: Number(newProduct.weight_step) || 1,
         in_stock: true,
         is_active: true,
         created_at: new Date().toISOString(),
@@ -524,7 +580,12 @@ function ProductsContent() {
           order_index: 0,
           stock: 100,
           is_seasonal: false,
-          image_urls: ['']
+          image_urls: [''],
+          weight_mode: 'fixed',
+          weight_options: [1, 2, 5, 10],
+          weight_min: 1,
+          weight_max: 10,
+          weight_step: 1
         });
       } else {
         console.error('Add product error:', error);
@@ -1384,6 +1445,120 @@ function ProductsContent() {
                         </div>
                       </div>
                     </div>
+                  </div>
+
+                  {/* Customer Quantity Options: admin controls exactly which weights/quantities the customer can choose on the product page. */}
+                  <div className="space-y-4 bg-slate-50 p-6 rounded-3xl border-2 border-slate-100">
+                    <label className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 ml-1">Customer Quantity Options</label>
+
+                    <div className="flex gap-3">
+                      <button
+                        type="button"
+                        onClick={() => editingProduct
+                          ? setEditFormData({ ...editFormData, weight_mode: 'fixed' })
+                          : setNewProduct({ ...newProduct, weight_mode: 'fixed' })}
+                        className={`flex-1 py-3 rounded-xl font-black text-xs uppercase tracking-widest border-2 transition-all ${
+                          (editingProduct ? editFormData.weight_mode : newProduct.weight_mode) === 'fixed'
+                            ? 'border-primary bg-primary/10 text-primary'
+                            : 'border-slate-200 bg-white text-slate-500'
+                        }`}
+                      >
+                        Fixed Options
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => editingProduct
+                          ? setEditFormData({ ...editFormData, weight_mode: 'range' })
+                          : setNewProduct({ ...newProduct, weight_mode: 'range' })}
+                        className={`flex-1 py-3 rounded-xl font-black text-xs uppercase tracking-widest border-2 transition-all ${
+                          (editingProduct ? editFormData.weight_mode : newProduct.weight_mode) === 'range'
+                            ? 'border-primary bg-primary/10 text-primary'
+                            : 'border-slate-200 bg-white text-slate-500'
+                        }`}
+                      >
+                        Range
+                      </button>
+                    </div>
+
+                    {(editingProduct ? editFormData.weight_mode : newProduct.weight_mode) === 'fixed' ? (
+                      <div className="space-y-3">
+                        <p className="text-xs text-slate-500 font-medium">Tick the weights customers should be able to choose. Untick one to hide it (e.g. hide 1 kg and keep only 5 kg / 10 kg).</p>
+                        <div className="flex flex-wrap gap-2">
+                          {[1, 2, 3, 5, 10, 15, 20, 25, 50].map((w) => {
+                            const current: number[] = editingProduct ? editFormData.weight_options : newProduct.weight_options;
+                            const checked = current.includes(w);
+                            return (
+                              <button
+                                type="button"
+                                key={w}
+                                onClick={() => toggleWeightOption(w)}
+                                className={`px-4 py-2 rounded-xl border-2 font-bold text-sm transition-all ${checked ? 'border-primary bg-primary/10 text-primary' : 'border-slate-200 bg-white text-slate-500 hover:border-primary/40'}`}
+                              >
+                                {w} kg
+                              </button>
+                            );
+                          })}
+                        </div>
+                        <div className="flex gap-2">
+                          <input
+                            type="number"
+                            min="0.1"
+                            step="0.1"
+                            placeholder="Custom value (e.g. 30)"
+                            className="flex-1 px-4 py-3 rounded-xl border-2 border-slate-100 focus:border-primary/30 outline-none font-bold text-sm"
+                            value={customWeightInput}
+                            onChange={(e) => setCustomWeightInput(e.target.value)}
+                            onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); addCustomWeightOption(); } }}
+                          />
+                          <button type="button" onClick={addCustomWeightOption} className="px-5 bg-slate-900 text-white rounded-xl font-black text-xs uppercase tracking-widest hover:bg-primary transition-all">
+                            Add
+                          </button>
+                        </div>
+                        {(editingProduct ? editFormData.weight_options : newProduct.weight_options).length > 0 && (
+                          <div className="flex flex-wrap gap-2">
+                            {(editingProduct ? editFormData.weight_options : newProduct.weight_options).map((w: number) => (
+                              <span key={w} className="flex items-center gap-1 px-3 py-1.5 bg-primary/10 text-primary rounded-full text-xs font-bold">
+                                {w} kg
+                                <button type="button" onClick={() => toggleWeightOption(w)} className="hover:text-red-500"><X size={12} /></button>
+                              </span>
+                            ))}
+                          </div>
+                        )}
+                        {(editingProduct ? editFormData.weight_options : newProduct.weight_options).length === 0 && (
+                          <p className="text-red-500 text-xs font-bold">Select at least one weight, otherwise customers won&apos;t be able to order this product.</p>
+                        )}
+                      </div>
+                    ) : (
+                      <div className="grid grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                          <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">Min (kg)</label>
+                          <input
+                            type="number"
+                            min="0.1"
+                            step="0.1"
+                            className="w-full px-4 py-3 rounded-xl border-2 border-slate-100 focus:border-primary/30 outline-none font-bold text-sm"
+                            value={editingProduct ? editFormData.weight_min : newProduct.weight_min}
+                            onChange={(e) => editingProduct
+                              ? setEditFormData({ ...editFormData, weight_min: parseFloat(e.target.value) || 1 })
+                              : setNewProduct({ ...newProduct, weight_min: parseFloat(e.target.value) || 1 })}
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">Max (kg)</label>
+                          <input
+                            type="number"
+                            min="0.1"
+                            step="0.1"
+                            className="w-full px-4 py-3 rounded-xl border-2 border-slate-100 focus:border-primary/30 outline-none font-bold text-sm"
+                            value={editingProduct ? editFormData.weight_max : newProduct.weight_max}
+                            onChange={(e) => editingProduct
+                              ? setEditFormData({ ...editFormData, weight_max: parseFloat(e.target.value) || 1 })
+                              : setNewProduct({ ...newProduct, weight_max: parseFloat(e.target.value) || 1 })}
+                          />
+                        </div>
+                        <p className="col-span-2 text-xs text-slate-500 font-medium">Customers can choose any whole quantity between Min and Max (e.g. 1 to 50 kg).</p>
+                      </div>
+                    )}
                   </div>
 
                   <div className="space-y-3">

@@ -13,6 +13,20 @@ import { FALLBACK_PRODUCTS, getSmartRecommendations, getTrendingProducts } from 
 import ProductReviews from './ProductReviews';
 import { useTranslation } from '@/context/TranslationContext';
 
+// Picks the starting quantity for a product based on its admin-configured
+// weight options, instead of always defaulting to 1 (which may be hidden).
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function getDefaultQuantity(p: any): number {
+  if (!p) return 1;
+  if (p.weight_mode === 'range') return Number(p.weight_min) || 1;
+  let wo = p.weight_options;
+  if (typeof wo === 'string') {
+    try { wo = JSON.parse(wo); } catch { wo = []; }
+  }
+  const opts: number[] = Array.isArray(wo) && wo.length > 0 ? wo.map(Number).sort((a: number, b: number) => a - b) : [1, 2, 5, 10];
+  return opts[0];
+}
+
 interface ProductDetailModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -27,6 +41,11 @@ interface ProductDetailModalProps {
     stock?: number;
     original_price?: number;
     is_seasonal?: boolean;
+    weight_mode?: 'fixed' | 'range';
+    weight_options?: number[] | string;
+    weight_min?: number;
+    weight_max?: number;
+    weight_step?: number;
   } | null;
 }
 
@@ -53,10 +72,12 @@ export default function ProductDetailModal({ isOpen, onClose, product }: Product
     if (isOpen && product) {
       // eslint-disable-next-line react-hooks/set-state-in-effect
       setCurrentProduct(product);
-      setQuantity(1);
       setImageError(false);
       setSelectedMedia(null);
       setIsLightboxOpen(false);
+      // Start at the smallest quantity the admin allows for this product
+      // (1kg may be hidden), instead of always defaulting to 1.
+      setQuantity(getDefaultQuantity(product));
     }
   }, [isOpen, product]);
 
@@ -99,6 +120,21 @@ export default function ProductDetailModal({ isOpen, onClose, product }: Product
   const avgRating = Number(cp.average_rating) || 0;
   const reviewCount = Number(cp.review_count) || 0;
 
+  // ── Admin-configured quantity options ─────────────────────────────────
+  // 'fixed' = customer can only pick from weightOptions (e.g. only 5kg, or 5kg+10kg).
+  // 'range' = customer can pick any whole value between weightMin and weightMax.
+  const weightMode: 'fixed' | 'range' = cp.weight_mode === 'range' ? 'range' : 'fixed';
+  const weightOptions: number[] = (() => {
+    let wo = cp.weight_options;
+    if (typeof wo === 'string') {
+      try { wo = JSON.parse(wo); } catch { wo = []; }
+    }
+    return Array.isArray(wo) && wo.length > 0 ? wo.map(Number).sort((a, b) => a - b) : [1, 2, 5, 10];
+  })();
+  const weightMin = Number(cp.weight_min) || 1;
+  const weightMax = Number(cp.weight_max) || 10;
+  const weightStep = Number(cp.weight_step) || 1;
+
   // ── Image gallery (image_urls can be a JSON string in the DB) ────────
   let rawUrls = cp.image_urls;
   if (typeof rawUrls === 'string') {
@@ -119,6 +155,29 @@ export default function ProductDetailModal({ isOpen, onClose, product }: Product
     'Harvested fresh and delivered from farm to table within 24 hours',
     'Sustainably grown with zero waste packaging',
   ];
+
+  // Step the quantity down/up, respecting the admin's configured mode:
+  // 'fixed' jumps between the exact allowed values only; 'range' steps by
+  // weightStep but never goes outside [weightMin, weightMax].
+  const stepQuantityDown = () => {
+    if (weightMode === 'fixed') {
+      const idx = weightOptions.indexOf(quantity);
+      setQuantity(weightOptions[idx > 0 ? idx - 1 : 0] ?? weightOptions[0]);
+    } else {
+      setQuantity(q => Math.max(weightMin, Math.round((q - weightStep) * 100) / 100));
+    }
+  };
+  const stepQuantityUp = () => {
+    if (weightMode === 'fixed') {
+      const idx = weightOptions.indexOf(quantity);
+      const lastIdx = weightOptions.length - 1;
+      setQuantity(weightOptions[idx >= 0 && idx < lastIdx ? idx + 1 : lastIdx] ?? weightOptions[lastIdx]);
+    } else {
+      setQuantity(q => Math.min(weightMax, Math.round((q + weightStep) * 100) / 100));
+    }
+  };
+  const isAtMinQuantity = weightMode === 'fixed' ? quantity <= weightOptions[0] : quantity <= weightMin;
+  const isAtMaxQuantity = weightMode === 'fixed' ? quantity >= weightOptions[weightOptions.length - 1] : quantity >= weightMax;
 
   const triggerAddedOverlay = () => {
     setShowAddedOverlay(true);
@@ -311,29 +370,35 @@ export default function ProductDetailModal({ isOpen, onClose, product }: Product
                 </ul>
               </div>
 
-              {/* Quick Select Options */}
-              <div className="mb-4">
-                <span className="text-sm font-bold text-slate-700 block mb-2">Select Quantity:</span>
-                <div className="flex items-center gap-2 flex-wrap">
-                  {[1, 2, 5, 10].map(w => (
-                    <button
-                      key={w}
-                      onClick={() => setQuantity(w)}
-                      className={`px-4 py-2 rounded-xl border-2 font-bold text-sm transition-all ${quantity === w ? 'border-primary bg-primary/10 text-primary shadow-sm' : 'border-border bg-white text-slate-600 hover:border-primary/50'}`}
-                    >
-                      {w} {unitLabel}
-                    </button>
-                  ))}
+              {/* Quick Select Options (admin-configured: fixed list or a min-max range) */}
+              {weightMode === 'fixed' ? (
+                <div className="mb-4">
+                  <span className="text-sm font-bold text-slate-700 block mb-2">Select Quantity:</span>
+                  <div className="flex items-center gap-2 flex-wrap">
+                    {weightOptions.map(w => (
+                      <button
+                        key={w}
+                        onClick={() => setQuantity(w)}
+                        className={`px-4 py-2 rounded-xl border-2 font-bold text-sm transition-all ${quantity === w ? 'border-primary bg-primary/10 text-primary shadow-sm' : 'border-border bg-white text-slate-600 hover:border-primary/50'}`}
+                      >
+                        {w} {unitLabel}
+                      </button>
+                    ))}
+                  </div>
                 </div>
-              </div>
+              ) : (
+                <div className="mb-4">
+                  <span className="text-sm font-bold text-slate-700 block mb-2">Select Quantity ({weightMin}–{weightMax} {unitLabel}):</span>
+                </div>
+              )}
 
               {/* Qty + actions */}
               <div className="flex flex-col gap-6 mb-12">
                 <div className="flex items-center gap-4">
                   <div className="flex items-center gap-8 bg-muted/40 rounded-2xl px-8 py-4 border border-border">
-                    <button onClick={() => setQuantity(q => Math.max(1, q - 1))} className="p-1 hover:text-primary transition-colors disabled:opacity-30" disabled={quantity <= 1}><Minus size={24} /></button>
+                    <button onClick={stepQuantityDown} className="p-1 hover:text-primary transition-colors disabled:opacity-30" disabled={isAtMinQuantity}><Minus size={24} /></button>
                     <span className="text-3xl font-black min-w-[2rem] text-center">{quantity}</span>
-                    <button onClick={() => setQuantity(q => q + 1)} className="p-1 hover:text-primary transition-colors"><Plus size={24} /></button>
+                    <button onClick={stepQuantityUp} className="p-1 hover:text-primary transition-colors disabled:opacity-30" disabled={isAtMaxQuantity}><Plus size={24} /></button>
                   </div>
                   <button onClick={() => setIsFavorite(!isFavorite)} className={`w-16 h-16 rounded-2xl flex items-center justify-center transition-all border-2 ${isFavorite ? 'bg-red-50 border-red-200 text-red-500 shadow-lg' : 'bg-white border-border text-muted-foreground'}`}><Heart size={28} className={isFavorite ? 'fill-current' : ''} /></button>
                 </div>
@@ -343,7 +408,7 @@ export default function ProductDetailModal({ isOpen, onClose, product }: Product
                 </div>
               </div>
 
-              {relatedProducts.length > 0 && <div className="border-t border-border/60 pt-12 mt-12"><QuickAddCarousel products={relatedProducts} title={t('product.details.similar_harvest')} onAddSuccess={triggerAddedOverlay} onProductClick={(p) => { setCurrentProduct(p); setQuantity(1); setImageError(false); }} /></div>}
+              {relatedProducts.length > 0 && <div className="border-t border-border/60 pt-12 mt-12"><QuickAddCarousel products={relatedProducts} title={t('product.details.similar_harvest')} onAddSuccess={triggerAddedOverlay} onProductClick={(p) => { setCurrentProduct(p); setQuantity(getDefaultQuantity(p)); setImageError(false); }} /></div>}
               <ProductReviews productId={currentProduct.id} /><div className="h-4" />
             </div>
 
