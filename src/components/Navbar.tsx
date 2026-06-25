@@ -275,12 +275,12 @@ export default function Navbar() {
 
       <CartDrawer isOpen={isCartOpen} onClose={closeCart} />
       <WishlistDrawer />
-      <NotificationsDrawer isOpen={isNotificationsOpen} onClose={() => setIsNotificationsOpen(false)} />
+      <NotificationsDrawer isOpen={isNotificationsOpen} onClose={() => setIsNotificationsOpen(false)} onMarkRead={fetchUnreadCount} />
     </>
   );
 }
 
-function NotificationsDrawer({ isOpen, onClose }: { isOpen: boolean, onClose: () => void }) {
+function NotificationsDrawer({ isOpen, onClose, onMarkRead }: { isOpen: boolean, onClose: () => void, onMarkRead?: () => void }) {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [notifications, setNotifications] = React.useState<any[]>([]);
   const [loading, setLoading] = React.useState(true);
@@ -303,7 +303,24 @@ function NotificationsDrawer({ isOpen, onClose }: { isOpen: boolean, onClose: ()
           console.warn('[Navbar] Notification fetch error:', error.message);
         }
       } else {
-        setNotifications(data || []);
+        const list = data || [];
+        setNotifications(list);
+
+        // Customer has now seen these notifications — mark any unread ones
+        // as read so the bell's red unread count clears immediately.
+        const unreadIds = list.filter((n) => !n.is_read).map((n) => n.id);
+        if (unreadIds.length > 0) {
+          const { error: markErr } = await supabase
+            .from('notifications')
+            .update({ is_read: true })
+            .in('id', unreadIds);
+          if (!markErr) {
+            setNotifications(prev => prev.map(n => unreadIds.includes(n.id) ? { ...n, is_read: true } : n));
+            onMarkRead?.();
+          } else {
+            console.warn('[Navbar] Failed to mark notifications read:', markErr.message);
+          }
+        }
       }
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {
@@ -377,22 +394,27 @@ function NotificationsDrawer({ isOpen, onClose }: { isOpen: boolean, onClose: ()
             </div>
           ) : (
             notifications.map((notif) => {
-              let targetLink = notif.link || '/profile?tab=orders';
+              // Redirect to wherever this specific notification points to.
+              // Only fall back to the orders tab for order-related notifications —
+              // everything else (offers/promo/system) falls back to the home page
+              // instead of being forced onto an unrelated "orders" screen.
+              let targetLink = notif.link || (notif.type === 'order_status' ? '/profile?tab=orders' : '/');
               const match = notif.message?.match(/#([A-Za-z0-9-]+)/) || notif.title?.match(/#([A-Za-z0-9-]+)/);
               if (match && (!notif.link || !notif.link.includes('order='))) {
                 targetLink = `/profile?tab=orders&order=${match[1]}`;
               }
-              
+
               return (
-                <Link 
-                  key={notif.id} 
-                  href={targetLink} 
+                <Link
+                  key={notif.id}
+                  href={targetLink}
                   onClick={async () => {
-                    // Mark as read locally and in DB
+                    // Mark as read locally, in DB, and sync the navbar's unread badge instantly
                     setNotifications(prev => prev.map(n => n.id === notif.id ? { ...n, is_read: true } : n));
                     await supabase.from('notifications').update({ is_read: true }).eq('id', notif.id);
+                    onMarkRead?.();
                     onClose();
-                  }} 
+                  }}
                   className={`block p-5 rounded-2xl border transition-all group bg-white ${notif.is_read ? 'border-border opacity-70' : 'border-primary/20 shadow-lg shadow-primary/5'}`}
                 >
                   <div className="flex justify-between items-start mb-2">
