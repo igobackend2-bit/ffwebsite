@@ -298,8 +298,8 @@ export default function Checkout() {
         if (AC) {
           const ctx = new AC();
           const start = ctx.currentTime;
-          // Rising two-note chime: G5 -> C6
-          [{ f: 783.99, t: 0 }, { f: 1046.5, t: 0.16 }].forEach(({ f, t }) => {
+          // "Cha-Ching" — quick double-ping, cash-register style: E6 -> G6
+          [{ f: 1318.51, t: 0, dur: 0.1 }, { f: 1567.98, t: 0.13, dur: 0.25 }].forEach(({ f, t, dur }) => {
             const osc = ctx.createOscillator();
             const gain = ctx.createGain();
             osc.type = 'sine';
@@ -307,10 +307,10 @@ export default function Checkout() {
             osc.connect(gain);
             gain.connect(ctx.destination);
             gain.gain.setValueAtTime(0.0001, start + t);
-            gain.gain.exponentialRampToValueAtTime(0.35, start + t + 0.03);
-            gain.gain.exponentialRampToValueAtTime(0.0001, start + t + 0.5);
+            gain.gain.exponentialRampToValueAtTime(0.4, start + t + 0.015);
+            gain.gain.exponentialRampToValueAtTime(0.0001, start + t + dur);
             osc.start(start + t);
-            osc.stop(start + t + 0.55);
+            osc.stop(start + t + dur + 0.02);
           });
         }
       } catch { /* sound is best-effort; never block the order flow */ }
