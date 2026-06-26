@@ -94,6 +94,7 @@ function ProfileContent() {
   // Settings States
   const [fullNameState, setFullNameState] = useState('');
   const [phoneState, setPhoneState] = useState('');
+  const [emailState, setEmailState] = useState('');
   const [emailNotifications, setEmailNotifications] = useState(true);
   const [savingSettings, setSavingSettings] = useState(false);
 
@@ -190,6 +191,7 @@ function ProfileContent() {
         if (profileData) {
           setFullNameState(profileData.full_name || '');
           setPhoneState(profileData.phone || '');
+          setEmailState(profileData.email || user?.email || '');
           setEmailNotifications(profileData.email_notifications_enabled !== false);
         }
         
@@ -210,6 +212,10 @@ function ProfileContent() {
       toast.error('Please enter your full name');
       return;
     }
+    if (emailState.trim() && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailState.trim())) {
+      toast.error('Please enter a valid email address');
+      return;
+    }
     setSavingSettings(true);
     try {
       const { error } = await supabase
@@ -217,21 +223,23 @@ function ProfileContent() {
         .update({
           full_name: fullNameState.trim(),
           phone: phoneState.trim(),
+          email: emailState.trim() || null,
           email_notifications_enabled: emailNotifications,
           updated_at: new Date().toISOString()
         })
         .eq('id', user?.id);
 
       if (error) throw error;
-      
+
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       setProfile((prev: any) => ({
         ...prev,
         full_name: fullNameState.trim(),
         phone: phoneState.trim(),
+        email: emailState.trim() || null,
         email_notifications_enabled: emailNotifications
       }));
-      
+
       toast.success('Settings updated successfully!');
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {
@@ -611,11 +619,12 @@ function ProfileContent() {
                       </div>
                       <div className="space-y-2 md:col-span-2">
                         <label className="text-xs font-black text-slate-400 uppercase tracking-widest ml-1">{t('profile.email')}</label>
-                        <input 
-                          type="email" 
-                          value={user?.email || ''} 
-                          disabled 
-                          className="w-full bg-slate-100 border border-slate-100 rounded-xl py-3 px-6 text-sm font-bold text-slate-400 cursor-not-allowed" 
+                        <input
+                          type="email"
+                          value={emailState}
+                          onChange={(e) => setEmailState(e.target.value)}
+                          placeholder="Add your email address"
+                          className="w-full bg-slate-50 border border-slate-100 rounded-xl py-3 px-6 text-sm font-bold focus:ring-2 focus:ring-primary/20 outline-none"
                         />
                       </div>
                     </div>

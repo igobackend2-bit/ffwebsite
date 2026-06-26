@@ -150,6 +150,14 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const addToCart = async (productId: string, quantity = 1, productData?: any): Promise<boolean> => {
+    // Guard against non-database (demo/fallback) product ids, e.g. "v-23".
+    // These are not real products and can never be added to the basket.
+    const isValidUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(productId);
+    if (!isValidUuid) {
+      console.error('[Cart] Rejected non-UUID product id:', productId);
+      toast.error('Sorry, not able to add this item right now.', { duration: 4000 });
+      return false;
+    }
     try {
       if (user) {
         // ── Atomic upsert: works whether product is new OR already in cart ──
@@ -163,7 +171,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
 
         if (fetchError) {
           console.error('[Cart] Fetch-before-upsert error:', fetchError);
-          toast.error(`Basket error: ${fetchError.message}`, { duration: 5000 });
+          toast.error('Sorry, not able to add this item right now.', { duration: 4000 });
           throw fetchError;
         }
 
@@ -211,11 +219,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
           console.error('[Cart] Upsert error:', error);
           // Revert optimistic update on failure
           fetchCart();
-          if (error.code === '42501' || error.message?.includes('policy')) {
-            toast.error('Basket access denied. Please logout and login again.', { duration: 5000 });
-          } else {
-            toast.error(`Basket error: ${error.message}`, { duration: 5000 });
-          }
+          toast.error('Sorry, not able to add this item right now.', { duration: 4000 });
           throw error;
         }
 

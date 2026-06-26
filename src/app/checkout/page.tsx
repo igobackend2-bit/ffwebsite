@@ -244,10 +244,16 @@ export default function Checkout() {
 
       for (const item of cartItems) {
         try {
-          await supabase.rpc('decrement_stock', {
+          // Note: supabase.rpc() resolves with { error }, it does not throw —
+          // the error must be checked explicitly or stock-decrement failures
+          // (and the low-stock admin alert that depends on them) go unnoticed.
+          const { error: stockError } = await supabase.rpc('decrement_stock', {
             product_id: item.product_id,
             quantity: item.quantity
           });
+          if (stockError) {
+            console.error('[Checkout] Stock decrement failed for item:', item.product_id, stockError);
+          }
         } catch (e) {
           console.error('[Checkout] Stock decrement failed for item:', item.product_id, e);
         }
