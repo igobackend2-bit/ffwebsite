@@ -62,11 +62,14 @@ export default function AdminReviews() {
   async function deleteReview(id: string) {
     if (!confirm('Are you sure you want to delete this review?')) return;
 
-    const { error } = await supabase.from('reviews').delete().eq('id', id);
-    if (!error) {
+    try {
+      const res = await fetch(`/api/admin/reviews?id=${id}`, { method: 'DELETE' }).then(r => r.json());
+      if (res.error) throw new Error(res.error);
+
       setReviews(prev => prev.filter(r => r.id !== id));
       toast.success('Review deleted');
-    } else {
+    } catch (err) {
+      console.error('Error deleting review:', err);
       toast.error('Failed to delete review');
     }
   }
