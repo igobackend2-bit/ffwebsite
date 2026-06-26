@@ -21,11 +21,49 @@ function getAdminClient() {
   return createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY);
 }
 
-export async function GET() {
+export async function GET(req: Request) {
   try {
     const supabase = getAdminClient();
     if (!supabase) {
       return NextResponse.json({ error: 'Server is missing Supabase service-role configuration' }, { status: 500 });
+    }
+
+    const { searchParams } = new URL(req.url);
+    const customerId = searchParams.get('customerId');
+
+    // Per-customer detail lookup (orders + addresses + coupons used) for the
+    // CRM detail modal. This goes through the service-role key for the same
+    // reason as the profiles list below: reading `orders`/`addresses` for a
+    // customer OTHER than the logged-in admin straight from the browser
+    // depends on an is_admin()-style RLS exception that may not exist (or be
+    // active) on every table, which previously caused "Failed to load
+    // complete customer profile" even though the rows exist.
+    if (customerId) {
+      const [ordersRes, addressesRes] = await Promise.all([
+        supabase.from('orders').select('*').eq('user_id', customerId).order('created_at', { ascending: false }),
+        supabase.from('addresses').select('*').eq('user_id', customerId)
+      ]);
+
+      if (ordersRes.error) {
+        return NextResponse.json({ error: ordersRes.error.message }, { status: 500 });
+      }
+      if (addressesRes.error) {
+        return NextResponse.json({ error: addressesRes.error.message }, { status: 500 });
+      }
+
+      const orders = ordersRes.data || [];
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const couponIds = Array.from(new Set(orders.map((o: any) => o.coupon_id).filter(Boolean)));
+      let coupons: unknown[] = [];
+      if (couponIds.length > 0) {
+        const { data: couponsData } = await supabase
+          .from('coupons')
+          .select('id, code, discount_type, discount_value')
+          .in('id', couponIds);
+        coupons = couponsData || [];
+      }
+
+      return NextResponse.json({ orders, addresses: addressesRes.data || [], coupons });
     }
 
     const { data, error } = await supabase

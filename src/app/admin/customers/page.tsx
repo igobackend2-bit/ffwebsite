@@ -92,32 +92,18 @@ export default function AdminCustomersPage() {
     setIsModalOpen(true);
     setLoadingDetails(true);
     try {
-      const [ordersRes, addressesRes] = await Promise.all([
-        supabase.from('orders').select('*').eq('user_id', customer.id).order('created_at', { ascending: false }),
-        supabase.from('addresses').select('*').eq('user_id', customer.id)
-      ]);
+      // Fetched via a server-side admin API route (service-role key) for the
+      // same reason the profiles list is: reading another customer's
+      // `orders`/`addresses` straight from the browser depends on RLS
+      // admin-exceptions that aren't guaranteed to exist/be active on every
+      // table, which previously caused "Failed to load complete customer
+      // profile" even though the rows exist.
+      const res = await fetch(`/api/admin/customers?customerId=${customer.id}`).then(r => r.json());
+      if (res.error) throw new Error(res.error);
 
-      if (ordersRes.error) throw ordersRes.error;
-      if (addressesRes.error) throw addressesRes.error;
-
-      const orders = ordersRes.data || [];
-      setCustomerOrders(orders);
-      setCustomerSavedAddresses(addressesRes.data || []);
-
-      // Coupons used: look up any coupon_id referenced on this customer's
-      // orders against the coupons table. Kept best-effort/non-fatal since
-      // it's a bonus insight, not core order/profile data.
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const couponIds = Array.from(new Set(orders.map((o: any) => o.coupon_id).filter(Boolean)));
-      if (couponIds.length > 0) {
-        const { data: couponsData } = await supabase
-          .from('coupons')
-          .select('id, code, discount_type, discount_value')
-          .in('id', couponIds);
-        setCustomerCoupons(couponsData || []);
-      } else {
-        setCustomerCoupons([]);
-      }
+      setCustomerOrders(res.orders || []);
+      setCustomerSavedAddresses(res.addresses || []);
+      setCustomerCoupons(res.coupons || []);
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {
       console.error('Error fetching customer details:', err.message);
