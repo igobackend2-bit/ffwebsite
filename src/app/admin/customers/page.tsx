@@ -24,6 +24,8 @@ export default function AdminCustomersPage() {
   const [customerOrders, setCustomerOrders] = useState<any[]>([]);
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [customerSavedAddresses, setCustomerSavedAddresses] = useState<any[]>([]);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const [customerCoupons, setCustomerCoupons] = useState<any[]>([]);
   const [loadingDetails, setLoadingDetails] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
@@ -35,20 +37,26 @@ export default function AdminCustomersPage() {
   const fetchCustomers = async () => {
     try {
       setLoading(true);
-      // Fetch profiles and orders separately to avoid relation mapping issues in Supabase
-      const [profilesRes, ordersRes] = await Promise.all([
-        supabase.from('profiles').select('*').order('created_at', { ascending: false }),
+      // Profiles are fetched via a server-side admin API route (service-role
+      // key) instead of the browser client. Reading `profiles` straight from
+      // the browser depends on the is_admin() RLS check, which depends on
+      // the admin's own profiles.role staying 'admin' — a value the shared
+      // ERP database has reset before, which silently zeroed out this page
+      // (0 customers) even though the rows exist. The API route bypasses
+      // that fragile check so the real data always loads.
+      const [profilesJsonRes, ordersRes] = await Promise.all([
+        fetch('/api/admin/customers').then(r => r.json()),
         supabase.from('orders').select('id, user_id, total_amount')
       ]);
-      
-      if (profilesRes.error) throw profilesRes.error;
+
+      if (profilesJsonRes.error) throw new Error(profilesJsonRes.error);
       if (ordersRes.error) throw ordersRes.error;
-      
+
       // Hide internal ERP staff accounts from the store's customer list.
       // These share the same database and must NOT be deleted (the ERP
       // references them), but they are not website customers.
       const STAFF_DOMAINS = ['@farmersfactory.in', '@farmersfactory.com', '@ffactory.com', '@famersfactory.com'];
-      const profiles = (profilesRes.data || []).filter(
+      const profiles = (profilesJsonRes.profiles || []).filter(
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         (c: any) => !STAFF_DOMAINS.some(d => (c.email || '').toLowerCase().endsWith(d))
       );
@@ -92,8 +100,24 @@ export default function AdminCustomersPage() {
       if (ordersRes.error) throw ordersRes.error;
       if (addressesRes.error) throw addressesRes.error;
 
-      setCustomerOrders(ordersRes.data || []);
+      const orders = ordersRes.data || [];
+      setCustomerOrders(orders);
       setCustomerSavedAddresses(addressesRes.data || []);
+
+      // Coupons used: look up any coupon_id referenced on this customer's
+      // orders against the coupons table. Kept best-effort/non-fatal since
+      // it's a bonus insight, not core order/profile data.
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const couponIds = Array.from(new Set(orders.map((o: any) => o.coupon_id).filter(Boolean)));
+      if (couponIds.length > 0) {
+        const { data: couponsData } = await supabase
+          .from('coupons')
+          .select('id, code, discount_type, discount_value')
+          .in('id', couponIds);
+        setCustomerCoupons(couponsData || []);
+      } else {
+        setCustomerCoupons([]);
+      }
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {
       console.error('Error fetching customer details:', err.message);
@@ -222,8 +246,14 @@ export default function AdminCustomersPage() {
                             e.stopPropagation();
                             const newPoints = prompt('Enter new points balance:', customer.points || 0);
                             if (newPoints !== null) {
-                              supabase.from('profiles').update({ points: parseInt(newPoints) }).eq('id', customer.id)
-                                .then(() => {
+                              fetch('/api/admin/customers', {
+                                method: 'PATCH',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({ id: customer.id, points: parseInt(newPoints) })
+                              })
+                                .then(r => r.json())
+                                .then((res) => {
+                                  if (res.error) { toast.error(res.error); return; }
                                   toast.success('Points updated');
                                   fetchCustomers();
                                 });
@@ -263,12 +293,12 @@ export default function AdminCustomersPage() {
                         onClick={async (e) => {
                           e.stopPropagation();
                           if (confirm('Are you sure you want to delete this customer profile? This action is permanent.')) {
-                            const { error } = await supabase.from('profiles').delete().eq('id', customer.id);
-                            if (!error) {
+                            const res = await fetch(`/api/admin/customers?id=${customer.id}`, { method: 'DELETE' }).then(r => r.json());
+                            if (!res.error) {
                               toast.success('Customer deleted successfully');
                               fetchCustomers();
                             } else {
-                              toast.error(error.message);
+                              toast.error(res.error);
                             }
                           }
                         }}
@@ -401,8 +431,14 @@ export default function AdminCustomersPage() {
                               const amt = prompt('Modify Points balance (enter positive or negative number):', '100');
                               if (amt) {
                                 const newPts = (selectedCustomer.points || 0) + parseInt(amt);
-                                supabase.from('profiles').update({ points: newPts }).eq('id', selectedCustomer.id)
-                                  .then(() => {
+                                fetch('/api/admin/customers', {
+                                  method: 'PATCH',
+                                  headers: { 'Content-Type': 'application/json' },
+                                  body: JSON.stringify({ id: selectedCustomer.id, points: newPts })
+                                })
+                                  .then(r => r.json())
+                                  .then((res) => {
+                                    if (res.error) { toast.error(res.error); return; }
                                     toast.success('Loyalty balance updated!');
                                     // eslint-disable-next-line @typescript-eslint/no-explicit-any
                                     setSelectedCustomer((prev: any) => ({ ...prev, points: newPts }));
@@ -429,6 +465,25 @@ export default function AdminCustomersPage() {
                                 <p className="text-[10px] font-black uppercase tracking-widest text-primary">{addr.address_type || 'Address'}</p>
                                 <p className="text-xs font-black text-slate-800">{addr.full_name} • {addr.phone}</p>
                                 <p className="text-xs text-slate-500 leading-normal">{addr.street}, {addr.city} - {addr.zip_code}</p>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Coupons Used */}
+                      <div className="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm space-y-4">
+                        <h4 className="text-xs font-black uppercase tracking-widest text-primary border-b border-slate-100 pb-3">Coupons Used</h4>
+                        {customerCoupons.length === 0 ? (
+                          <p className="text-xs text-slate-400 italic">No coupons used yet.</p>
+                        ) : (
+                          <div className="space-y-2">
+                            {customerCoupons.map((cp) => (
+                              <div key={cp.id} className="flex items-center justify-between p-3 bg-slate-50 border border-slate-100 rounded-xl">
+                                <span className="font-mono text-xs font-black text-slate-800">{cp.code}</span>
+                                <span className="text-[10px] font-black uppercase text-primary bg-primary/10 px-2 py-0.5 rounded-full border border-primary/20">
+                                  {cp.discount_type === 'percentage' ? `${cp.discount_value}% OFF` : `₹${cp.discount_value} OFF`}
+                                </span>
                               </div>
                             ))}
                           </div>
