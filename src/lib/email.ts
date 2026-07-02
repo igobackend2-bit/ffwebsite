@@ -24,7 +24,8 @@ export interface EmailData {
     | 'order_shipped'
     | 'order_delivered'
     | 'order_cancelled'
-    | 'order_rejected';
+    | 'order_rejected'
+    | 'feedback_request';
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   data: any;
 }
@@ -106,4 +107,12 @@ export const sendOrderStatusEmail = (email: string, orderId: string, status: str
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     template: `order_${status}` as any,
     data: { orderId, orderNumber: orderNumber || orderId.slice(0, 8), status },
+  });
+
+export const sendFeedbackRequestEmail = (email: string, orderNumber: string, customerName: string, token: string) =>
+  sendLiveEmail({
+    to: email,
+    subject: `How was your delivery? #${orderNumber} — Farmers Factory`,
+    template: 'feedback_request',
+    data: { orderNumber, customerName, token },
   });

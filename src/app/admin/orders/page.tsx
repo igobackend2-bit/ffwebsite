@@ -1,12 +1,13 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
-import { 
-  getAllOrders, 
+import {
+  getAllOrders,
   updateOrderStatus,
   getCustomerStats,
   getOrderDetails
 } from '@/lib/admin';
+import { createFeedbackRequest } from '@/lib/feedback';
 import { 
   ShoppingBag, 
   Clock, 
@@ -193,6 +194,14 @@ function OrdersContent() {
           else if (result.skipped) console.warn('[Email] SMTP not configured');
           else console.error('[Email] Failed:', result.error);
         }).catch(err => console.error('[Email] Network error:', err));
+      }
+
+      // Post-delivery feedback request — fires once, only on the transition
+      // to 'delivered'. Creates the feedback row + sends the survey email.
+      if (newStatus === 'delivered') {
+        createFeedbackRequest(order).catch(err =>
+          console.error('[Feedback] Failed to create request:', err)
+        );
       }
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {

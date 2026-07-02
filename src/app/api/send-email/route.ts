@@ -734,6 +734,29 @@ function buildHtml(template: string, data: any, items: any[] = []): string {
       break;
     }
 
+    // ── Feedback Request (post-delivery) ───────────────────────────────────────
+    case 'feedback_request': {
+      const feedbackUrl = `${SITE_URL}/feedback/${data.token}`;
+      rows = `
+        ${logoBar()}
+        ${heroBanner('How Was Your Delivery? 🌟',
+          'Your feedback helps our farmers grow better produce for you.',
+          `linear-gradient(135deg, ${BRAND_GREEN} 0%, #43A047 100%)`)}
+        ${greeting(customerName,
+          `We hope you enjoyed your order <strong>#${orderNumber}</strong>! It only takes a minute to tell us how it went — no login needed.`)}
+        ${ctaButton('SHARE YOUR FEEDBACK', feedbackUrl)}
+        <tr>
+          <td style="padding:0 36px 20px;">
+            <p style="margin:0;font-size:12px;color:${BRAND_MUTED};line-height:1.75;text-align:center;">
+              This link is unique to your order and can only be used once.
+            </p>
+          </td>
+        </tr>
+        ${supportBlock()}
+      `;
+      break;
+    }
+
     // ── Order Cancelled ────────────────────────────────────────────────────────
     case 'order_cancelled': {
       rows = `

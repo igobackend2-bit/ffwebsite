@@ -164,6 +164,27 @@ export function ProductJsonLd({
   return jsonLdScript(data);
 }
 
+/** FAQPage — powers featured snippets / AI answer-engine citations (AEO) */
+export function FaqJsonLd({
+  items,
+}: {
+  items: Array<{ question: string; answer: string }>;
+}) {
+  const data = {
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    mainEntity: items.map((it) => ({
+      '@type': 'Question',
+      name: it.question,
+      acceptedAnswer: {
+        '@type': 'Answer',
+        text: it.answer,
+      },
+    })),
+  };
+  return jsonLdScript(data);
+}
+
 /**
  * LocalBusiness — inject when a real address is available.
  * Do NOT use placeholder values; omit any unknown fields instead.

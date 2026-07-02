@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import { BreadcrumbJsonLd, OrganizationJsonLd } from '@/components/seo/JsonLd';
+import { BreadcrumbJsonLd, OrganizationJsonLd, FaqJsonLd } from '@/components/seo/JsonLd';
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://famersfactory.com';
 
@@ -50,6 +50,25 @@ export default function DeliveryLayout({ children }: { children: React.ReactNode
         items={[
           { name: 'Home', url: '/' },
           { name: 'Delivery', url: '/delivery' },
+        ]}
+      />
+      <FaqJsonLd
+        items={[
+          {
+            question: 'What is the delivery charge?',
+            answer:
+              'Free delivery on orders above ₹499. For smaller baskets, a flat convenience fee of ₹29 applies.',
+          },
+          {
+            question: 'Do you deliver on Sundays?',
+            answer:
+              'No, we do not deliver on Sundays. Our farmers, cows, and logistics teams rest on Sundays. All orders placed on Saturdays or Sundays are harvested fresh first thing Monday morning and delivered directly to your doorstep within 24 hours of harvest.',
+          },
+          {
+            question: 'How can I track my order?',
+            answer:
+              "Once your harvest is dispatched, you'll receive a WhatsApp update with a live tracking link to our electric delivery fleet.",
+          },
         ]}
       />
       {children}

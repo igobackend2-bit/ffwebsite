@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import { BreadcrumbJsonLd, OrganizationJsonLd } from '@/components/seo/JsonLd';
+import { BreadcrumbJsonLd, OrganizationJsonLd, LocalBusinessJsonLd } from '@/components/seo/JsonLd';
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://famersfactory.com';
 
@@ -47,6 +47,14 @@ export default function ContactLayout({ children }: { children: React.ReactNode 
           { name: 'Home', url: '/' },
           { name: 'Contact', url: '/contact' },
         ]}
+      />
+      <LocalBusinessJsonLd
+        streetAddress="No 17, Kovalan Street, 2nd Main Road, Uthandi Kanathur"
+        addressLocality="Chennai"
+        addressRegion="Tamil Nadu"
+        postalCode="600119"
+        addressCountry="IN"
+        telephone="+91 89258 78327"
       />
       {children}
     </>
