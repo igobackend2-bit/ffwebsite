@@ -281,6 +281,9 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       if (typeof window !== 'undefined') {
         window.dispatchEvent(new Event('cart-updated'));
       }
+      // Fire-and-forget: feeds the admin Conversion Funnel widget with a
+      // real cumulative "Add to Cart" count (see ADD_ANALYTICS_EVENTS_FUNNEL.sql).
+      supabase.from('analytics_events').insert({ event_type: 'add_to_cart' }).then(() => {});
       return true;
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {

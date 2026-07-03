@@ -22,6 +22,14 @@ export default function Checkout() {
   const [loading, setLoading] = useState(false);
   const router = useRouter();
 
+  // Real "reached checkout" count for the admin Conversion Funnel widget —
+  // fires once per visit to this page, replacing the old fragile proxy of
+  // counting orders currently stuck in 'pending' status. See
+  // ADD_ANALYTICS_EVENTS_FUNNEL.sql.
+  useEffect(() => {
+    supabase.from('analytics_events').insert({ event_type: 'checkout_start' }).then(() => {});
+  }, []);
+
   const [address, setAddress] = useState({
     name: '',
     phone: '',
@@ -242,21 +250,48 @@ export default function Checkout() {
         throw new Error(itemsError.message || 'Failed to save order items. Please try again.');
       }
 
+      // decrement_stock now rejects the call if there isn't enough stock left
+      // (see ADD_STOCK_RESTORE_AND_OVERSELL_PREVENTION.sql) instead of always
+      // silently succeeding. If any item runs out mid-checkout, roll back
+      // everything that already succeeded (restore their stock) plus the
+      // order itself, so two customers can't both "win" the last few units.
+      const succeededItems: typeof cartItems = [];
+      let outOfStockName: string | null = null;
+
       for (const item of cartItems) {
         try {
-          // Note: supabase.rpc() resolves with { error }, it does not throw —
-          // the error must be checked explicitly or stock-decrement failures
-          // (and the low-stock admin alert that depends on them) go unnoticed.
           const { error: stockError } = await supabase.rpc('decrement_stock', {
             product_id: item.product_id,
             quantity: item.quantity
           });
           if (stockError) {
             console.error('[Checkout] Stock decrement failed for item:', item.product_id, stockError);
+            if (String(stockError.message || '').includes('INSUFFICIENT_STOCK')) {
+              outOfStockName = item.products?.name || 'an item in your cart';
+            }
+            break;
           }
+          succeededItems.push(item);
         } catch (e) {
           console.error('[Checkout] Stock decrement failed for item:', item.product_id, e);
+          break;
         }
+      }
+
+      if (outOfStockName) {
+        // Roll back: give back stock for whatever already succeeded, then
+        // remove the order + its items so nothing is left half-created.
+        for (const restoreItem of succeededItems) {
+          await supabase.rpc('restore_stock', {
+            product_id: restoreItem.product_id,
+            quantity: restoreItem.quantity
+          }).then(({ error: restoreErr }) => {
+            if (restoreErr) console.error('[Checkout] Rollback restore failed:', restoreItem.product_id, restoreErr);
+          });
+        }
+        await supabase.from('order_items').delete().eq('order_id', order.id);
+        await supabase.from('orders').delete().eq('id', order.id);
+        throw new Error(`Sorry, "${outOfStockName}" just sold out. Please update your cart and try again.`);
       }
 
       if (user) {

@@ -438,15 +438,15 @@ export async function getCRMAnalytics() {
       .from('products')
       .select('*');
 
-    // 3. Fetch Cart for funnel
-    const { count: cartCount } = await supabase
-      .from('cart')
-      .select('*', { count: 'exact', head: true });
-
-    // 4. Fetch Customers for funnel
-    const { count: totalCustomers } = await supabase
-      .from('profiles')
-      .select('*', { count: 'exact', head: true });
+    // 3. Real, cumulative funnel counts — logged by VisitTracker, CartContext's
+    //    addToCart(), and the checkout page respectively (see
+    //    ADD_ANALYTICS_EVENTS_FUNNEL.sql). Replaces the old mock "Browsing"
+    //    number and the old point-in-time-only cart/pending-order proxies.
+    const [{ count: visitCount }, { count: addToCartCount }, { count: checkoutStartCount }] = await Promise.all([
+      supabase.from('analytics_events').select('*', { count: 'exact', head: true }).eq('event_type', 'visit'),
+      supabase.from('analytics_events').select('*', { count: 'exact', head: true }).eq('event_type', 'add_to_cart'),
+      supabase.from('analytics_events').select('*', { count: 'exact', head: true }).eq('event_type', 'checkout_start'),
+    ]);
 
     if (ordersError || productsError) throw new Error('Analytics fetch failed');
 
@@ -470,11 +470,13 @@ export async function getCRMAnalytics() {
       color: name === 'Vegetables' ? 'bg-green-500' : name === 'Fruits' ? 'bg-amber-500' : 'bg-primary'
     }));
 
-    // Funnel Mockup (Real logic where possible)
+    // Real, cumulative conversion funnel — every step is an actual logged
+    // event or a real order count, not an approximation or a current-moment
+    // snapshot.
     const funnel = [
-      { label: 'Browsing', count: (totalCustomers || 0) * 10, color: 'bg-white/20' }, // Approximation
-      { label: 'Add to Cart', count: cartCount || 0, color: 'bg-white/40' },
-      { label: 'Checkout', count: (orders || []).filter(o => o.status === 'pending').length, color: 'bg-white/60' },
+      { label: 'Browsing', count: visitCount || 0, color: 'bg-white/20' },
+      { label: 'Add to Cart', count: addToCartCount || 0, color: 'bg-white/40' },
+      { label: 'Checkout', count: checkoutStartCount || 0, color: 'bg-white/60' },
       { label: 'Paid', count: (orders || []).filter(o => o.status !== 'pending' && o.status !== 'cancelled').length, color: 'bg-white' },
     ];
 

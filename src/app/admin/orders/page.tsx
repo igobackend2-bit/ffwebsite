@@ -203,6 +203,35 @@ function OrdersContent() {
           console.error('[Feedback] Failed to create request:', err)
         );
       }
+
+      // Restore stock — fires once, only on the transition INTO cancelled/
+      // rejected (order.status here is still the pre-update value, so this
+      // guards against restoring twice if toggled back and forth). See
+      // ADD_STOCK_RESTORE_AND_OVERSELL_PREVENTION.sql for restore_stock().
+      if (
+        (newStatus === 'cancelled' || newStatus === 'rejected') &&
+        order.status !== 'cancelled' && order.status !== 'rejected'
+      ) {
+        supabase
+          .from('order_items')
+          .select('product_id, quantity')
+          .eq('order_id', order.id)
+          .then(({ data: items, error: itemsErr }) => {
+            if (itemsErr || !items) {
+              console.error('[Stock] Failed to fetch order items for restore:', itemsErr);
+              return;
+            }
+            items.forEach((item) => {
+              if (!item.product_id) return;
+              supabase.rpc('restore_stock', {
+                product_id: item.product_id,
+                quantity: item.quantity
+              }).then(({ error: stockErr }) => {
+                if (stockErr) console.error('[Stock] Restore failed for item:', item.product_id, stockErr);
+              });
+            });
+          });
+      }
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {
       console.error('[Admin] Unexpected error:', err);

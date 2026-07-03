@@ -10,6 +10,7 @@ import { TranslationProvider } from "@/context/TranslationContext";
 import { Toaster } from "react-hot-toast";
 import GlobalUI from "@/components/GlobalUI";
 import HarvestTicker from "@/components/HarvestTicker";
+import VisitTracker from "@/components/VisitTracker";
 import { OrganizationJsonLd, WebSiteJsonLd } from "@/components/seo/JsonLd";
 
 const geistSans = Geist({
@@ -186,6 +187,7 @@ export default function RootLayout({
                   />
                   <HarvestTicker />
                   <GlobalUI />
+                  <VisitTracker />
                   {children}
                 </CartProvider>
               </LoyaltyProvider>
