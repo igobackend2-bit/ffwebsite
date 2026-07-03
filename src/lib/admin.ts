@@ -101,7 +101,8 @@ export async function getAllOrders() {
     if (!orders || orders.length === 0) return [];
 
     // Fetch profiles and users concurrently for these orders
-    const userIds = [...new Set(orders.map(o => o.user_id).filter(Boolean))];
+    const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+    const userIds = [...new Set(orders.map(o => o.user_id).filter((id): id is string => typeof id === 'string' && UUID_RE.test(id)))];
     const [profilesRes, usersRes] = await Promise.all([
       supabase.from('profiles').select('id, full_name, email, phone').in('id', userIds),
       supabase.from('users').select('id, name, email').in('id', userIds)

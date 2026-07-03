@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { supabase } from '@/lib/supabase';
-import { Star, MessageSquare, Loader2, AlertTriangle } from 'lucide-react';
+import { Star, MessageSquare, Loader2, AlertTriangle, Send } from 'lucide-react';
 
 // ============================================================================
 // Admin view of customer feedback (part of the Customer Feedback System).
@@ -29,10 +29,33 @@ export default function AdminFeedbackPage() {
   const [rows, setRows] = useState<FeedbackRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<'all' | 'submitted' | 'pending' | 'low'>('all');
+  const [backfilling, setBackfilling] = useState(false);
 
   useEffect(() => {
     load();
   }, []);
+
+  async function handleBackfill() {
+    setBackfilling(true);
+    try {
+      const res = await fetch('/api/feedback/backfill', { method: 'POST' });
+      const result = await res.json();
+      const { toast } = await import('react-hot-toast');
+      if (!res.ok) {
+        toast.error(result.error || 'Backfill failed');
+      } else if (result.sent === 0) {
+        toast.success(result.message || 'Nothing new to send — every delivered order already has a request.');
+      } else {
+        toast.success(`Sent feedback request to ${result.sent} past customer${result.sent === 1 ? '' : 's'}.`);
+      }
+      await load();
+    } catch {
+      const { toast } = await import('react-hot-toast');
+      toast.error('Backfill request failed — check your connection and try again.');
+    } finally {
+      setBackfilling(false);
+    }
+  }
 
   async function load() {
     setLoading(true);
@@ -60,13 +83,24 @@ export default function AdminFeedbackPage() {
 
   return (
     <div className="p-8 space-y-8">
-      <div>
-        <h1 className="text-5xl font-black text-foreground tracking-tighter uppercase mb-2">
-          Customer <span className="text-primary italic font-serif lowercase">Feedback</span>
-        </h1>
-        <p className="text-sm text-muted-foreground font-medium">
-          Post-delivery survey responses. Also readable by the ERP for L1 and CEO reporting.
-        </p>
+      <div className="flex items-start justify-between gap-4 flex-wrap">
+        <div>
+          <h1 className="text-5xl font-black text-foreground tracking-tighter uppercase mb-2">
+            Customer <span className="text-primary italic font-serif lowercase">Feedback</span>
+          </h1>
+          <p className="text-sm text-muted-foreground font-medium">
+            Post-delivery survey responses. Also readable by the ERP for L1 and CEO reporting.
+          </p>
+        </div>
+        <button
+          onClick={handleBackfill}
+          disabled={backfilling}
+          className="flex items-center gap-2 px-5 py-3 bg-primary text-white rounded-xl font-black uppercase tracking-widest text-xs hover:opacity-90 transition-all disabled:opacity-60 shrink-0"
+          title="Send the feedback form to every customer whose order was already delivered before this system existed"
+        >
+          {backfilling ? <Loader2 size={16} className="animate-spin" /> : <Send size={16} />}
+          {backfilling ? 'Sending...' : 'Send to past deliveries'}
+        </button>
       </div>
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
