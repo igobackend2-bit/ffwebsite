@@ -178,7 +178,10 @@ function orderItemRow(item: any): string {
   const price    = Number(item.price_at_purchase || item.price || 0);
   const qty      = Number(item.quantity || 1);
   const lineTotal = (price * qty).toFixed(2);
-  const imgSrc   = item.products?.image_url || item.image_url || '';
+  const rawImgSrc = item.products?.image_url || item.image_url || '';
+  const imgSrc   = rawImgSrc && !/^https?:\/\//i.test(rawImgSrc)
+    ? `${SITE_URL}${rawImgSrc.startsWith('/') ? '' : '/'}${rawImgSrc}`
+    : rawImgSrc;
   const name     = item.products?.name || item.name || 'Product';
   const initial  = name.charAt(0).toUpperCase();
 
@@ -973,7 +976,25 @@ export async function POST(req: Request) {
 
     const html = buildHtml(template, data || {}, items as never[]);
 
-    await transporter.sendMail({ from: FROM_EMAIL, to, subject, html });
+    // A plain-text alternative alongside the HTML, and a Reply-To pointing at
+    // the monitored support inbox rather than the sending account, are both
+    // standard deliverability practices — helps inbox placement, doesn't
+    // guarantee it (true fix requires domain-level SPF/DKIM/DMARC, which is
+    // a separate infrastructure decision, not a code change).
+    const text = html
+      .replace(/<style[\s\S]*?<\/style>/gi, '')
+      .replace(/<[^>]+>/g, ' ')
+      .replace(/\s+/g, ' ')
+      .trim();
+
+    await transporter.sendMail({
+      from: FROM_EMAIL,
+      to,
+      subject,
+      html,
+      text,
+      replyTo: 'info.thefarmersfactory@gmail.com',
+    });
 
     console.log(`[Email] ✅ Sent "${template}" to ${to}`);
     return NextResponse.json({ success: true });
