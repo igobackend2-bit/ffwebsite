@@ -103,7 +103,7 @@ export async function getAllOrders() {
     // Fetch profiles and users concurrently for these orders
     const userIds = [...new Set(orders.map(o => o.user_id))];
     const [profilesRes, usersRes] = await Promise.all([
-      supabase.from('profiles').select('id, full_name, avatar_url, email, phone').in('id', userIds),
+      supabase.from('profiles').select('id, full_name, email, phone').in('id', userIds),
       supabase.from('users').select('id, name, email').in('id', userIds)
     ]);
 
