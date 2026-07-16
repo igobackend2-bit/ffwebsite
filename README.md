@@ -1,59 +1,113 @@
-# Farmers Factory — Website Audit & Reference
+# Farmers Factory
 
-famersfactory.com — Next.js + Supabase organic produce e-commerce site, deployed on Hostinger.
+famersfactory.com — organic farm produce e-commerce platform (fruits, vegetables, and traditional farm products) with online ordering, customer accounts, and admin operations, based in Chennai, India. Full stack website + admin dashboard, backed by Supabase.
 
-This file documents a full site audit and the fixes applied, so anyone picking up this project (including a future AI session) has one place to see what's real, what was fake, and what's still open. No application code outside what's listed under "Fixes applied" was touched to produce this document.
+## Tech Stack
 
-## Environment variables required in production (Hostinger)
+- Framework: Next.js 16 (App Router, TypeScript)
+- Styling: Tailwind CSS
+- Database & Auth: Supabase (PostgreSQL + Row Level Security)
+- Email: Nodemailer (SMTP)
+- Animation: Framer Motion
+- Icons: Lucide React
+
+## Features
+
+- Product catalog with categories, custom weight/quantity pricing, and stock tracking
+- Customer accounts (signup/login), cart, checkout (COD + card), and order tracking with live status updates
+- Automatic stock deduction on order placement, with oversell protection and automatic stock restoration on order cancellation
+- Post-delivery Customer Feedback System — automatic survey email after delivery, no-login public feedback form, admin dashboard, and read access for the company's separate ERP system (L1/CEO reporting)
+- Admin dashboard: orders, products, customers, leads/inquiries, inventory, coupons, farmers, reviews, banners, live streams, farm stories, and site settings
+- Real, cumulative conversion funnel tracking (site visits → add to cart → checkout → paid)
+- Transactional email notifications for every order status change plus the feedback survey
+- SEO / AEO / GEO: structured data (JSON-LD), sitemap, robots.txt, llms.txt, Open Graph/Twitter cards, optional GA4 / Search Console / Bing / Clarity integration
+
+## Project Structure
+
+```
+src/
+├── app/                  # Routes (Next.js App Router)
+│   ├── admin/            # Admin dashboard (orders, products, customers, leads,
+│   │                     #   inventory, feedback, coupons, farmers, reviews,
+│   │                     #   banners, streams, stories, settings)
+│   ├── api/               # Server routes (email sending, feedback, admin, sync-user)
+│   ├── auth/              # Login / signup
+│   ├── cart/, checkout/   # Cart & checkout flow
+│   ├── feedback/[token]/  # Public, no-login post-delivery feedback form
+│   ├── orders/            # Customer order tracking
+│   ├── products/          # Product catalog & detail pages
+│   ├── profile/           # Customer account settings
+│   └── (about, contact, delivery, privacy, terms, streams)
+├── components/            # 50+ shared UI components
+├── context/               # React context providers (Auth, Cart, Wishlist, Loyalty, Translation)
+└── lib/                   # Supabase client, admin data functions, email, pricing, feedback, storage
+```
+
+## Getting Started
+
+### Prerequisites
+
+- Node.js 18+
+- A Supabase project (see Environment Variables below)
+
+### 1. Install dependencies
+
+```bash
+npm install
+```
+
+### 2. Copy `.env.example` to `.env.local` and fill in your own credentials
 
 | Variable | Purpose |
 |---|---|
 | `NEXT_PUBLIC_SUPABASE_URL` | Supabase project URL |
-| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Public anon key (safe client-side) |
-| `SUPABASE_SERVICE_ROLE_KEY` | Server-only key, bypasses RLS — used in API routes only |
-| `NEXT_PUBLIC_SITE_URL` | `https://famersfactory.com` — used to build absolute links/images in emails |
-| `SMTP_HOST` / `SMTP_PORT` / `SMTP_USER` / `SMTP_PASS` | Gmail SMTP relay for all outgoing email (order + feedback emails) |
-| `EMAIL_FROM` | Display name/address emails are sent from |
-| `NEXT_PUBLIC_GA_MEASUREMENT_ID` | Google Analytics 4 (optional, no-op if unset) |
-| `NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION` / `NEXT_PUBLIC_BING_SITE_VERIFICATION` | Search Console / Bing Webmaster ownership tags (optional) |
-| `NEXT_PUBLIC_CLARITY_ID` | Microsoft Clarity (optional, no-op if unset) |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Public anon key |
+| `SUPABASE_SERVICE_ROLE_KEY` | Server-only key — bypasses RLS, used in API routes only |
+| `NEXT_PUBLIC_SITE_URL` | Full site URL, e.g. `https://famersfactory.com` |
+| `SMTP_HOST` / `SMTP_PORT` / `SMTP_USER` / `SMTP_PASS` | Outgoing email (Gmail SMTP relay) |
+| `EMAIL_FROM` | Sender name/address shown on outgoing emails |
+| `NEXT_PUBLIC_GA_MEASUREMENT_ID` | Google Analytics 4 (optional) |
+| `NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION` / `NEXT_PUBLIC_BING_SITE_VERIFICATION` | Search engine ownership verification (optional) |
+| `NEXT_PUBLIC_CLARITY_ID` | Microsoft Clarity (optional) |
 
-See `.env.example` for the full template.
+### 3. Set up the database
 
-## Known real vs. fake data (audit findings)
+Run the SQL files at the repo root in the Supabase SQL Editor. Core schema first (`supabase_schema.sql`, `production_setup.sql`), then feature-specific files as needed (`ADD_CUSTOMER_FEEDBACK_SYSTEM.sql`, `ADD_STOCK_RESTORE_AND_OVERSELL_PREVENTION.sql`, `ADD_ANALYTICS_EVENTS_FUNNEL.sql`, etc.) — each file has a comment at the top explaining what it does. `FIX_*.sql` files are historical patches kept for reference.
 
-The site has, at various points, mixed genuinely live data with hardcoded placeholder values. Status as of this audit:
+### 4. Run the dev server
 
-- **Admin dashboard KPI trend arrows** (Total Revenue, Active Orders, Total Customers) — were hardcoded fake percentages (`+12.5%`, `+5.2%`, `+18.1%`) shown on every load regardless of real performance. **Fixed this session** — removed; the underlying numbers themselves (revenue, order count, customer count, stock alerts) were always real.
-- **Conversion Funnel widget** (admin dashboard) — "Browsing" was a fabricated number (`customers × 10`), and "Add to Cart"/"Checkout" were misleading point-in-time snapshots, not real cumulative totals. **Fixed this session** — added a real `analytics_events` table logging actual visits, add-to-cart actions, and checkout starts (see `ADD_ANALYTICS_EVENTS_FUNNEL.sql`). Counts start from zero going forward; no historical backfill exists.
-- **`SustainabilityMeter` component** (`src/components/SustainabilityMeter.tsx`, shown on product pages as "Harvest Impact") — carbon saved / water saved / delivery miles figures are entirely made up per category, and the "miles" figure is a random number that changes on every page render. **Not fixed** — flagged here, not touched, since it wasn't part of this session's requested scope. Recommend deciding whether to replace with real figures or remove before relying on it for customer-facing claims.
-- **Stock reduction on order placement** — confirmed real and working (`decrement_stock` Postgres function, verified live in production).
-- **Stock restoration on cancellation** and **oversell prevention at checkout** — were missing entirely (cancelling an order never gave stock back; two customers could both buy the last few units). **Fixed this session** — see `ADD_STOCK_RESTORE_AND_OVERSELL_PREVENTION.sql`.
-- **Leads page vs. Customers page** — confirmed working as designed, but not connected the way it might look: a "lead" row is created only at signup (or Contact form / marketing popup submission), not on every login. The Customers page lists all registered accounts regardless of order history. Marking a lead "Converted" is a fully manual admin action — nothing automatically flips it when that person places an order. Not changed; documented for awareness.
-- **Product/email images and logo** — order confirmation emails were showing broken product images because relative image paths (e.g. `/products/x.jpg`) don't resolve inside an email (no page origin to fall back to). **Fixed this session** — image URLs are now made absolute before being used in email HTML.
-- **Feedback request email + admin visibility of customer emails** — two separate real bugs, both fixed this session: (1) an `avatar_url` column that no longer exists in `profiles` was silently breaking every admin-side customer lookup; (2) guest/unlinked orders store a non-UUID placeholder (`"phone:+91..."`) in `user_id`, which was breaking the same batched lookup for every order, not just guest ones. See `FIX_ADMIN_PROFILE_EMAIL_ACCESS.sql` and the `getAllOrders()` fix in `src/lib/admin.ts`.
-- **Email deliverability (inbox vs. spam)** — emails now send successfully (confirmed via Hostinger runtime logs), but may land in spam. This is a sender-reputation limitation of relaying through a personal Gmail account via SMTP, not a code bug — a real fix requires a custom domain + transactional email provider (Resend/SES) with SPF/DKIM/DMARC, which hasn't been implemented (declined in favor of zero-code-change SMTP). A plain-text email part and a Reply-To header were added as a minor, real improvement.
+```bash
+npm run dev
+```
 
-## Customer Feedback System
+## Available Scripts
 
-Post-delivery survey, fully built and live:
-- `public.feedback` table (`ADD_CUSTOMER_FEEDBACK_SYSTEM.sql`) — RLS-locked to admin only, no public/anon access; the customer-facing form talks only to server API routes using the service role key.
-- Automatically triggered when an order is marked Delivered (`src/app/admin/orders/page.tsx`).
-- One-time backfill endpoint (`/api/feedback/backfill`, button on `/admin/feedback`) catches up customers whose orders were delivered before this system existed.
-- Designed so the separate ERP system (shares the same Supabase project) can read this same table for L1/CEO reporting — see `ERP_TEAM_HANDOFF_FEEDBACK_SYSTEM.md` for the handoff brief, and the grant note at the bottom of `ADD_CUSTOMER_FEEDBACK_SYSTEM.sql`.
+| Command | Description |
+|---|---|
+| `npm run dev` | Run the dev server locally |
+| `npm run build` | Build the production bundle |
+| `npm start` | Run the production build |
+| `npm run lint` | Run ESLint |
 
-## SQL files in this repo
+## Architecture Notes & Gotchas
 
-This project follows a convention of standalone `.sql` migration files run manually in the Supabase SQL Editor (no migration framework). There are many at the repo root, reflecting the project's history:
+A few things that aren't obvious from the code alone, worth knowing before making changes:
 
-**From this session's audit/fixes** (see descriptions above): `FIX_ADMIN_PROFILE_EMAIL_ACCESS.sql`, `ADD_CUSTOMER_FEEDBACK_SYSTEM.sql`, `ADD_STOCK_RESTORE_AND_OVERSELL_PREVENTION.sql`, `ADD_ANALYTICS_EVENTS_FUNNEL.sql`.
+- **This Supabase project is shared with a separate ERP system.** The ERP connects to the same database for L1/CEO reporting (see the Customer Feedback System). It has, in the past, overwritten the `profiles.role` column, which broke admin permission checks that depended on it. Any new admin-only RLS policy should use `public.ff_is_admin()` (checks the admin account's email OR role — resilient to this), not the older `public.is_admin()` (role-only, fragile). There is also a third, separate admin-check mechanism (`auth_role()` / `get_my_role()` with a `profiles_admin_all` policy covering roles like `admin`/`ceo`/`hr`) that appears to belong to the ERP side — don't assume any one of these three is the only one in effect on a given table; check `pg_policies` for the actual table before changing access rules.
+- **Admin login is a single shared account**, not per-staff-member accounts: it authenticates via Supabase Auth as a hardcoded email (`admin@famersfactory.com`) with a password stored in the `site_settings` table (see `getAdminPassword()` in `src/lib/admin.ts`), plus a `localStorage`/cookie flag for the UI gate. There's no per-admin audit trail as a result.
+- **Two separate business email addresses are in play**: the outgoing SMTP account (whatever `SMTP_USER`/`EMAIL_FROM` are set to) is what customers see as the "From" address, while `info.thefarmersfactory@gmail.com` is hardcoded in several places (Contact page, Profile page, admin Settings, feedback form error state) as the displayed support contact. These aren't automatically kept in sync — if either changes, check both.
+- **Signup logic exists in two separate places** (`src/app/auth/page.tsx` and `src/components/AuthModal.tsx`), each independently inserting into the `leads` table on signup. Worth consolidating if it's ever changed, so both stay in sync.
+- **`decrement_stock()` and `restore_stock()`** (Postgres functions) use `SELECT ... FOR UPDATE` row locking specifically so concurrent checkouts can't oversell the same product — don't remove that locking if touching these functions.
 
-**Core schema / historical setup**: `supabase_schema.sql`, `production_setup.sql`, `phase_2_setup.sql`, `supabase_new_tables_only.sql`, `community_schema.sql`, `live_schema.sql`, `reviews_schema.sql`, `traceability_schema.sql`, `farm_streams.sql`, `banners_setup.sql`, `seed_products.sql`, `decrement_stock.sql`.
+## Project Status & Known Limitations
 
-**Historical `FIX_*` patches** (each named for the specific issue it solved at the time — admin permissions/RLS, order status constraints, wishlist, notifications, storage uploads, coupons, CRM columns, leads table, live schema, order foreign keys, and others): these are kept for history/reference. Not all are still relevant to the current schema — if reviewing the database from scratch, prefer the current live schema over re-running old fixes blindly.
+This is a live, actively maintained platform. Recent fixes: admin visibility into customer emails (was silently broken by a stale column reference and non-standard guest order IDs), stock oversell prevention, automatic stock restoration on cancellation, product images in emails, and real (previously fabricated) analytics on the admin dashboard.
 
-**`scratch/`** — working/scratch SQL files from earlier debugging sessions, not part of the official migration set.
+Open items worth knowing about:
+- **Email deliverability**: outgoing mail sends successfully but may land in spam, since it relays through a personal Gmail account rather than a verified custom domain with SPF/DKIM/DMARC. Fixing this properly requires moving to a transactional email provider (e.g. Resend — already an installed dependency, not yet wired up) with a verified domain.
+- **`SustainabilityMeter` component** (shown on product pages as "Harvest Impact"): the carbon/water/mileage figures are placeholder values, not measured data — one of them is randomized on every page load. Needs real figures or removal before relying on it for customer-facing claims.
+- **Leads vs. Customers**: a lead is only created at signup (or via the Contact form/marketing popup), not on every login, and does not automatically get marked "Converted" when that person places an order — that's a manual admin action today.
 
 ## Deployment
 
-Hosted on Hostinger as a Node.js app, deployed from this GitHub repo. Environment variables are configured directly in Hostinger's panel (not read from any committed `.env` file — `.env*` is gitignored except `.env.example`). After any env var change, the app needs a restart (not necessarily a full redeploy) to pick up the new value.
+Hosted on Hostinger as a Node.js app, deployed from this GitHub repo. Environment variables are set directly in Hostinger's panel, not read from any committed `.env` file (`.env*` is gitignored except `.env.example`). After changing an environment variable, restart the app in Hostinger's panel to pick up the new value — a full redeploy isn't required just for that.
