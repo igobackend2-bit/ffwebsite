@@ -45,11 +45,17 @@ export default function AdminAnalytics() {
     );
   }
 
+  // Note: the previous version of this array had hardcoded, fake trend
+  // percentages (+12.5%, +5.2%, +18.1%) on every load, regardless of actual
+  // performance — removed as demo data. Real period-over-period trends would
+  // need historical daily snapshots, which don't exist yet; "Stock Alerts"
+  // keeps its real "Critical" flag since that's a genuine current count, not
+  // a fabricated trend.
   const KPI_CARDS = [
-    { label: 'Total Revenue', value: stats?.totalRevenue || '₹0', trend: '+12.5%', isUp: true, icon: DollarSign, color: 'text-green-600', bg: 'bg-green-100', link: '/admin/orders' },
-    { label: 'Active Orders', value: stats?.totalOrders || '0', trend: '+5.2%', isUp: true, icon: ShoppingCart, color: 'text-primary', bg: 'bg-primary/10', link: '/admin/orders' },
-    { label: 'Total Customers', value: stats?.totalCustomers || '0', trend: '+18.1%', isUp: true, icon: Users, color: 'text-blue-600', bg: 'bg-blue-100', link: '/admin/customers' },
-    { label: 'Stock Alerts', value: stats?.outOfStockCount || '0', trend: 'Critical', isUp: false, icon: Package, color: 'text-amber-600', bg: 'bg-amber-100', link: '/admin/inventory?filter=lowstock' },
+    { label: 'Total Revenue', value: stats?.totalRevenue || '₹0', trend: null, icon: DollarSign, color: 'text-green-600', bg: 'bg-green-100', link: '/admin/orders' },
+    { label: 'Active Orders', value: stats?.totalOrders || '0', trend: null, icon: ShoppingCart, color: 'text-primary', bg: 'bg-primary/10', link: '/admin/orders' },
+    { label: 'Total Customers', value: stats?.totalCustomers || '0', trend: null, icon: Users, color: 'text-blue-600', bg: 'bg-blue-100', link: '/admin/customers' },
+    { label: 'Stock Alerts', value: stats?.outOfStockCount || '0', trend: Number(stats?.outOfStockCount) > 0 ? 'Critical' : null, isUp: false, icon: Package, color: 'text-amber-600', bg: 'bg-amber-100', link: '/admin/inventory?filter=lowstock' },
   ];
 
   return (
@@ -84,10 +90,12 @@ export default function AdminAnalytics() {
               <div className={`p-3 rounded-2xl ${stat.bg} ${stat.color}`}>
                 <stat.icon size={24} />
               </div>
-              <div className={`flex items-center gap-1 text-[10px] font-black ${stat.isUp ? 'text-green-500' : 'text-red-500'}`}>
-                {stat.isUp ? <ArrowUpRight size={12} /> : <ArrowDownRight size={12} />}
-                {stat.trend}
-              </div>
+              {stat.trend && (
+                <div className={`flex items-center gap-1 text-[10px] font-black ${stat.isUp ? 'text-green-500' : 'text-red-500'}`}>
+                  {stat.isUp ? <ArrowUpRight size={12} /> : <ArrowDownRight size={12} />}
+                  {stat.trend}
+                </div>
+              )}
             </div>
             <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest mb-1">{stat.label}</p>
             <h3 className="text-2xl font-black text-foreground">{stat.value}</h3>
