@@ -46,6 +46,18 @@ import { toast } from 'react-hot-toast';
 import { VERIFIED_INVENTORY } from '@/lib/constants';
 import { normalizeWeightOptions, type WeightOption } from '@/lib/pricing';
 
+// Selling Unit options, tailored per Store Category so admins pick a clean
+// value instead of free-typing it (was causing dirty data like "1 kg" /
+// "500g" that other screens then had to clean up — see cleanUnitLabel() in
+// src/lib/pricing.ts). "Valluvam Products" spans oils, ghee, honey, millets
+// and spices, so it gets the fuller list rather than a single forced unit.
+const UNIT_OPTIONS_BY_CATEGORY: Record<string, string[]> = {
+  'Vegetables': ['kg', 'g', 'piece', 'bunch', 'pack', 'box'],
+  'Fruits': ['kg', 'g', 'piece', 'dozen', 'pack', 'box'],
+  'Valluvam Products': ['kg', 'g', 'litre', 'ml', 'pack', 'box'],
+};
+const DEFAULT_UNIT_OPTIONS = UNIT_OPTIONS_BY_CATEGORY['Vegetables'];
+
 function ProductsContent() {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [products, setProducts] = useState<any[]>([]);
@@ -1381,33 +1393,72 @@ function ProductsContent() {
                     </div>
                     <div className="space-y-3">
                       <label className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 ml-1">Selling Unit</label>
-                      <input 
-                        required
-                        type="text" 
-                        className="w-full px-6 py-4 rounded-2xl border-2 border-slate-100 focus:border-primary/30 focus:ring-4 focus:ring-primary/5 outline-none font-bold transition-all text-lg"
-                        placeholder="e.g. 1 kg / Box / Bunch"
-                        value={editingProduct ? editFormData.unit : newProduct.unit}
-                        onChange={(e) => editingProduct
-                          ? setEditFormData({...editFormData, unit: e.target.value})
-                          : setNewProduct({...newProduct, unit: e.target.value})}
-                      />
+                      {(() => {
+                        const currentCategory = editingProduct ? editFormData.category : newProduct.category;
+                        const unitOptions = UNIT_OPTIONS_BY_CATEGORY[currentCategory] || DEFAULT_UNIT_OPTIONS;
+                        const currentUnit = (editingProduct ? editFormData.unit : newProduct.unit) || '';
+                        const isKnownUnit = unitOptions.includes(currentUnit);
+                        const selectValue = isKnownUnit ? currentUnit : (currentUnit ? 'Other' : unitOptions[0]);
+                        const setUnit = (val: string) => editingProduct
+                          ? setEditFormData({...editFormData, unit: val})
+                          : setNewProduct({...newProduct, unit: val});
+                        return (
+                          <>
+                            <select
+                              required
+                              className="w-full px-6 py-4 rounded-2xl border-2 border-slate-100 focus:border-primary/30 focus:ring-4 focus:ring-primary/5 outline-none font-bold appearance-none bg-white transition-all text-lg"
+                              value={selectValue}
+                              onChange={(e) => setUnit(e.target.value === 'Other' ? '' : e.target.value)}
+                            >
+                              {unitOptions.map((u) => (
+                                <option key={u} value={u}>{u}</option>
+                              ))}
+                              <option value="Other">Other (type manually)</option>
+                            </select>
+                            {selectValue === 'Other' && (
+                              <input
+                                required
+                                type="text"
+                                className="w-full px-6 py-4 rounded-2xl border-2 border-slate-100 focus:border-primary/30 focus:ring-4 focus:ring-primary/5 outline-none font-bold transition-all text-lg"
+                                placeholder="e.g. 500ml"
+                                value={currentUnit}
+                                onChange={(e) => setUnit(e.target.value)}
+                              />
+                            )}
+                          </>
+                        );
+                      })()}
                     </div>
                     <div className="space-y-3">
-                      <label className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 ml-1">Current Stock Level</label>
+                      {(() => {
+                        // Stock is tracked in whatever the Selling Unit is (decrement_stock()
+                        // already labels low-stock alerts with the product's own unit, e.g.
+                        // "15 litre remaining" for oils) -- so the label here should say so
+                        // instead of leaving admins to guess if "200" means kg, litre or pieces.
+                        const stockUnit = (editingProduct ? editFormData.unit : newProduct.unit) || 'kg';
+                        return (
+                          <label className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 ml-1">
+                            Current Stock Level <span className="text-primary/70 normal-case">(in {stockUnit})</span>
+                          </label>
+                        );
+                      })()}
                       <div className="relative">
                         <span className="absolute left-6 top-1/2 -translate-y-1/2 font-black text-slate-300 text-lg">
                           <Package size={20} />
                         </span>
-                        <input 
+                        <input
                           required
-                          type="number" 
-                          className="w-full pl-14 pr-6 py-4 rounded-2xl border-2 border-slate-100 focus:border-primary/30 focus:ring-4 focus:ring-primary/5 outline-none font-black transition-all text-lg"
+                          type="number"
+                          className="w-full pl-14 pr-20 py-4 rounded-2xl border-2 border-slate-100 focus:border-primary/30 focus:ring-4 focus:ring-primary/5 outline-none font-black transition-all text-lg"
                           placeholder="0"
                           value={editingProduct ? editFormData.stock : newProduct.stock}
                           onChange={(e) => editingProduct
                             ? setEditFormData({...editFormData, stock: parseInt(e.target.value) || 0})
                             : setNewProduct({...newProduct, stock: parseInt(e.target.value) || 0})}
                         />
+                        <span className="absolute right-6 top-1/2 -translate-y-1/2 font-black text-slate-400 text-sm uppercase tracking-widest pointer-events-none">
+                          {(editingProduct ? editFormData.unit : newProduct.unit) || 'kg'}
+                        </span>
                       </div>
                     </div>
                     <div className="space-y-3">
