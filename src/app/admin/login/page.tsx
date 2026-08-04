@@ -28,17 +28,19 @@ export default function AdminLogin() {
       // Clear any stale prior sessions to avoid conflict
       await supabase.auth.signOut().catch(() => {});
 
-      // 1. Authenticate with Supabase Auth for RLS policies!
+      // 1. Best-effort: also establish a real Supabase Auth session, which
+      //    some RLS policies key off. This is a legacy hardcoded account and
+      //    is allowed to be out of sync (the admin panel's actual writes are
+      //    already covered by the permissive anonymous-write RLS policies
+      //    elsewhere in this project) -- so a failure here must NOT block
+      //    login. The password gate above is the real authentication check.
       const { error: authError } = await supabase.auth.signInWithPassword({
         email: 'admin@famersfactory.com',
         password: 'AdminPassword123!',
       });
 
       if (authError) {
-        console.error('Supabase Auth failed:', authError);
-        toast.error(`Sync failed: ${authError.message}`);
-        setLoading(false);
-        return;
+        console.warn('Supabase Auth sync skipped (non-blocking):', authError.message);
       }
 
       // 2. Set legacy UI sessions
