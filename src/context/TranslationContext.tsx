@@ -538,7 +538,26 @@ const translations: Translations = {
   'order_details.step.shipped.label': { en: 'Out for Delivery', ta: 'விநியோகத்திற்கு அனுப்பப்பட்டது', hi: 'डिलीवरी के लिए निकल गया' },
   'order_details.step.shipped.desc': { en: 'On the way to your doorstep', ta: 'உங்கள் வீட்டு வாசலுக்கு வரும் வழியில்', hi: 'आपके दरवाजे पर आने के रास्ते में' },
   'order_details.step.delivered.label': { en: 'Delivered', ta: 'விநியோகிக்கப்பட்டது', hi: 'वितरित' },
-  'order_details.step.delivered.desc': { en: 'Delivered successfully!', ta: 'வெற்றிகரமாக விநியோகிக்கப்பட்டது!', hi: 'सफलतापूर्वक वितरित!' }
+  'order_details.step.delivered.desc': { en: 'Delivered successfully!', ta: 'வெற்றிகரமாக விநியோகிக்கப்பட்டது!', hi: 'सफलतापूर्वक वितरित!' },
+
+  // Contact page (these keys were never added, so they were showing as
+  // raw "CONTACT.BADGE" etc. text on the live /contact page)
+  'contact.badge': { en: 'Contact Us', ta: 'எங்களை தொடர்பு கொள்ளுங்கள்', hi: 'हमसे संपर्क करें' },
+  'contact.direct_line': { en: 'Direct Line', ta: 'நேரடி எண்', hi: 'सीधी लाइन' },
+  'contact.email_support': { en: 'Email Support', ta: 'மின்னஞ்சல் ஆதரவு', hi: 'ईमेल सहायता' },
+  'contact.main_hub': { en: 'Our Address', ta: 'எங்கள் முகவரி', hi: 'हमारा पता' },
+  'contact.send_msg': { en: 'Send a Message', ta: 'செய்தி அனுப்பவும்', hi: 'संदेश भेजें' },
+  'contact.reply_time': { en: 'We typically reply within 24 hours.', ta: '24 மணி நேரத்திற்குள் நாங்கள் பதிலளிப்போம்.', hi: 'हम आमतौर पर 24 घंटों के भीतर जवाब देते हैं।' },
+  'contact.fullname': { en: 'Full Name', ta: 'முழு பெயர்', hi: 'पूरा नाम' },
+  'contact.email': { en: 'Email', ta: 'மின்னஞ்சல்', hi: 'ईमेल' },
+  'contact.subject': { en: 'Subject', ta: 'பொருள்', hi: 'विषय' },
+  'contact.subject.general': { en: 'General Inquiry', ta: 'பொதுவான விசாரணை', hi: 'सामान्य पूछताछ' },
+  'contact.subject.order': { en: 'Order Support', ta: 'ஆர்டர் ஆதரவு', hi: 'ऑर्डर सहायता' },
+  'contact.subject.farmer': { en: 'Farmer Partnership', ta: 'விவசாயி கூட்டாண்மை', hi: 'किसान भागीदारी' },
+  'contact.subject.bulk': { en: 'Bulk/Business Orders', ta: 'மொத்த/வணிக ஆர்டர்கள்', hi: 'थोक/व्यावसायिक ऑर्डर' },
+  'contact.message': { en: 'Message', ta: 'செய்தி', hi: 'संदेश' },
+  'contact.sending': { en: 'Sending...', ta: 'அனுப்புகிறது...', hi: 'भेजा जा रहा है...' },
+  'contact.send_btn': { en: 'Send Message', ta: 'செய்தியை அனுப்பவும்', hi: 'संदेश भेजें' }
 };
 
 interface TranslationContextType {
