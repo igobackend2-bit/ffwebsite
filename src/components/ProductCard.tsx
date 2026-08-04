@@ -25,9 +25,14 @@ interface ProductCardProps {
     stock?: number;
     is_seasonal?: boolean;
   };
+  // When provided, clicking the card navigates to this URL (e.g. a real
+  // /vegetables/tomato page) instead of opening the quick-view modal.
+  // Left unset, behavior is unchanged from before (opens the modal) — used
+  // by the homepage and search so those stay exactly as they were.
+  href?: string;
 }
 
-export default function ProductCard({ product }: ProductCardProps) {
+export default function ProductCard({ product, href }: ProductCardProps) {
   const { t } = useTranslation();
   const [loading, setLoading] = useState(false);
   const [isDetailOpen, setIsDetailOpen] = useState(false);
@@ -39,6 +44,14 @@ export default function ProductCard({ product }: ProductCardProps) {
 
   const cartItem = cartItems.find(item => item.product_id === product.id);
   const isLiked = isInWishlist(product.id);
+
+  const handleCardClick = () => {
+    if (href) {
+      router.push(href);
+    } else {
+      setIsDetailOpen(true);
+    }
+  };
 
   const handleAddToCart = async (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -89,7 +102,7 @@ export default function ProductCard({ product }: ProductCardProps) {
         initial={{ opacity: 0, y: 20 }}
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true }}
-        onClick={() => setIsDetailOpen(true)}
+        onClick={handleCardClick}
         className="group bg-white rounded-[2rem] border border-border/50 p-5 hover:shadow-2xl hover:shadow-primary/10 transition-all duration-500 cursor-pointer flex flex-col h-full"
       >
         <div className="relative aspect-[4/5] rounded-[1.5rem] overflow-hidden mb-6 bg-muted/20">
@@ -202,14 +215,13 @@ export default function ProductCard({ product }: ProductCardProps) {
             <p className="text-[10px] uppercase tracking-[0.2em] text-primary font-black mb-2 opacity-70">
               {t(product.category) || t('cart.fresh_produce')}
             </p>
-            <div className="flex items-center gap-1 mb-2">
-              <div className="flex items-center gap-0.5">
-                {[...Array(5)].map((_, i) => (
-                  <Star key={i} size={10} className={i < 4 ? 'fill-amber-400 text-amber-400' : 'text-slate-200'} />
-                ))}
-              </div>
-              <span className="text-[9px] font-black text-muted-foreground uppercase tracking-widest ml-1">4.8 (120+)</span>
-            </div>
+            {/* The 5-star / "4.8 (120+)" badge that used to render here was
+                hardcoded identically on every product with no real review
+                data behind it (every card showed the same fake rating, but
+                opening the product showed no reviews at all). Removed
+                rather than left showing a fabricated number -- a real
+                per-product rating can be wired in once review aggregates
+                are actually fetched for the product list. */}
             <h3 className="text-xl font-black text-foreground line-clamp-1 group-hover:text-primary transition-colors leading-tight">
               {product.name}
             </h3>
@@ -269,11 +281,13 @@ export default function ProductCard({ product }: ProductCardProps) {
         </div>
       </motion.div>
 
-      <ProductDetailModal
-        isOpen={isDetailOpen}
-        onClose={() => setIsDetailOpen(false)}
-        product={product}
-      />
+      {!href && (
+        <ProductDetailModal
+          isOpen={isDetailOpen}
+          onClose={() => setIsDetailOpen(false)}
+          product={product}
+        />
+      )}
     </>
   );
 }

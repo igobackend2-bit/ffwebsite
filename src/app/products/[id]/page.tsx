@@ -1,14 +1,37 @@
-// Server component for the product detail route.
-// Deployment: Hostinger Node server (next build + node server.js), so each
-// /products/<id> is rendered on demand. No static-export generateStaticParams
-// is used here — that placeholder approach was only needed for static export
-// and prevented real product IDs from being served on the Node server.
-import ProductClient from './ProductClient';
+// This route now exists purely for backward compatibility: old links and
+// bookmarks pointing at /products/<id> get sent to the product's real,
+// canonical URL (/vegetables/tomato) with a permanent redirect, so old
+// links keep working and search engines consolidate ranking signals onto
+// the one real URL instead of treating this as duplicate content.
+//
+// ProductClient.tsx and layout.tsx in this folder are no longer rendered
+// (this page redirects before either would run) but are left in place
+// rather than deleted, since deleting files wasn't asked for.
+import { notFound, permanentRedirect } from 'next/navigation';
+import { supabase } from '@/lib/supabase';
+import { productHref } from '@/lib/categorySlug';
 
-// Render every product id dynamically at request time on the Node server.
 export const dynamic = 'force-dynamic';
 export const dynamicParams = true;
 
-export default function ProductPage() {
-  return <ProductClient />;
+type Params = { id: string };
+
+export default async function LegacyProductRedirect({
+  params,
+}: {
+  params: Promise<Params>;
+}) {
+  const { id } = await params;
+
+  const { data, error } = await supabase
+    .from('products')
+    .select('name, category')
+    .eq('id', id)
+    .single();
+
+  if (error || !data) {
+    notFound();
+  }
+
+  permanentRedirect(productHref(data.category, data.name));
 }

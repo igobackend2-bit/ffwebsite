@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { ArrowRight } from 'lucide-react';
 import { useTranslation } from '@/context/TranslationContext';
+import { categoryHref } from '@/lib/categorySlug';
 
 interface CategoryCardProps {
   name: string;
@@ -19,7 +20,7 @@ export default function CategoryCard({ name, image, count, color, priority = fal
 
   return (
     <Link 
-      href={`/products?category=${name}`}
+      href={categoryHref(name)}
       className="block group"
     >
       <motion.div 

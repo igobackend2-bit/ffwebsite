@@ -14,18 +14,30 @@ import { Suspense } from 'react';
 import { useTranslation } from '@/context/TranslationContext';
 
 import { VERIFIED_INVENTORY } from '@/lib/constants';
+import { categoryHref, productHref } from '@/lib/categorySlug';
 import Footer from '@/components/Footer';
 const ThreeHero = dynamic(() => import('@/components/ThreeHero'), { ssr: false, loading: () => <div className='h-[500px] bg-gradient-to-br from-primary/10 to-muted animate-pulse rounded-3xl' /> });
 
-function ProductsContent() {
+// Fixed pseudo-categories that always exist regardless of product data.
+const BASE_CATEGORIES = ['All', 'Seasonal'];
+
+interface ProductsContentProps {
+  // Passed by /[category]/page.tsx once it has resolved the URL slug to a
+  // real category name server-side. When absent (plain /products route),
+  // the category instead comes from the legacy ?category= query param.
+  initialCategory?: string;
+}
+
+export function ProductsContent({ initialCategory }: ProductsContentProps = {}) {
   const { t } = useTranslation();
   const searchParams = useSearchParams();
+  const router = useRouter();
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [products, setProducts] = useState<any[]>([]);
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [filteredProducts, setFilteredProducts] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const [category, setCategory] = useState('All');
+  const [category, setCategory] = useState(initialCategory || 'All');
   const [searchQuery, setSearchQuery] = useState('');
   const [priceRange, setPriceRange] = useState(2000);
 
@@ -37,7 +49,13 @@ function ProductsContent() {
     return Math.ceil(Math.max(...prices) / 50) * 50;
   }, [products]);
 
-  const categories = ['All', 'Seasonal', 'Fruits', 'Vegetables', 'Valluvam Products'];
+  // Category tabs = fixed pseudo-categories + whatever categories actually
+  // exist in the fetched product data. A brand-new category value on any
+  // product shows up here automatically, no code changes needed.
+  const categories = React.useMemo(() => {
+    const dataCategories = Array.from(new Set(products.map(p => p.category).filter(Boolean)));
+    return [...BASE_CATEGORIES, ...dataCategories];
+  }, [products]);
 
   const getCategoryTranslation = (cat: string) => {
     if (cat === 'All') return t('products.all');
@@ -48,14 +66,30 @@ function ProductsContent() {
     return cat;
   };
 
-  // Sync category and search state with URL params
+  // Navigate to the category's clean URL (e.g. /vegetables) instead of
+  // just updating local state — this is what makes the address bar change
+  // on click and keeps the browser Back button working correctly.
+  const goToCategory = (cat: string) => {
+    router.push(categoryHref(cat));
+  };
+
+  // Sync category and search state with the URL.
   useEffect(() => {
+    // Dedicated /[category] route already resolved the category server-side.
+    if (initialCategory) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setCategory(initialCategory);
+      return;
+    }
+
+    // Legacy path: /products?category=Vegetables still works.
     const catParam = searchParams.get('category');
     if (catParam) {
       const matched = categories.find(c => c.toLowerCase() === catParam.toLowerCase());
       // eslint-disable-next-line react-hooks/set-state-in-effect
-      setCategory(matched || 'All');
+      setCategory(matched || catParam);
     } else {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setCategory('All');
     }
 
@@ -63,7 +97,7 @@ function ProductsContent() {
     if (searchParam) {
       setSearchQuery(searchParam);
     }
-  }, [searchParams]);
+  }, [searchParams, initialCategory, categories]);
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const normalizeProduct = (p: any) => {
@@ -194,7 +228,7 @@ function ProductsContent() {
                 <span className="text-slate-800">{t('products.hero.title3')}</span>
               </h1>
               <p className="text-slate-600 font-medium mt-8 text-lg md:text-xl max-w-md leading-relaxed">
-                {t('products.hero.desc').replace('products', `${products.length}+`)}
+                {t('products.hero.desc').replace('products', `${products.length}+ products`)}
               </p>
             </div>
             
@@ -225,9 +259,9 @@ function ProductsContent() {
           
           <div className="mt-8 flex gap-3 overflow-x-auto pb-4 scrollbar-hide -mx-1 px-1">
             {categories.map((cat) => (
-              <button 
-                key={cat} 
-                onClick={() => setCategory(cat)} 
+              <button
+                key={cat}
+                onClick={() => goToCategory(cat)}
                 className={`flex-shrink-0 px-8 py-4 rounded-2xl font-black text-[11px] uppercase tracking-widest transition-all backdrop-blur-md ${
                   category === cat 
                     ? 'bg-primary text-white shadow-2xl shadow-primary/30 scale-105 border-transparent' 
@@ -248,7 +282,7 @@ function ProductsContent() {
               <div className="flex items-center gap-3 mb-8"><div className="w-8 h-8 bg-primary/10 text-primary rounded-lg flex items-center justify-center"><Filter size={18} /></div><h3 className="text-xl font-black tracking-tight">{t('products.categories')}</h3></div>
               <div className="space-y-1">
                 {categories.map((cat) => (
-                  <button key={cat} onClick={() => setCategory(cat)} className={`w-full text-left px-5 py-3.5 rounded-2xl transition-all duration-300 font-bold flex items-center justify-between group ${category === cat ? 'bg-primary text-white shadow-xl' : 'text-muted-foreground hover:bg-muted/50 hover:text-foreground'}`}>
+                  <button key={cat} onClick={() => goToCategory(cat)} className={`w-full text-left px-5 py-3.5 rounded-2xl transition-all duration-300 font-bold flex items-center justify-between group ${category === cat ? 'bg-primary text-white shadow-xl' : 'text-muted-foreground hover:bg-muted/50 hover:text-foreground'}`}>
                     <div className="flex items-center gap-3">{cat === 'Seasonal' && <Star size={16} className={category === 'Seasonal' ? 'text-white' : 'text-accent'} />}{getCategoryTranslation(cat)}</div>
                   </button>
                 ))}
@@ -284,11 +318,11 @@ function ProductsContent() {
               <div className="grid grid-cols-2 lg:grid-cols-3 gap-8 md:gap-10">
                 <AnimatePresence mode="popLayout">
                   {filteredProducts.map((product) => (
-                    <motion.div key={product.id || product.name} layout initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.9 }}><ProductCard product={product} /></motion.div>
+                    <motion.div key={product.id || product.name} layout initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.9 }}><ProductCard product={product} href={productHref(product.category, product.name)} /></motion.div>
                   ))}
                 </AnimatePresence>
               </div>
-            ) : <div className="text-center py-20 bg-muted/10 rounded-[3rem] border-2 border-dashed border-border/50"><h3 className="text-2xl font-black mb-2">{t('products.no_matching')}</h3><button onClick={() => { setCategory('All'); setSearchQuery(''); }} className="mt-6 bg-primary text-white px-10 py-4 rounded-full font-black uppercase text-xs">{t('products.show_all')}</button></div>}
+            ) : <div className="text-center py-20 bg-muted/10 rounded-[3rem] border-2 border-dashed border-border/50"><h3 className="text-2xl font-black mb-2">{t('products.no_matching')}</h3><button onClick={() => { setSearchQuery(''); goToCategory('All'); }} className="mt-6 bg-primary text-white px-10 py-4 rounded-full font-black uppercase text-xs">{t('products.show_all')}</button></div>}
           </div>
         </div>
       </div>

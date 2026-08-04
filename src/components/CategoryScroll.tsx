@@ -4,6 +4,7 @@ import React, { useRef } from 'react';
 import { motion } from 'framer-motion';
 import { ChevronRight, ChevronLeft } from 'lucide-react';
 import Link from 'next/link';
+import { categoryHref } from '@/lib/categorySlug';
 
 const CATEGORIES = [
   { id: '1', name: 'Vegetables', icon: '🥦', color: 'bg-green-50 text-green-600' },
@@ -49,7 +50,7 @@ export default function CategoryScroll() {
         {CATEGORIES.map((cat) => (
           <Link 
             key={cat.id} 
-            href={`/products?category=${cat.name}`}
+            href={categoryHref(cat.name)}
             className="snap-start flex-shrink-0"
           >
             <motion.div 

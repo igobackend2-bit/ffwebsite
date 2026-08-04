@@ -1,5 +1,6 @@
 import type { MetadataRoute } from 'next';
 import { supabase } from '@/lib/supabase';
+import { categoryHref, productHref } from '@/lib/categorySlug';
 
 export const dynamic = 'force-static';
 
@@ -8,7 +9,10 @@ export const dynamic = 'force-static';
  * Combines:
  *   1. Static public canonical routes (no query-string URLs — those conflict
  *      with the /products canonical and send mixed signals to Google).
- *   2. Dynamic product detail pages pulled from Supabase.
+ *   2. Category pages (/vegetables, /fruits, /valluvam-products, ...).
+ *   3. Dynamic product detail pages pulled from Supabase, at their real
+ *      nested URL (/vegetables/tomato) — the old /products/<id> URLs now
+ *      redirect there, so only the canonical nested URL is listed.
  *
  * Safe-fails: if Supabase is unreachable at build time, only static routes
  * are returned so the build never breaks.
@@ -70,19 +74,28 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     },
   ];
 
+  let categoryRoutes: MetadataRoute.Sitemap = [];
   let productRoutes: MetadataRoute.Sitemap = [];
 
   try {
     const { data, error } = await supabase
       .from('products')
-      .select('id, updated_at, created_at')
+      .select('id, name, category, updated_at, created_at')
       .eq('is_active', true)
       .limit(5000);
 
     if (!error && data) {
+      const categories = Array.from(new Set(data.map((p) => p.category).filter(Boolean)));
+      categoryRoutes = categories.map((category) => ({
+        url: `${SITE_URL}${categoryHref(category)}`,
+        lastModified: now,
+        changeFrequency: 'daily' as const,
+        priority: 0.9,
+      }));
+
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       productRoutes = data.map((p: any) => ({
-        url: `${SITE_URL}/products/${p.id}`,
+        url: `${SITE_URL}${productHref(p.category, p.name)}`,
         lastModified: p.updated_at
           ? new Date(p.updated_at)
           : p.created_at
@@ -94,8 +107,9 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     }
   } catch (_err) {
     // Silently fall back to static-only sitemap at build time.
+    categoryRoutes = [];
     productRoutes = [];
   }
 
-  return [...staticRoutes, ...productRoutes];
+  return [...staticRoutes, ...categoryRoutes, ...productRoutes];
 }

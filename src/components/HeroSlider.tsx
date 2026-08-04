@@ -35,7 +35,7 @@ const DEFAULT_SLIDES: Slide[] = [
     title: 'Pure Organic Fruits',
     subtitle: 'Taste the sweetness of nature with our hand-picked 3D organic fruits, delivered fresh within 24 hours.',
     cta: 'Shop Fruits',
-    href: '/products?category=Fruits',
+    href: '/fruits',
     media_url: '/banners/fruits_3d.png',
     type: 'image',
     theme: 'dark'
@@ -45,7 +45,7 @@ const DEFAULT_SLIDES: Slide[] = [
     title: 'Traditional Valluvam',
     subtitle: 'Experience the purity of ancient traditions with our curated Valluvam collection.',
     cta: 'Explore Valluvam',
-    href: '/products?category=Valluvam Products',
+    href: '/valluvam-products',
     media_url: '/banners/valluvam_3d.png',
     type: 'image',
     theme: 'dark'
