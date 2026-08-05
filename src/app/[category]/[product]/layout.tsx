@@ -4,6 +4,7 @@ import { BreadcrumbJsonLd, ProductJsonLd } from '@/components/seo/JsonLd';
 import { getKnownCategories } from '@/lib/categories';
 import { resolveCategoryFromSlug } from '@/lib/categorySlug';
 import { getProductBySlug } from '@/lib/products';
+import { PRODUCT_META_OVERRIDES } from '@/lib/metaOverrides';
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://famersfactory.com';
 
@@ -27,10 +28,12 @@ export async function generateMetadata({
     };
   }
 
-  const title = `${product.name} — Buy Fresh ${category} Online | Farmers Factory`;
+  const override = PRODUCT_META_OVERRIDES[categorySlug.toLowerCase()]?.[productSlug.toLowerCase()];
+  const title = override?.title ?? `${product.name} — Buy Fresh ${category} Online | Farmers Factory`;
   const description =
-    (product.description && String(product.description).slice(0, 160)) ||
-    `Buy fresh ${product.name} online — farm-direct, organic, harvested today and delivered in 24 hours. Pure quality guaranteed by Farmers Factory.`;
+    override?.description ??
+    ((product.description && String(product.description).slice(0, 160)) ||
+      `Buy fresh ${product.name} online — farm-direct, organic, harvested today and delivered in 24 hours. Pure quality guaranteed by Farmers Factory.`);
 
   const image =
     product.image_url ||

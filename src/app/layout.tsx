@@ -26,11 +26,11 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   metadataBase: new URL("https://famersfactory.com"),
   title: {
-    default: "Farmers Factory | Fresh Organic Farm Produce Directly to Your Doorstep",
+    default: "Farmers Factory – Buy Fresh Organic Fruits & Vegetables Online",
     template: "%s | Farmers Factory",
   },
   description:
-    "Experience the freshest organic fruits, vegetables, and farm-direct products. Sustainable farming, pure quality, and 24-hour delivery from our farms to your kitchen.",
+    "Buy fresh organic fruits, vegetables, and premium groceries directly from Farmers Factory. Farm-fresh quality, hygienic packaging, and fast doorstep delivery.",
   keywords: [
     // Brand
     "Farmers Factory", "farmers factory online", "farmers factory India", "IGO Group",
@@ -70,9 +70,9 @@ export const metadata: Metadata = {
     canonical: "https://famersfactory.com/",
   },
   openGraph: {
-    title: "Farmers Factory | Fresh Organic Farm Produce Directly to Your Doorstep",
+    title: "Farmers Factory – Buy Fresh Organic Fruits & Vegetables Online",
     description:
-      "Experience the freshest organic fruits, vegetables, and farm-direct products. Sustainable farming, pure quality, and 24-hour delivery from our farms to your kitchen.",
+      "Buy fresh organic fruits, vegetables, and premium groceries directly from Farmers Factory. Farm-fresh quality, hygienic packaging, and fast doorstep delivery.",
     url: "https://famersfactory.com",
     siteName: "Farmers Factory",
     type: "website",
@@ -88,9 +88,9 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "Farmers Factory | Fresh Organic Farm Produce",
+    title: "Farmers Factory – Buy Fresh Organic Fruits & Vegetables Online",
     description:
-      "Farm-direct organic fruits, vegetables and traditional products — 24-hour delivery from our farms to your kitchen.",
+      "Buy fresh organic fruits, vegetables, and premium groceries directly from Farmers Factory. Farm-fresh quality, hygienic packaging, and fast doorstep delivery.",
     images: ["/banner-organic.webp"],
   },
   icons: {
