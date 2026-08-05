@@ -32,7 +32,11 @@ export async function generateMetadata({
     `Shop farm-direct organic ${category.toLowerCase()} — harvested today, delivered within 24 hours. Pure quality guaranteed by Farmers Factory.`;
 
   return {
-    title,
+    // Use an "absolute" title so the root layout's "%s | Farmers Factory"
+    // template isn't appended a second time (this title already ends in
+    // "Farmers Factory", which was producing "... | Farmers Factory |
+    // Farmers Factory" in the browser tab / search results).
+    title: { absolute: title },
     description,
     keywords: [
       `buy ${category.toLowerCase()} online`,
