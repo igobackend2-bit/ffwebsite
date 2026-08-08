@@ -88,5 +88,50 @@ export const PRODUCT_META_OVERRIDES: Record<string, Record<string, MetaOverride>
       description:
         'Order fresh premium raw banana from Farmers Factory. Farm-fresh quality, naturally grown vegetables, hygienically packed, and delivered fresh.',
     },
+    'ooty-carrot': {
+      title: 'Fresh Ooty Carrot Online | Farm Fresh Ooty Carrots | Farmers Factory',
+      description:
+        'Buy fresh Ooty carrots online from Farmers Factory. Enjoy farm-fresh, naturally grown, crunchy and nutritious Ooty carrots, carefully harvested and delivered fresh to your doorstep.',
+    },
+    'onion-nasik': {
+      title: 'Fresh Nasik Onion Online | Farm Fresh Onions | Farmers Factory',
+      description:
+        'Shop farm-fresh Nasik onions online from Farmers Factory. Get quality onions with natural freshness and authentic flavor for all your favorite dishes.',
+    },
+    'mint-leaves': {
+      title: 'Fresh Mint Leaves Online | Farm Fresh Mint Leaves | Farmers Factory',
+      description:
+        'Get fresh mint leaves delivered to your doorstep from Farmers Factory. Shop quality, aromatic and farm-fresh mint leaves online for your everyday cooking needs.',
+    },
+    lemon: {
+      title: 'Fresh Lemon Online | Farm Fresh Organic Lemon | Farmers Factory',
+      description:
+        'Buy fresh organic lemons online from Farmers Factory. Enjoy farm-fresh, naturally juicy and refreshing lemons, delivered to your doorstep.',
+    },
+    'maravalli-kilangu': {
+      title: 'Fresh Maravalli-kilangu Online | Farm Fresh Tapioca | Farmers Factory',
+      description:
+        'Shop fresh Maravalli Kilangu (Tapioca) online at Farmers Factory. Enjoy farm-fresh, carefully selected tapioca with quality, freshness, and convenient delivery.',
+    },
+    'onion-big': {
+      title: 'Fresh Big Onion Online | Farm Fresh Onions | Farmers Factory',
+      description:
+        'Buy fresh Big Onions online from Farmers Factory. Get farm-fresh, quality onions carefully harvested and delivered fresh to your doorstep.',
+    },
+    onion: {
+      title: 'Fresh Onion Online | Farm Fresh Onions | Farmers Factory',
+      description:
+        'Buy fresh onions online from Farmers Factory. Enjoy farm-fresh, naturally grown onions harvested with care and delivered fresh to your doorstep.',
+    },
+    nookal: {
+      title: 'Fresh Nookal Online | Farm Fresh Nookal | Farmers Factory',
+      description:
+        'Shop fresh Nookal online at Farmers Factory. Enjoy farm-fresh, naturally grown Nookal, carefully harvested and delivered fresh to your doorstep.',
+    },
+    karunaikizhangu: {
+      title: 'Fresh Karunai Kizhangu Online | Farm Fresh Yam | Farmers Factory',
+      description:
+        'Buy fresh Karunai Kizhangu online from Farmers Factory. Enjoy farm-fresh, naturally grown yam, carefully harvested and delivered fresh to your doorstep.',
+    },
   },
 };

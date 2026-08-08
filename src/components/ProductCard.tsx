@@ -231,8 +231,8 @@ export default function ProductCard({ product, href }: ProductCardProps) {
           <div className="flex items-center justify-between mt-auto pt-4 border-t border-muted/50">
             <div className="flex flex-col">
               <div className="flex items-center gap-2">
-                <span className="text-xl font-black text-primary">₹{product.price}</span>
-                <span className="text-[10px] font-bold text-muted-foreground/60 line-through">₹{Math.round(product.price * 1.3)}</span>
+                <span className="text-2xl font-black text-primary">₹{product.price}</span>
+                <span className="text-xs font-bold text-muted-foreground/60 line-through">₹{Math.round(product.price * 1.3)}</span>
               </div>
               <div className="bg-green-100 text-green-700 text-[9px] font-black px-1.5 py-0.5 rounded-md uppercase tracking-tighter w-fit">
                 {t('product.save_amount')}{Math.round(product.price * 0.3)}
@@ -261,9 +261,9 @@ export default function ProductCard({ product, href }: ProductCardProps) {
               <button
                 onClick={handleAddToCart}
                 disabled={loading || product.stock === 0}
-                className={`w-full h-12 rounded-2xl flex items-center justify-center transition-all transform active:scale-[0.95] shadow-xl relative overflow-hidden group/btn ${
-                  product.stock === 0 
-                    ? 'bg-slate-100 text-slate-400 cursor-not-allowed shadow-none border border-slate-200' 
+                className={`flex-shrink-0 h-9 px-4 rounded-xl flex items-center justify-center transition-all transform active:scale-[0.95] shadow-md relative overflow-hidden group/btn ${
+                  product.stock === 0
+                    ? 'bg-slate-100 text-slate-400 cursor-not-allowed shadow-none border border-slate-200'
                     : 'bg-primary text-white hover:bg-primary/90 shadow-primary/20'
                 }`}
               >
