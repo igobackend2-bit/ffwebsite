@@ -319,4 +319,126 @@ export const PRODUCT_META_OVERRIDES: Record<string, Record<string, MetaOverride>
         'Buy fresh carrots online from Farmers Factory. Enjoy farm-fresh, carefully selected carrots delivered to your doorstep with quality, freshness, and natural goodness.',
     },
   },
+  fruits: {
+    'watermelon-strips': {
+      title: 'Buy Fresh Watermelon Strips Online | Farmers Factory',
+      description:
+        'Buy fresh Watermelon Strips online from Farmers Factory. Enjoy naturally fresh, juicy and quality watermelon delivered conveniently to your doorstep.',
+    },
+    'watermelon-kiran': {
+      title: 'Buy Fresh Kiran Watermelon Online | Farmers Factory',
+      description:
+        'Buy fresh Kiran Watermelon online from Farmers Factory. Enjoy naturally sweet, juicy, freshly harvested watermelon delivered straight to your doorstep.',
+    },
+    redbanana: {
+      title: 'Buy Fresh Red Banana Online | Organic Red Banana | Farmers Factory',
+      description:
+        'Buy fresh Red Banana online from Farmers Factory. Enjoy naturally fresh, organic, chemical-free bananas harvested with care and delivered fresh to your doorstep.',
+    },
+    'senthoora-mango': {
+      title: 'Buy Fresh Senthoora Mango Online | Farm Fresh Mango | Farmers Factory',
+      description:
+        'Buy fresh Senthoora Mango online from Farmers Factory. Enjoy naturally fresh, organic mangoes harvested with care and delivered straight to your doorstep.',
+    },
+    'mango-banganapalli': {
+      title: 'Buy Fresh Banganapalli Mango Online | Farmers Factory',
+      description:
+        'Buy fresh Banganapalli mangoes online from Farmers Factory. Enjoy naturally sweet, juicy, organic mangoes with no chemicals or ripening agents, delivered fresh to your doorstep.',
+    },
+    'musk-melon': {
+      title: 'Buy Fresh Musk Melon Online | Farm Fresh | Farmers Factory',
+      description:
+        'Buy fresh Musk Melon online from Farmers Factory. Enjoy naturally fresh, carefully harvested, quality melons delivered straight from the farm to your doorstep.',
+    },
+    'guava-white': {
+      title: 'Buy Fresh White Guava Online | Farm Fresh Guava | Farmers Factory',
+      description:
+        'Buy fresh White Guava online from Farmers Factory. Enjoy naturally fresh, quality guava harvested from the farm and delivered straight to your doorstep.',
+    },
+    'banana-poovan': {
+      title: 'Buy Fresh Poovan Banana Online | Farm Fresh | Farmers Factory',
+      description:
+        'Buy fresh Poovan Banana online from Farmers Factory. Enjoy naturally fresh, organic bananas harvested with care and delivered straight to your doorstep.',
+    },
+    'banana-elakki': {
+      title: 'Buy Fresh Elakki Banana Online | Farm Fresh | Farmers Factory',
+      description:
+        'Buy fresh Elakki Bananas online from Farmers Factory. Enjoy naturally fresh, quality bananas harvested with care and conveniently delivered to your doorstep.',
+    },
+    'banana-karpooravalli': {
+      title: 'Buy Fresh Karpooravalli Banana Online | Farmers Factory',
+      description:
+        'Shop fresh Karpooravalli bananas online at Farmers Factory. Enjoy naturally sweet, freshly harvested, quality bananas delivered conveniently to your doorstep.',
+    },
+    'banana-nendhiram': {
+      title: 'Buy Fresh Nendhiram Banana Online | Farmers Factory',
+      description:
+        'Buy fresh Nendhiram Banana online from Farmers Factory. Enjoy naturally grown, chemical-free bananas freshly harvested and delivered straight to your doorstep.',
+    },
+    kiwi: {
+      title: 'Buy Fresh Kiwi Online | Organic Kiwi Fruit | Farmers Factory',
+      description:
+        'Buy fresh kiwi online from Farmers Factory. Enjoy naturally fresh, organic, quality kiwi fruit delivered straight to your doorstep for healthy everyday eating.',
+    },
+    apple: {
+      title: 'Buy Fresh Apples Online | Farm Fresh Apples | Farmers Factory',
+      description:
+        'Buy fresh, quality apples online from Farmers Factory. Enjoy naturally fresh, carefully selected apples delivered straight to your doorstep for healthy everyday eating.',
+    },
+    strawberry: {
+      title: 'Buy Fresh Strawberries Online | Farm Fresh | Farmers Factory',
+      description:
+        'Buy fresh strawberries online from Farmers Factory. Enjoy farm-fresh, naturally grown strawberries delivered straight to your doorstep with quality and freshness.',
+    },
+    pomegranate: {
+      title: 'Buy Fresh Pomegranate Online | Farm Fresh | Farmers Factory',
+      description:
+        'Buy fresh pomegranate online from Farmers Factory. Enjoy naturally fresh, organic, farm-harvested pomegranates delivered straight to your doorstep.',
+    },
+    orange: {
+      title: 'Buy Fresh Oranges Online | Farm Fresh Orange | Farmers Factory',
+      description:
+        'Buy fresh oranges online from Farmers Factory. Enjoy naturally fresh, juicy, organic oranges harvested with care and delivered fresh to your doorstep.',
+    },
+    amla: {
+      title: 'Buy Fresh Amla Online | Organic Indian Gooseberry | Farmers Factory',
+      description:
+        'Buy fresh organic Amla online from Farmers Factory. Enjoy naturally harvested Indian gooseberries with farm-fresh quality, carefully packed and delivered to your doorstep.',
+    },
+    papaya: {
+      title: 'Fresh Papaya Online | Farm Fresh Organic Papaya | Farmers Factory',
+      description:
+        'Buy fresh papaya online from Farmers Factory. Enjoy naturally fresh, organic papaya harvested with care and delivered straight to your doorstep.',
+    },
+    pineapple: {
+      title: 'Buy Fresh Pineapple Online | Farm Fresh Pineapple | Farmers Factory',
+      description:
+        'Buy fresh pineapple online from Farmers Factory. Enjoy naturally fresh, juicy, quality-selected pineapple delivered straight to your doorstep for healthy everyday eating.',
+    },
+    grapes: {
+      title: 'Buy Fresh Grapes Online | Organic Grapes | Farmers Factory',
+      description:
+        'Buy fresh organic grapes online from Farmers Factory. Enjoy naturally fresh, carefully harvested grapes delivered straight from the farm to your doorstep.',
+    },
+    sapota: {
+      title: 'Fresh Sapota Online | Farm Fresh Chikoo | Farmers Factory',
+      description:
+        'Buy fresh Sapota (Chikoo) online from Farmers Factory. Enjoy naturally fresh, carefully selected, farm-quality Sapota delivered conveniently to your doorstep.',
+    },
+    guava: {
+      title: 'Fresh Guava Online | Organic & Farm Fresh Guava | Farmers Factory',
+      description:
+        'Buy fresh guava online from Farmers Factory. Enjoy naturally fresh, organic, Grade A guava harvested from the farm and delivered straight to your doorstep.',
+    },
+    'sweet-lime': {
+      title: 'Buy Fresh Sweet Lime Online | Organic Mosambi | Farmers Factory',
+      description:
+        'Buy fresh Sweet Lime (Mosambi) online from Farmers Factory. Enjoy naturally fresh, organic, juicy sweet lime harvested with care and delivered to your doorstep.',
+    },
+    'dragon-fruit': {
+      title: 'Buy Fresh Dragon Fruit Online | Farm Fresh | Farmers Factory',
+      description:
+        'Buy fresh Dragon Fruit online from Farmers Factory. Enjoy naturally fresh, farm-harvested quality delivered straight to your doorstep for a healthy lifestyle.',
+    },
+  },
 };
