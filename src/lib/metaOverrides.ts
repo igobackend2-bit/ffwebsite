@@ -116,7 +116,7 @@ export const PRODUCT_META_OVERRIDES: Record<string, Record<string, MetaOverride>
     'onion-big': {
       title: 'Fresh Big Onion Online | Farm Fresh Onions | Farmers Factory',
       description:
-        'Buy fresh Big Onions online from Farmers Factory. Get farm-fresh, quality onions carefully harvested and delivered fresh to your doorstep.',
+        'Buy fresh big onions online from Farmers Factory. Get farm-fresh, carefully selected onions with natural quality, great taste, and convenient doorstep delivery.',
     },
     onion: {
       title: 'Fresh Onion Online | Farm Fresh Onions | Farmers Factory',
@@ -132,6 +132,191 @@ export const PRODUCT_META_OVERRIDES: Record<string, Record<string, MetaOverride>
       title: 'Fresh Karunai Kizhangu Online | Farm Fresh Yam | Farmers Factory',
       description:
         'Buy fresh Karunai Kizhangu online from Farmers Factory. Enjoy farm-fresh, naturally grown yam, carefully harvested and delivered fresh to your doorstep.',
+    },
+    'green-peas': {
+      title: 'Fresh Green Peas Online | Organic Vegetables | Farmers Factory',
+      description:
+        'Shop fresh green peas online at Farmers Factory. Enjoy farm-fresh, quality organic vegetables carefully harvested and delivered fresh to your doorstep.',
+    },
+    greenchili: {
+      title: 'Fresh Green Chilli Online | Organic Green Chilli | Farmers Factory',
+      description:
+        'Buy fresh green chilli online from Farmers Factory. Get organic, farm-fresh green chillies carefully selected for quality, freshness, flavour, and everyday cooking.',
+    },
+    kovaikkai: {
+      title: 'Fresh Kovaikkai Online | Farm Fresh Ivy Gourd | Farmers Factory',
+      description:
+        'Buy fresh Kovaikkai (Ivy Gourd) online from Farmers Factory. Enjoy farm-fresh, quality-checked vegetables with hygienic packing and convenient delivery.',
+    },
+    'ladies-finger': {
+      title: 'Fresh Ladies Finger Online | Farm Fresh Okra | Farmers Factory',
+      description:
+        'Buy fresh Ladies Finger (Okra) online from Farmers Factory. Get farm-fresh, quality-checked vegetables with hygienic packing and convenient delivery.',
+    },
+    'coriander-leaves': {
+      title: 'Fresh Coriander Leaves Online | Farm Fresh Coriander | Farmers Factory',
+      description:
+        'Buy fresh coriander leaves online from Farmers Factory. Get farm-fresh, aromatic, quality-checked coriander, hygienically packed and delivered fresh to you.',
+    },
+    'capsicum-green': {
+      title: 'Fresh Green Capsicum Online | Farm Fresh Capsicum | Farmers Factory',
+      description:
+        'Looking for fresh green capsicum online? Farmers Factory brings you quality farm-fresh capsicum with great freshness, taste, and crunch for everyday cooking.',
+    },
+    'cluster-beans': {
+      title: 'Fresh Cluster Beans Online | Quality Farm Fresh Vegetables | Farmers Factory',
+      description:
+        'Order fresh cluster beans online from Farmers Factory. Get quality farm-fresh cluster beans, carefully harvested and selected for fresh, healthy everyday meals.',
+    },
+    'capsicum-yellow': {
+      title: 'Fresh Yellow Capsicum Online | Farm Fresh Yellow Capsicum | Farmers Factory',
+      description:
+        'Buy fresh yellow capsicum online from Farmers Factory. Enjoy farm-fresh, crisp and premium-quality yellow capsicum, carefully selected and delivered fresh to your doorstep.',
+    },
+    'capsicum-red': {
+      title: 'Fresh Red Capsicum Online | Farm Fresh Red Capsicum | Farmers Factory',
+      description:
+        'Buy fresh red capsicum online from Farmers Factory. Get farm-fresh, crisp and premium-quality red capsicum, carefully selected and delivered to your doorstep.',
+    },
+    'curry-leaves': {
+      title: 'Fresh Curry Leaves Online | Farm Fresh Curry Leaves | Farmers Factory',
+      description:
+        'Buy fresh curry leaves online from Farmers Factory. Enjoy farm-fresh, aromatic and carefully selected curry leaves, hygienically packed and delivered fresh to your doorstep.',
+    },
+    'chow-chow': {
+      title: 'Fresh Chow Chow Online | Farm Fresh Chow Chow | Farmers Factory',
+      description:
+        'Buy fresh Chow Chow online from Farmers Factory. Get farm-fresh, carefully selected Chow Chow, hygienically packed and delivered fresh to your doorstep.',
+    },
+    'bottle-gourd': {
+      title: 'Fresh Bottle Gourd Online | Farm Fresh Bottle Gourd | Farmers Factory',
+      description:
+        'Buy fresh bottle gourd online from Farmers Factory. Enjoy farm-fresh, carefully selected bottle gourds, hygienically packed and delivered fresh to your doorstep.',
+    },
+    'brinjal-eggplant': {
+      title: 'Fresh Brinjal Online | Farm Fresh Eggplant | Farmers Factory',
+      description:
+        'Buy fresh brinjal online from Farmers Factory. Enjoy farm-fresh eggplant, carefully selected, hygienically packed and delivered fresh to your doorstep.',
+    },
+    'ash-gourd': {
+      title: 'Fresh Ash Gourd Online | Farm Fresh Ash Gourd | Farmers Factory',
+      description:
+        'Buy fresh Ash Gourd online from Farmers Factory. Enjoy farm-fresh, carefully selected Ash Gourd with quality, freshness, and convenient doorstep delivery.',
+    },
+    'banana-flower': {
+      title: 'Fresh Banana Flower Online | Farm Fresh Banana Flower | Farmers Factory',
+      description:
+        'Buy fresh Banana Flower online from Farmers Factory. Get farm-fresh, carefully selected Banana Flowers packed for quality and freshness with convenient doorstep delivery.',
+    },
+    avarakkai: {
+      title: 'Fresh Avarakkai Online | Farm Fresh Broad Beans | Farmers Factory',
+      description:
+        'Buy fresh Avarakkai (Broad Beans) online from Farmers Factory. Enjoy farm-fresh quality, natural goodness, hygienic packing, and convenient doorstep delivery.',
+    },
+    'baby-potato': {
+      title: 'Fresh Baby Potato Online | Farm Fresh Baby Potatoes | Farmers Factory',
+      description:
+        'Shop fresh baby potatoes online at Farmers Factory. Get premium farm-fresh baby potatoes, hygienically packed and delivered fresh for your everyday meals.',
+    },
+    'brinjal-vari': {
+      title: 'Fresh Brinjal Vari Online | Farm Fresh Brinjal | Farmers Factory',
+      description:
+        'Shop fresh Brinjal Vari online at Farmers Factory. Enjoy farm-fresh, carefully selected brinjal with quality, freshness, and convenient doorstep delivery.',
+    },
+    'button-mushrooms': {
+      title: 'Fresh Button Mushrooms Online | Farm Fresh Mushrooms | Farmers Factory',
+      description:
+        'Buy fresh Button Mushrooms online at Farmers Factory. Get farm-fresh, carefully selected mushrooms with quality, freshness, and convenient doorstep delivery.',
+    },
+    'baji-chilli': {
+      title: 'Fresh Bajji Chilli Online | Farm Fresh Bajji Chilli | Farmers Factory',
+      description:
+        'Shop fresh Bajji Chilli online at Farmers Factory. Get farm-fresh, carefully selected chillies with great quality, freshness, and convenient doorstep delivery.',
+    },
+    'banana-stem': {
+      title: 'Fresh Banana Stem Online | Farm Fresh Banana Stem | Farmers Factory',
+      description:
+        'Buy fresh Banana Stem online at Farmers Factory. Get farm-fresh, carefully selected banana stem delivered conveniently to your doorstep for healthy everyday cooking.',
+    },
+    'baby-corn': {
+      title: 'Fresh Baby Corn Online | Farm Fresh Baby Corn | Farmers Factory',
+      description:
+        'Buy fresh Baby Corn online at Farmers Factory. Get farm-fresh, carefully selected baby corn with great quality, natural freshness, and convenient doorstep delivery.',
+    },
+    beans: {
+      title: 'Fresh Beans Online | Farm Fresh Green Beans | Farmers Factory',
+      description:
+        'Buy fresh beans online from Farmers Factory. Get farm-fresh, carefully selected green beans harvested for quality, freshness, and convenient doorstep delivery.',
+    },
+    broccoli: {
+      title: 'Fresh Broccoli Online | Farm Fresh Broccoli | Farmers Factory',
+      description:
+        'Buy fresh broccoli online from Farmers Factory. Get farm-fresh, carefully selected broccoli with great quality, freshness, and convenient doorstep delivery.',
+    },
+    drumstick: {
+      title: 'Fresh Drumstick Online | Farm Fresh Drumstick | Farmers Factory',
+      description:
+        'Buy fresh drumstick online from Farmers Factory. Get farm-fresh, carefully selected drumsticks with quality, freshness, and convenient doorstep delivery.',
+    },
+    cauliflower: {
+      title: 'Fresh Cauliflower Online | Farm Fresh Cauliflower | Farmers Factory',
+      description:
+        'Shop fresh cauliflower online at Farmers Factory. Get farm-fresh, carefully selected cauliflower harvested for quality and freshness, delivered conveniently to your doorstep.',
+    },
+    cucumber: {
+      title: 'Fresh Cucumber Online | Farm Fresh Cucumber | Farmers Factory',
+      description:
+        'Buy fresh cucumber online from Farmers Factory. Enjoy farm-fresh, carefully selected cucumbers with natural freshness, quality, and convenient doorstep delivery.',
+    },
+    cabbage: {
+      title: 'Fresh Cabbage Online | Farm Fresh Cabbage | Farmers Factory',
+      description:
+        'Buy fresh cabbage online from Farmers Factory. Get farm-fresh, carefully selected cabbage with quality, freshness, and convenient doorstep delivery.',
+    },
+    'bitter-gourd': {
+      title: 'Fresh Bitter Gourd Online | Farm Fresh Bitter Gourd | Farmers Factory',
+      description:
+        'Buy fresh Bitter Gourd online from Farmers Factory. Get farm-fresh, carefully selected bitter gourd with quality, freshness, and convenient doorstep delivery.',
+    },
+    garlic: {
+      title: 'Fresh Garlic Online | Farm Fresh Garlic | Farmers Factory',
+      description:
+        'Shop fresh garlic online at Farmers Factory. Get farm-fresh, carefully selected garlic with natural flavour, reliable quality, and convenient doorstep delivery.',
+    },
+    'brinjal-ujala': {
+      title: 'Fresh Brinjal Ujala Online | Farm Fresh Brinjal | Farmers Factory',
+      description:
+        'Shop fresh Brinjal Ujala online at Farmers Factory. Get farm-fresh, carefully selected brinjal with quality, freshness, and convenient doorstep delivery.',
+    },
+    beetroot: {
+      title: 'Fresh Beetroot Online | Farm Fresh Beetroot | Farmers Factory',
+      description:
+        'Shop fresh beetroot online at Farmers Factory. Get farm-fresh, nutritious beetroot carefully selected for quality, freshness, and convenient doorstep delivery.',
+    },
+    spinach: {
+      title: 'Fresh Spinach Online | Farm Fresh Spinach | Farmers Factory',
+      description:
+        'Shop fresh spinach online at Farmers Factory. Get farm-fresh, carefully selected spinach packed with freshness and quality, delivered conveniently to your doorstep.',
+    },
+    'ridge-gourd': {
+      title: 'Fresh Ridge Gourd Online | Farm Fresh Ridge Gourd | Farmers Factory',
+      description:
+        'Buy fresh Ridge Gourd online at Farmers Factory. Get farm-fresh, carefully selected ridge gourd with natural quality, freshness, and convenient doorstep delivery.',
+    },
+    ginger: {
+      title: 'Fresh Ginger Online | Farm Fresh Ginger | Farmers Factory',
+      description:
+        'Buy fresh ginger online at Farmers Factory. Get farm-fresh, carefully selected ginger with natural aroma, quality, freshness, and convenient doorstep delivery.',
+    },
+    'snake-gourd': {
+      title: 'Fresh Snake Gourd Online | Farm Fresh Snake Gourd | Farmers Factory',
+      description:
+        'Buy fresh Snake Gourd online from Farmers Factory. Get farm-fresh, carefully selected snake gourd with quality, freshness, and convenient doorstep delivery.',
+    },
+    carrots: {
+      title: 'Fresh Carrots Online | Farm Fresh Carrots | Farmers Factory',
+      description:
+        'Buy fresh carrots online from Farmers Factory. Enjoy farm-fresh, carefully selected carrots delivered to your doorstep with quality, freshness, and natural goodness.',
     },
   },
 };
