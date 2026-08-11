@@ -4,7 +4,10 @@ import { BreadcrumbJsonLd, OrganizationJsonLd, WebSiteJsonLd } from '@/component
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://famersfactory.com';
 
 export const metadata: Metadata = {
-  title: 'Shop Fresh Organic Fruits & Vegetables | Farmers Factory',
+  // Absolute title — this string already ends in "Farmers Factory", so it
+  // must not go through the root layout's "%s | Farmers Factory" template
+  // (that was producing "... | Farmers Factory | Farmers Factory").
+  title: { absolute: 'Shop Fresh Organic Fruits & Vegetables | Farmers Factory' },
   description:
     'Browse 100+ farm-direct organic fruits and vegetables. Same-day harvest, 24-hour delivery, pure quality guaranteed.',
   keywords: [

@@ -512,7 +512,14 @@ function ProductsContent() {
         is_seasonal: editFormData.is_seasonal,
         video_url: editFormData.video_url,
         order_index: editFormData.order_index,
-        slug: editFormData.name.toLowerCase().replace(/[^a-z0-9]+/g, '-'),
+        // Slug intentionally left out of edit saves: recomputing it fresh
+        // from the current name on every save could collide with another
+        // product's existing slug (e.g. two similarly-named products) and
+        // fail with "duplicate key value violates unique constraint
+        // products_slug_unique". The slug is a stable URL identifier set at
+        // creation time — routine edits (price, stock, etc.) shouldn't
+        // change it, and leaving the key out of this update object means
+        // Supabase leaves the existing slug column untouched.
         category: editFormData.category,
         category_slug,
         image_url: editFormData.image_url || (editFormData.image_urls || []).find((u: string) => u && u.trim() !== '') || '',
@@ -646,7 +653,12 @@ function ProductsContent() {
   }
 
   const filteredProducts = products.filter(product => {
-    const matchesSearch = 
+    // Valluvam Products is no longer sold on Farmers Factory (moved to
+    // https://www.valluvamproducts.com/) — hide it from the admin product
+    // list entirely rather than just the category dropdowns.
+    if (product.category === 'Valluvam Products') return false;
+
+    const matchesSearch =
       (product.name || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
       (product.category || '').toLowerCase().includes(searchTerm.toLowerCase());
     
