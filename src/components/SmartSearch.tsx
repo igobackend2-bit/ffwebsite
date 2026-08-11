@@ -58,20 +58,34 @@ export default function SmartSearch({ isSolid = false }: { isSolid?: boolean }) 
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       recognitionRef.current.onresult = (event: any) => {
         let finalTranscript = '';
+        let interimTranscript = '';
         for (let i = event.resultIndex; i < event.results.length; i++) {
+          const piece = event.results[i][0].transcript;
           if (event.results[i].isFinal) {
-            finalTranscript += event.results[i][0].transcript;
+            finalTranscript += piece;
+          } else {
+            interimTranscript += piece;
           }
         }
-        if (!finalTranscript.trim()) return;
 
-        const transcript = finalTranscript.trim();
-        setQuery(transcript);
-        setIsListening(false);
-        clearVoiceTimeout();
-        try { recognitionRef.current.stop(); } catch (e) { console.warn('Error stopping recognition:', e); }
-        toast.dismiss('voice-search');
-        toast.success(`Searching for "${transcript}"`, { id: 'voice-search-success' });
+        // Update the search box (and therefore trigger the product search)
+        // as soon as ANY speech is heard, not just once Chrome decides the
+        // phrase is "final" — some browsers are slow or inconsistent about
+        // ever marking a continuous-mode result final, which was leaving
+        // words like "tomato"/"potato" recognized internally but never
+        // reaching the search box. A live interim guess is enough to search.
+        const liveText = (finalTranscript || interimTranscript).trim();
+        if (liveText) {
+          setQuery(liveText);
+        }
+
+        if (finalTranscript.trim()) {
+          setIsListening(false);
+          clearVoiceTimeout();
+          try { recognitionRef.current.stop(); } catch (e) { console.warn('Error stopping recognition:', e); }
+          toast.dismiss('voice-search');
+          toast.success(`Searching for "${finalTranscript.trim()}"`, { id: 'voice-search-success' });
+        }
       };
 
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
