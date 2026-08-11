@@ -6,6 +6,7 @@ import { supabase } from '@/lib/supabase';
 import { ArrowRight, Loader2 } from 'lucide-react';
 import Link from 'next/link';
 import { useTranslation } from '@/context/TranslationContext';
+import { productHref } from '@/lib/categorySlug';
 
 export default function FeaturedProducts() {
   const { t } = useTranslation();
@@ -123,7 +124,7 @@ export default function FeaturedProducts() {
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
         {products.map((product) => (
-          <ProductCard key={product.id || product.name} product={product} />
+          <ProductCard key={product.id || product.name} product={product} href={productHref(product.category, product.name)} />
         ))}
       </div>
     </section>
