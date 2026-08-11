@@ -10,7 +10,10 @@ interface Translations {
   };
 }
 
-const translations: Translations = {
+// Exported so voice search can reverse-lookup a recognized Tamil/Hindi word
+// (e.g. "உருளைக்கிழங்கு") back to the English product name ("Baby Potato")
+// used to query the database, which only stores English names.
+export const translations: Translations = {
   // Navbar
   'nav.products': { en: 'Products', ta: 'தயாரிப்புகள்', hi: 'उत्पाद' },
   'nav.about': { en: 'About Us', ta: 'எங்களைப் பற்றி', hi: 'हमारे बारे में' },

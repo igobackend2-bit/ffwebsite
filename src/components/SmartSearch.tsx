@@ -7,10 +7,42 @@ import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
 import { toast } from 'react-hot-toast';
 import { productHref } from '@/lib/categorySlug';
-import { useTranslation } from '@/context/TranslationContext';
+import { useTranslation, translations } from '@/context/TranslationContext';
+
+// Web Speech API locale for each site language, so voice search actually
+// listens for Tamil/Hindi speech instead of always forcing English (India)
+// recognition regardless of the language the customer has selected.
+const SPEECH_LOCALES: Record<string, string> = {
+  en: 'en-IN',
+  ta: 'ta-IN',
+  hi: 'hi-IN',
+};
+
+// The database only stores English product names, so a recognized Tamil or
+// Hindi word (e.g. "உருளைக்கிழங்கு") needs to be mapped back to its English
+// name ("Baby Potato") before searching — otherwise the DB query never
+// matches anything. Reuses the same dictionary the site already uses to
+// display translated product names, just in reverse.
+function resolveVoiceSearchTerm(rawText: string): string {
+  const clean = rawText.trim();
+  if (!clean) return clean;
+  const cleanLower = clean.toLowerCase();
+
+  for (const [englishName, entry] of Object.entries(translations)) {
+    const ta = entry.ta?.trim();
+    const hi = entry.hi?.trim();
+    if (ta && (cleanLower.includes(ta.toLowerCase()) || ta.toLowerCase().includes(cleanLower))) {
+      return englishName;
+    }
+    if (hi && (cleanLower.includes(hi.toLowerCase()) || hi.toLowerCase().includes(cleanLower))) {
+      return englishName;
+    }
+  }
+  return clean;
+}
 
 export default function SmartSearch({ isSolid = false }: { isSolid?: boolean }) {
-  const { t } = useTranslation();
+  const { t, language } = useTranslation();
   const [query, setQuery] = useState('');
   const [isOpen, setIsOpen] = useState(false);
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -76,7 +108,7 @@ export default function SmartSearch({ isSolid = false }: { isSolid?: boolean }) 
         // reaching the search box. A live interim guess is enough to search.
         const liveText = (finalTranscript || interimTranscript).trim();
         if (liveText) {
-          setQuery(liveText);
+          setQuery(resolveVoiceSearchTerm(liveText));
         }
 
         if (finalTranscript.trim()) {
@@ -175,6 +207,11 @@ export default function SmartSearch({ isSolid = false }: { isSolid?: boolean }) 
     }
 
     try {
+      // Match the recognizer's listening language to whichever language the
+      // customer currently has the site set to (EN / TA / HI), set fresh on
+      // every listen since the site language can change after this
+      // component (and its SpeechRecognition instance) first mounted.
+      recognitionRef.current.lang = SPEECH_LOCALES[language] || 'en-IN';
       recognitionRef.current.start();
       setIsListening(true);
       toast.loading('🎙️ Voice active. Speak now...', { id: 'voice-search' });
