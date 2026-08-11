@@ -5,6 +5,7 @@ import { motion } from 'framer-motion';
 import { Plus, Minus, ShoppingCart, Sparkles } from 'lucide-react';
 import { useCart } from '@/context/CartContext';
 import { toast } from 'react-hot-toast';
+import { useTranslation } from '@/context/TranslationContext';
 
 interface Product {
   id: string;
@@ -28,6 +29,7 @@ interface QuickAddCarouselProps {
 }
 
 export default function QuickAddCarousel({ products, title = "You might also like", subtitle, onProductClick, onAddSuccess }: QuickAddCarouselProps) {
+  const { t } = useTranslation();
   const { cartItems, addToCart, updateQuantity, removeItem } = useCart();
 
   const getCartItem = (productId: string) => cartItems.find(item => item.product_id === productId);
@@ -84,7 +86,7 @@ export default function QuickAddCarousel({ products, title = "You might also lik
               </div>
 
               <div className="space-y-1 mb-3 cursor-pointer" onClick={() => onProductClick?.(product)}>
-                <h4 className="text-[11px] font-black uppercase tracking-tight line-clamp-1 group-hover:text-primary transition-colors">{product.name}</h4>
+                <h4 className="text-[11px] font-black uppercase tracking-tight line-clamp-1 group-hover:text-primary transition-colors">{t(product.name)}</h4>
                 <p className="text-[10px] font-bold text-muted-foreground">{product.unit}</p>
                 <p className="text-xs font-black text-primary">₹{product.price}</p>
               </div>

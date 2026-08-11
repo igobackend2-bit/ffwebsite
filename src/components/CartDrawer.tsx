@@ -11,6 +11,7 @@ import { toast } from 'react-hot-toast';
 import QuickAddCarousel from './QuickAddCarousel';
 import { FALLBACK_PRODUCTS, getSmartRecommendations } from '@/lib/constants';
 import { getEffectiveLineTotal } from '@/lib/pricing';
+import { useTranslation } from '@/context/TranslationContext';
 
 interface CartDrawerProps {
   isOpen: boolean;
@@ -18,6 +19,7 @@ interface CartDrawerProps {
 }
 
 export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
+  const { t } = useTranslation();
   const { cartItems, cartTotal, loading, updateQuantity, removeItem } = useCart();
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [relatedProducts, setRelatedProducts] = React.useState<any[]>([]);
@@ -148,7 +150,7 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
                         </div>
                         <div className="flex-1 flex flex-col justify-between py-0.5">
                           <div>
-                            <h4 className="text-[11px] font-black uppercase tracking-tight line-clamp-1">{item.products?.name}</h4>
+                            <h4 className="text-[11px] font-black uppercase tracking-tight line-clamp-1">{item.products?.name ? t(item.products.name) : ''}</h4>
                             <p className="text-[10px] font-bold text-muted-foreground">{item.products?.unit}</p>
                           </div>
                           <div className="flex items-center justify-between">

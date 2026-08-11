@@ -223,7 +223,7 @@ export default function ProductCard({ product, href }: ProductCardProps) {
                 per-product rating can be wired in once review aggregates
                 are actually fetched for the product list. */}
             <h3 className="text-xl font-black text-foreground line-clamp-1 group-hover:text-primary transition-colors leading-tight">
-              {product.name}
+              {t(product.name)}
             </h3>
             <p className="text-sm font-bold text-muted-foreground mt-1">1 {cleanUnitLabel(product.unit)}</p>
           </div>

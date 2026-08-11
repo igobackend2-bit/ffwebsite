@@ -97,7 +97,7 @@ export default function CartPage() {
                     <div className="flex-1 text-center md:text-left">
                       <div className="mb-4">
                         <p className="text-[10px] font-black uppercase tracking-[0.2em] text-primary mb-1 opacity-70">{t('cart.fresh_produce')}</p>
-                        <h3 className="text-2xl font-black text-foreground mb-1 group-hover:text-primary transition-colors">{item.products.name}</h3>
+                        <h3 className="text-2xl font-black text-foreground mb-1 group-hover:text-primary transition-colors">{t(item.products.name)}</h3>
                         <p className="text-muted-foreground font-bold">1 {cleanUnitLabel(item.products.unit)}</p>
                       </div>
                       
@@ -128,7 +128,11 @@ export default function CartPage() {
                         <p className="text-3xl font-black text-primary">₹{getEffectiveLineTotal(item.products, item.quantity)}</p>
                       </div>
                       <button
-                        onClick={() => removeItem(item.id)}
+                        onClick={() => {
+                          if (window.confirm(`Remove "${item.products.name}" from your cart?`)) {
+                            removeItem(item.id);
+                          }
+                        }}
                         className="w-14 h-14 rounded-2xl bg-red-50 text-red-500 hover:bg-red-500 hover:text-white transition-all flex items-center justify-center group/del shadow-sm hover:shadow-red-200"
                       >
                         <Trash2 size={22} className="group-hover/del:rotate-12 transition-transform" />
@@ -415,8 +419,8 @@ function RecommendedProducts({ cartItems }: { cartItems: any[] }) {
               </button>
             </div>
             <div>
-              <p className="text-[10px] font-black uppercase tracking-[0.2em] text-primary/60 mb-1">{product.category}</p>
-              <h4 className="text-lg font-black text-foreground group-hover:text-primary transition-colors line-clamp-1">{product.name}</h4>
+              <p className="text-[10px] font-black uppercase tracking-[0.2em] text-primary/60 mb-1">{t(product.category)}</p>
+              <h4 className="text-lg font-black text-foreground group-hover:text-primary transition-colors line-clamp-1">{t(product.name)}</h4>
               <p className="text-xl font-black text-primary mt-2">₹{product.price}</p>
             </div>
           </motion.div>

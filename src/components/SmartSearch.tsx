@@ -189,7 +189,7 @@ export default function SmartSearch({ isSolid = false }: { isSolid?: boolean }) 
             {results.map((product) => (
               <button key={product.id || product.name} onClick={() => handleProductClick(product)} className="w-full flex items-center gap-4 p-3 rounded-xl hover:bg-primary/5 transition-all text-left">
                 <div className="w-12 h-12 rounded-lg bg-muted/20 overflow-hidden flex-shrink-0"><img src={product.image_url} alt={product.name} className="w-full h-full object-cover" loading="lazy" /></div>
-                <div className="flex-1"><p className="text-sm font-black text-foreground">{product.name}</p><p className="text-[10px] text-muted-foreground font-bold uppercase">{product.category}</p></div>
+                <div className="flex-1"><p className="text-sm font-black text-foreground">{t(product.name)}</p><p className="text-[10px] text-muted-foreground font-bold uppercase">{t(product.category)}</p></div>
                 <p className="text-xs font-black text-primary">₹{product.price}</p>
               </button>
             ))}

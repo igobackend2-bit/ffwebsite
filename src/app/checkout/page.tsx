@@ -617,7 +617,7 @@ export default function Checkout() {
                       <img src={item.products.image_url} alt={item.products.name} className="w-full h-full object-cover" loading="lazy" />
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="font-bold text-sm truncate">{item.products.name}</p>
+                      <p className="font-bold text-sm truncate">{t(item.products.name)}</p>
                       <p className="text-xs text-muted-foreground">{item.quantity} x ₹{Math.round(getEffectiveUnitPrice(item.products, item.quantity))}</p>
                     </div>
                     <p className="font-bold text-sm">₹{getEffectiveLineTotal(item.products, item.quantity)}</p>

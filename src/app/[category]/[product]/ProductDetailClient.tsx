@@ -95,9 +95,9 @@ export default function ProductDetailClient({ product, relatedProducts }: Produc
         <nav className="flex items-center gap-2 text-xs font-black uppercase tracking-widest text-muted-foreground mb-12">
           <Link href="/" className="hover:text-primary transition-colors">{t('product.details.home')}</Link>
           <ChevronRight size={14} />
-          <Link href={categoryHref(product.category)} className="hover:text-primary transition-colors">{product.category}</Link>
+          <Link href={categoryHref(product.category)} className="hover:text-primary transition-colors">{t(product.category) || product.category}</Link>
           <ChevronRight size={14} />
-          <span className="text-foreground">{product.name}</span>
+          <span className="text-foreground">{t(product.name)}</span>
         </nav>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-20">
@@ -119,7 +119,7 @@ export default function ProductDetailClient({ product, relatedProducts }: Produc
             className="flex flex-col"
           >
             <h1 className="text-4xl md:text-5xl font-black text-foreground mb-4 leading-tight tracking-tight uppercase">
-              {product.name}
+              {t(product.name)}
             </h1>
 
             <div className="flex flex-wrap items-center gap-4 mb-8">
