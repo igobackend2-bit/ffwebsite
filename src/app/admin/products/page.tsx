@@ -653,10 +653,14 @@ function ProductsContent() {
   }
 
   const filteredProducts = products.filter(product => {
-    // Valluvam Products is no longer sold on Farmers Factory (moved to
-    // https://www.valluvamproducts.com/) — hide it from the admin product
-    // list entirely rather than just the category dropdowns.
-    if (product.category === 'Valluvam Products') return false;
+    // Farmers Factory only sells Fruits and Vegetables now — Valluvam
+    // Products moved to https://www.valluvamproducts.com/. The traditional
+    // items live under several different raw category names in the DB
+    // (Oils, General, Spices, Millets, Dry Fruits & Seeds, Honey & Jaggery,
+    // etc.), not just the literal "Valluvam Products" string, so this is an
+    // allowlist (only Fruits/Vegetables shown) rather than a blocklist for
+    // one specific name — the same fix already applied to /admin/inventory.
+    if (!['fruits', 'vegetables'].includes((product.category || '').toLowerCase().trim())) return false;
 
     const matchesSearch =
       (product.name || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
