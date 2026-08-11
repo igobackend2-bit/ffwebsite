@@ -60,12 +60,72 @@ export default function SmartSearch({ isSolid = false }: { isSolid?: boolean }) 
   // an actual voice (not just silence); result -> it got a result event
   // (handled separately in onresult, which already shows its own toast).
   const voiceProgressRef = useRef({ audio: false, speech: false, result: false });
+  // Independent mic-level meter (separate from the SpeechRecognition engine's
+  // own opaque voice-activity detector) so when nothing is recognized we can
+  // say definitively "your mic has no signal" vs "your mic is fine, the
+  // speech engine just didn't understand it" — two very different problems.
+  const micStreamRef = useRef<MediaStream | null>(null);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const audioCtxRef = useRef<any>(null);
+  const levelIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const maxLevelRef = useRef(0);
   const router = useRouter();
 
   const clearVoiceTimeout = () => {
     if (voiceTimeoutRef.current) {
       clearTimeout(voiceTimeoutRef.current);
       voiceTimeoutRef.current = null;
+    }
+  };
+
+  const stopMicLevelMeter = () => {
+    if (levelIntervalRef.current) {
+      clearInterval(levelIntervalRef.current);
+      levelIntervalRef.current = null;
+    }
+    if (micStreamRef.current) {
+      micStreamRef.current.getTracks().forEach((track) => track.stop());
+      micStreamRef.current = null;
+    }
+    if (audioCtxRef.current) {
+      try { audioCtxRef.current.close(); } catch { /* already closed */ }
+      audioCtxRef.current = null;
+    }
+  };
+
+  const startMicLevelMeter = async () => {
+    try {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const AudioContextClass = (window as any).AudioContext || (window as any).webkitAudioContext;
+      if (!AudioContextClass || !navigator.mediaDevices?.getUserMedia) return;
+
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      micStreamRef.current = stream;
+
+      const audioCtx = new AudioContextClass();
+      audioCtxRef.current = audioCtx;
+      const analyser = audioCtx.createAnalyser();
+      analyser.fftSize = 512;
+      const source = audioCtx.createMediaStreamSource(stream);
+      source.connect(analyser);
+
+      const data = new Uint8Array(analyser.frequencyBinCount);
+      levelIntervalRef.current = setInterval(() => {
+        analyser.getByteTimeDomainData(data);
+        // Peak deviation from the silent baseline (128) across the sample —
+        // a genuinely silent/muted mic stays right around 0-2 here.
+        let peak = 0;
+        for (let i = 0; i < data.length; i++) {
+          const deviation = Math.abs(data[i] - 128);
+          if (deviation > peak) peak = deviation;
+        }
+        if (peak > maxLevelRef.current) maxLevelRef.current = peak;
+      }, 150);
+    } catch (e) {
+      // Can't independently verify mic level (e.g. a second getUserMedia
+      // call being blocked) — the SpeechRecognition-only diagnosis below
+      // still applies, this is just a best-effort extra signal.
+      console.warn('Mic level meter unavailable:', e);
     }
   };
 
@@ -139,6 +199,7 @@ export default function SmartSearch({ isSolid = false }: { isSolid?: boolean }) 
         if (finalTranscript.trim()) {
           setIsListening(false);
           clearVoiceTimeout();
+          stopMicLevelMeter();
           try { recognitionRef.current.stop(); } catch (e) { console.warn('Error stopping recognition:', e); }
           toast.dismiss('voice-search');
           toast.success(`Searching for "${finalTranscript.trim()}"`, { id: 'voice-search-success' });
@@ -150,6 +211,7 @@ export default function SmartSearch({ isSolid = false }: { isSolid?: boolean }) 
         console.warn('Speech recognition error:', event.error);
         setIsListening(false);
         clearVoiceTimeout();
+        stopMicLevelMeter();
         toast.dismiss('voice-search');
 
         if (event.error === 'not-allowed') {
@@ -169,6 +231,8 @@ export default function SmartSearch({ isSolid = false }: { isSolid?: boolean }) 
         setIsListening(false);
         clearVoiceTimeout();
         const { audio, speech, result } = voiceProgressRef.current;
+        const measuredLevel = maxLevelRef.current;
+        stopMicLevelMeter();
         toast.dismiss('voice-search');
         // Only show a diagnostic message if nothing ever reached the search
         // box (onresult already shows its own success toast when it does).
@@ -176,18 +240,28 @@ export default function SmartSearch({ isSolid = false }: { isSolid?: boolean }) 
           if (!audio) {
             toast.error("Mic never started capturing — check your browser's microphone permission for this site.", { id: 'voice-search-error' });
           } else if (!speech) {
-            toast.error('Mic is on but no voice was heard — check the right microphone is selected and try speaking closer to it.', { id: 'voice-search-error' });
+            // measuredLevel comes from an independent mic-level check (not
+            // the speech engine's own detector), so this tells us whether
+            // the mic genuinely has no signal vs. has signal that just
+            // wasn't recognized as speech — two different problems.
+            if (measuredLevel < 10) {
+              toast.error("Your microphone isn't picking up any sound — it may be muted, or the wrong device is selected as your default microphone in your computer's sound settings.", { id: 'voice-search-error' });
+            } else {
+              toast.error('Your mic is picking up sound, but it wasn\'t recognized as speech — try speaking a bit louder and closer to the mic.', { id: 'voice-search-error' });
+            }
           } else {
             toast.error("Heard you speak but couldn't transcribe it — check your internet connection and try again.", { id: 'voice-search-error' });
           }
         }
         voiceProgressRef.current = { audio: false, speech: false, result: false };
+        maxLevelRef.current = 0;
       };
     }
 
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
       clearVoiceTimeout();
+      stopMicLevelMeter();
     };
   }, []);
 
@@ -240,6 +314,7 @@ export default function SmartSearch({ isSolid = false }: { isSolid?: boolean }) 
       }
       setIsListening(false);
       clearVoiceTimeout();
+      stopMicLevelMeter();
       toast.dismiss('voice-search');
       return;
     }
@@ -251,6 +326,8 @@ export default function SmartSearch({ isSolid = false }: { isSolid?: boolean }) 
       // component (and its SpeechRecognition instance) first mounted.
       recognitionRef.current.lang = SPEECH_LOCALES[language] || 'en-IN';
       voiceProgressRef.current = { audio: false, speech: false, result: false };
+      maxLevelRef.current = 0;
+      startMicLevelMeter();
       recognitionRef.current.start();
       setIsListening(true);
       toast.loading('🎙️ Voice active. Speak now...', { id: 'voice-search' });
