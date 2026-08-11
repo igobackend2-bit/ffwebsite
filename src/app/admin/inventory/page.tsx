@@ -68,8 +68,15 @@ export default function AdminInventory() {
         .select('*')
         .order('name', { ascending: true });
       if (error) throw error;
-      
-      const list = data || [];
+
+      // Farmers Factory only sells Fruits and Vegetables now — Valluvam
+      // Products and its underlying categories (Millets, Spices, Dry
+      // Fruits & Seeds, Honey & Jaggery, etc.) moved to
+      // valluvamproducts.com, so keep them out of the inventory view too.
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const list = (data || []).filter((p: any) =>
+        ['fruits', 'vegetables'].includes((p.category || '').toLowerCase().trim())
+      );
       setProducts(list);
       
       // Initialize inline editing buffer state
