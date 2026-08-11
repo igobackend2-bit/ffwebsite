@@ -54,6 +54,12 @@ export default function SmartSearch({ isSolid = false }: { isSolid?: boolean }) 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const recognitionRef = useRef<any>(null);
   const voiceTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  // Tracks how far the current listening session got, so onend can report
+  // exactly where it broke instead of silently resetting with no feedback:
+  // audio -> the mic hardware started capturing at all; speech -> it heard
+  // an actual voice (not just silence); result -> it got a result event
+  // (handled separately in onresult, which already shows its own toast).
+  const voiceProgressRef = useRef({ audio: false, speech: false, result: false });
   const router = useRouter();
 
   const clearVoiceTimeout = () => {
@@ -87,6 +93,24 @@ export default function SmartSearch({ isSolid = false }: { isSolid?: boolean }) 
       recognitionRef.current.interimResults = true;
       recognitionRef.current.lang = 'en-IN'; // Better for Indian accents (includes Tamil/Hindi context)
 
+      // Diagnostic lifecycle events — the browser fires these in order as
+      // voice search progresses: onstart (recognizer engaged) -> onaudiostart
+      // (mic hardware capturing) -> onspeechstart (it heard an actual voice,
+      // not just background noise) -> onresult (it transcribed something).
+      // If the toast gets stuck on "Voice active..." and never advances past
+      // it, whichever step never fired tells us exactly where this breaks —
+      // e.g. if onaudiostart never fires, the browser isn't getting audio
+      // from the mic at all (OS/device issue, not this code); if it fires
+      // but onspeechstart never does, the mic is capturing silence.
+      recognitionRef.current.onaudiostart = () => {
+        voiceProgressRef.current.audio = true;
+        toast.loading('🎙️ Mic connected — listening...', { id: 'voice-search' });
+      };
+      recognitionRef.current.onspeechstart = () => {
+        voiceProgressRef.current.speech = true;
+        toast.loading('🎙️ Speech detected — processing...', { id: 'voice-search' });
+      };
+
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       recognitionRef.current.onresult = (event: any) => {
         let finalTranscript = '';
@@ -108,6 +132,7 @@ export default function SmartSearch({ isSolid = false }: { isSolid?: boolean }) 
         // reaching the search box. A live interim guess is enough to search.
         const liveText = (finalTranscript || interimTranscript).trim();
         if (liveText) {
+          voiceProgressRef.current.result = true;
           setQuery(resolveVoiceSearchTerm(liveText));
         }
 
@@ -143,7 +168,20 @@ export default function SmartSearch({ isSolid = false }: { isSolid?: boolean }) 
       recognitionRef.current.onend = () => {
         setIsListening(false);
         clearVoiceTimeout();
+        const { audio, speech, result } = voiceProgressRef.current;
         toast.dismiss('voice-search');
+        // Only show a diagnostic message if nothing ever reached the search
+        // box (onresult already shows its own success toast when it does).
+        if (!result) {
+          if (!audio) {
+            toast.error("Mic never started capturing — check your browser's microphone permission for this site.", { id: 'voice-search-error' });
+          } else if (!speech) {
+            toast.error('Mic is on but no voice was heard — check the right microphone is selected and try speaking closer to it.', { id: 'voice-search-error' });
+          } else {
+            toast.error("Heard you speak but couldn't transcribe it — check your internet connection and try again.", { id: 'voice-search-error' });
+          }
+        }
+        voiceProgressRef.current = { audio: false, speech: false, result: false };
       };
     }
 
@@ -212,6 +250,7 @@ export default function SmartSearch({ isSolid = false }: { isSolid?: boolean }) 
       // every listen since the site language can change after this
       // component (and its SpeechRecognition instance) first mounted.
       recognitionRef.current.lang = SPEECH_LOCALES[language] || 'en-IN';
+      voiceProgressRef.current = { audio: false, speech: false, result: false };
       recognitionRef.current.start();
       setIsListening(true);
       toast.loading('🎙️ Voice active. Speak now...', { id: 'voice-search' });
