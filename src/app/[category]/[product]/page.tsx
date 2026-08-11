@@ -6,6 +6,13 @@ import ProductDetailClient from './ProductDetailClient';
 
 type Params = { category: string; product: string };
 
+// Re-check the DB / meta overrides every hour instead of caching a product
+// page forever after its first visit. Without this, a page that got
+// rendered/cached before a meta title or description update was deployed
+// would keep serving that stale version indefinitely, even after new
+// deployments (this is exactly what happened to /vegetables/ooty-carrot).
+export const revalidate = 3600;
+
 // The single dynamic route that serves every product in every category
 // (/vegetables/tomato, /fruits/apple, and any future fruit/vegetable
 // category/product) — no per-product page files. It resolves both URL

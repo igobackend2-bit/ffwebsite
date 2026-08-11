@@ -7,6 +7,11 @@ import { ProductsContent } from '@/app/products/page';
 
 type Params = { category: string };
 
+// Re-check the DB / meta overrides every hour instead of caching a category
+// page forever after its first visit — see the matching note in
+// [category]/[product]/page.tsx for why this matters.
+export const revalidate = 3600;
+
 // The single dynamic route that serves every category (/vegetables,
 // /fruits, and any future fruit/vegetable category) — no per-category page
 // files. It resolves the URL slug against the categories that actually

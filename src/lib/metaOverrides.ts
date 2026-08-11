@@ -116,7 +116,7 @@ export const PRODUCT_META_OVERRIDES: Record<string, Record<string, MetaOverride>
     'onion-big': {
       title: 'Fresh Big Onion Online | Farm Fresh Onions | Farmers Factory',
       description:
-        'Buy fresh big onions online from Farmers Factory. Get farm-fresh, carefully selected onions with natural quality, great taste, and convenient doorstep delivery.',
+        'Buy fresh Big Onions online from Farmers Factory. Get farm-fresh, quality onions carefully harvested and delivered fresh to your doorstep.',
     },
     onion: {
       title: 'Fresh Onion Online | Farm Fresh Onions | Farmers Factory',
