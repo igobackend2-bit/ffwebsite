@@ -47,6 +47,17 @@ function AuthContent() {
   const [mode, setMode] = useState<'login' | 'signup'>(
     searchParams.get('mode') === 'signup' ? 'signup' : 'login'
   );
+
+  // First-time visitors on this browser (no prior successful login/signup)
+  // should land on "Join" instead of "Login". We only auto-switch when the
+  // URL didn't explicitly request a mode, and only after mount, since
+  // localStorage isn't available during server rendering.
+  React.useEffect(() => {
+    if (searchParams.get('mode')) return;
+    const isReturningCustomer = typeof window !== 'undefined' && localStorage.getItem('ff_returning_customer') === '1';
+    if (!isReturningCustomer) setMode('signup');
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
   const [step, setStep] = useState<'initial' | 'otp' | 'details'>('initial');
   const [loginMethod, setLoginMethod] = useState<'password' | 'otp'>('password');
   const [identifier, setIdentifier] = useState('');
@@ -90,12 +101,16 @@ function AuthContent() {
     try {
       const { error } = await supabase.auth.verifyOtp({ phone: formattedPhone(), token: otp, type: 'sms' });
       if (error) throw error;
-      if (mode === 'login') { toast.success('Welcome back!'); router.push(redirectPath); }
+      if (mode === 'login') {
+        localStorage.setItem('ff_returning_customer', '1');
+        toast.success('Welcome back!'); router.push(redirectPath);
+      }
       else {
         // If this mobile number already has a completed profile, tell the
         // customer it exists instead of re-registering.
         const { data: { user: u } } = await supabase.auth.getUser();
         if (u?.user_metadata?.full_name) {
+          localStorage.setItem('ff_returning_customer', '1');
           toast.success('This mobile number is already registered — you are now logged in to your existing account.', { duration: 6000 });
           router.push(redirectPath);
         } else {
@@ -120,6 +135,7 @@ function AuthContent() {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const { error } = await supabase.auth.signInWithPassword(creds as any);
       if (error) throw new Error('Invalid email/mobile number or password');
+      localStorage.setItem('ff_returning_customer', '1');
       toast.success('Welcome back!');
       router.push(redirectPath);
     } catch (e: unknown) { toast.error((e as Error).message || 'Login failed'); }
@@ -142,6 +158,7 @@ function AuthContent() {
         if (u) await supabase.from('profiles').upsert({ id: u.id, full_name: fullName.trim(), email: email.trim(), phone }, { onConflict: 'id' });
       } catch { /**/ }
       try { await supabase.from('leads').insert({ name: fullName.trim(), email: email.trim(), phone, source: 'User Signup' }); } catch { /**/ }
+      localStorage.setItem('ff_returning_customer', '1');
       toast.success('Welcome to Farmers Factory! 🌿');
       router.push(redirectPath);
     } catch (e: unknown) { toast.error((e as Error).message || 'Signup failed'); }
@@ -159,7 +176,18 @@ function AuthContent() {
       {/* Left: brand / headline over the image */}
       <div className="relative z-10 hidden lg:flex lg:w-1/2 flex-col justify-between p-14">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 bg-primary rounded-xl flex items-center justify-center"><Leaf size={22} className="text-white" /></div>
+          <div className="w-10 h-10 bg-primary rounded-xl flex items-center justify-center overflow-hidden relative">
+            <img
+              src="/logo.webp"
+              alt="Farmers Factory Logo"
+              className="w-full h-full object-contain p-1"
+              onError={(e) => {
+                (e.target as HTMLImageElement).style.display = 'none';
+                (e.target as HTMLImageElement).nextElementSibling?.classList.remove('hidden');
+              }}
+            />
+            <Leaf size={22} className="text-white hidden absolute" />
+          </div>
           <div><p className="font-black tracking-tighter text-lg">FARMERS FACTORY</p><p className="text-[10px] text-white/50 uppercase tracking-widest">Premium Organics</p></div>
         </div>
         <div>
@@ -176,7 +204,18 @@ function AuthContent() {
 
         {/* Logo */}
         <div className="flex items-center gap-3 mb-10">
-          <div className="w-10 h-10 bg-primary rounded-xl flex items-center justify-center"><Leaf size={22} className="text-white" /></div>
+          <div className="w-10 h-10 bg-primary rounded-xl flex items-center justify-center overflow-hidden relative">
+            <img
+              src="/logo.webp"
+              alt="Farmers Factory Logo"
+              className="w-full h-full object-contain p-1"
+              onError={(e) => {
+                (e.target as HTMLImageElement).style.display = 'none';
+                (e.target as HTMLImageElement).nextElementSibling?.classList.remove('hidden');
+              }}
+            />
+            <Leaf size={22} className="text-white hidden absolute" />
+          </div>
           <div><p className="font-black tracking-tighter text-lg">FARMERS FACTORY</p><p className="text-[10px] text-white/30 uppercase tracking-widest">Premium Organics</p></div>
         </div>
 
@@ -188,9 +227,11 @@ function AuthContent() {
                   {mode === 'login' ? 'Welcome Back' : 'Join the Farm'}
                 </h2>
                 <p className="text-white/40 text-sm">
-                  {mode === 'login' && loginMethod === 'password'
-                    ? 'Login with your email or mobile number and password'
-                    : 'Enter your mobile number to get OTP'}
+                  {mode === 'login'
+                    ? (loginMethod === 'password'
+                        ? 'Login with your email or mobile number and password'
+                        : 'Enter your mobile number to get OTP')
+                    : 'New here? Enter your mobile number to create your free account'}
                 </p>
               </div>
 
