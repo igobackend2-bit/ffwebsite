@@ -1,27 +1,21 @@
 'use client';
 
 import React, { useState, useEffect, useRef } from 'react';
-import { createPortal } from 'react-dom';
 import { Search, X, Leaf, Star, ArrowRight, Loader2, Mic, MicOff, Sparkles } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
-import ProductDetailModal from './ProductDetailModal';
 import { toast } from 'react-hot-toast';
-import { VERIFIED_INVENTORY } from '@/lib/constants';
+import { productHref } from '@/lib/categorySlug';
 import { useTranslation } from '@/context/TranslationContext';
 
 export default function SmartSearch({ isSolid = false }: { isSolid?: boolean }) {
   const { t } = useTranslation();
-  const [mounted, setMounted] = useState(false);
   const [query, setQuery] = useState('');
   const [isOpen, setIsOpen] = useState(false);
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [results, setResults] = useState<any[]>([]);
   const [selectedIndex, setSelectedIndex] = useState(-1);
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const [selectedProduct, setSelectedProduct] = useState<any>(null);
-  const [isModalOpen, setIsModalOpen] = useState(false);
   const [isListening, setIsListening] = useState(false);
   const [isVisualSearching, setIsVisualSearching] = useState(false);
   const searchRef = useRef<HTMLDivElement>(null);
@@ -30,7 +24,6 @@ export default function SmartSearch({ isSolid = false }: { isSolid?: boolean }) 
   const router = useRouter();
 
   useEffect(() => {
-    setMounted(true);
     const handleClickOutside = (event: MouseEvent) => {
       if (searchRef.current && !searchRef.current.contains(event.target as Node)) {
         setIsOpen(false);
@@ -89,31 +82,19 @@ export default function SmartSearch({ isSolid = false }: { isSolid?: boolean }) 
   useEffect(() => {
     const fetchResults = async () => {
       if (query.length > 1) {
-        // 1. Search Database
+        // Only show products that are actually live on the site — the
+        // real, active rows from the database. (This used to also merge in
+        // a hardcoded static fallback list, which surfaced fake duplicate
+        // entries like "TomatoBangalore"/"TomatoCountry" that have no real
+        // product page.)
         const { data: dbData } = await supabase
           .from('products')
           .select('*')
+          .eq('is_active', true)
           .or(`name.ilike.%${query}%,category.ilike.%${query}%`)
           .limit(6);
-        
-        // 2. Search Local Inventory
-        const localData = VERIFIED_INVENTORY.filter(p => 
-          p.name.toLowerCase().includes(query.toLowerCase()) || 
-          p.category.toLowerCase().includes(query.toLowerCase())
-        ).slice(0, 6);
 
-        // 3. Merge results (prioritize DB, deduplicate by name, filter inactive)
-        const combined = new Map();
-        localData.forEach(p => combined.set(p.name.toLowerCase(), p));
-        (dbData || []).forEach(p => {
-          if (p.is_active !== false) {
-            combined.set(p.name.toLowerCase(), p);
-          } else {
-            combined.delete(p.name.toLowerCase());
-          }
-        });
-        
-        const finalResults = Array.from(combined.values()).slice(0, 6);
+        const finalResults = dbData || [];
         setResults(finalResults);
         setIsOpen(finalResults.length > 0);
       } else {
@@ -128,8 +109,7 @@ export default function SmartSearch({ isSolid = false }: { isSolid?: boolean }) 
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const handleProductClick = (product: any) => {
-    setSelectedProduct(product);
-    setIsModalOpen(true);
+    router.push(productHref(product.category, product.name));
     setIsOpen(false);
     setQuery('');
   };
@@ -217,10 +197,6 @@ export default function SmartSearch({ isSolid = false }: { isSolid?: boolean }) 
           </motion.div>
         )}
       </AnimatePresence>
-      {mounted && typeof document !== 'undefined' && createPortal(
-        <ProductDetailModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} product={selectedProduct} />,
-        document.body
-      )}
     </div>
   );
 }
