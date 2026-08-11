@@ -9,12 +9,6 @@ const PSEUDO_CATEGORIES = ['Seasonal'];
 // pages never hard-fail just because the DB had a hiccup.
 const FALLBACK_CATEGORIES = ['Fruits', 'Vegetables'];
 
-// Valluvam Products is no longer sold on this site (moved to
-// https://www.valluvamproducts.com/, see next.config.ts redirects) — even if
-// active products in the DB still carry this category, it's excluded here so
-// it never resurfaces as a browsable category or URL.
-const EXCLUDED_CATEGORIES = ['Valluvam Products'];
-
 /**
  * All category names currently in use, read fresh from the product table.
  * This is what makes /[category] future-proof: the moment a new category
@@ -35,10 +29,13 @@ export const getKnownCategories = cache(async (): Promise<string[]> => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const data = (await Promise.race([query, timeout])) as any[] | null;
 
+    // Returns every raw category value in use (Fruits, Vegetables, and any
+    // legacy/traditional names like Spices, Millets, Valluvam Products,
+    // etc.). Which of those are actually browsable on this site (Fruits and
+    // Vegetables only — the rest now live at valluvamproducts.com) is
+    // decided by the callers in src/app/[category], not here.
     const dbCategories: string[] = data
-      ? Array.from(new Set(data.map((p) => p.category).filter(Boolean))).filter(
-          (c) => !EXCLUDED_CATEGORIES.includes(c)
-        )
+      ? Array.from(new Set(data.map((p) => p.category).filter(Boolean)))
       : [];
 
     const base = dbCategories.length > 0 ? dbCategories : FALLBACK_CATEGORIES;

@@ -85,10 +85,15 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       .limit(5000);
 
     if (!error && data) {
-      // Valluvam Products moved to https://www.valluvamproducts.com/ and now
-      // 301-redirects off this site (see next.config.ts) — exclude it here so
-      // the sitemap never points Google at a URL that just redirects away.
-      const nonValluvam = data.filter((p) => p.category !== 'Valluvam Products');
+      // Farmers Factory only sells Fruits and Vegetables now — every other
+      // category (Spices, Millets, Oils, Dry Fruits & Seeds, Honey &
+      // Jaggery, Valluvam Products, ...) now redirects off this site to
+      // https://www.valluvamproducts.com/ (see src/app/[category]/page.tsx
+      // and next.config.ts), so exclude them here too rather than pointing
+      // Google at URLs that just redirect away.
+      const nonValluvam = data.filter((p) =>
+        ['fruits', 'vegetables'].includes((p.category || '').toLowerCase().trim())
+      );
 
       const categories = Array.from(new Set(nonValluvam.map((p) => p.category).filter(Boolean)));
       categoryRoutes = categories.map((category) => ({

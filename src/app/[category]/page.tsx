@@ -1,5 +1,5 @@
 import { Suspense } from 'react';
-import { notFound } from 'next/navigation';
+import { notFound, redirect } from 'next/navigation';
 import { Loader2 } from 'lucide-react';
 import { getKnownCategories } from '@/lib/categories';
 import { resolveCategoryFromSlug } from '@/lib/categorySlug';
@@ -8,10 +8,10 @@ import { ProductsContent } from '@/app/products/page';
 type Params = { category: string };
 
 // The single dynamic route that serves every category (/vegetables,
-// /fruits, /valluvam-products, and any future category) — no per-category
-// page files. It resolves the URL slug against the categories that
-// actually exist in the product data and renders the same product-listing
-// UI as /products, pre-filtered.
+// /fruits, and any future fruit/vegetable category) — no per-category page
+// files. It resolves the URL slug against the categories that actually
+// exist in the product data and renders the same product-listing UI as
+// /products, pre-filtered.
 export default async function CategoryPage({
   params,
 }: {
@@ -25,6 +25,15 @@ export default async function CategoryPage({
   // silently rendering an empty/misleading listing.
   if (!category) {
     notFound();
+  }
+
+  // Farmers Factory only sells Fruits and Vegetables now. Everything else
+  // (Spices, Millets, Oils, Dry Fruits & Seeds, Honey & Jaggery, Valluvam
+  // Products, and any other legacy/traditional category still sitting in
+  // the product data) moved to https://www.valluvamproducts.com/ — send
+  // visitors there instead of rendering a retired category page.
+  if (!['fruits', 'vegetables'].includes(category.toLowerCase())) {
+    redirect('https://www.valluvamproducts.com/');
   }
 
   return (
