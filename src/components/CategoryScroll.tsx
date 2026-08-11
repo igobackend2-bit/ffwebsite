@@ -9,7 +9,8 @@ import { categoryHref } from '@/lib/categorySlug';
 const CATEGORIES = [
   { id: '1', name: 'Vegetables', icon: '🥦', color: 'bg-green-50 text-green-600' },
   { id: '2', name: 'Fruits', icon: '🍎', color: 'bg-red-50 text-red-600' },
-  { id: '3', name: 'Valluvam Products', icon: '🏺', color: 'bg-amber-50 text-amber-600' },
+  // Sold on its own site now, not on Farmers Factory.
+  { id: '3', name: 'Valluvam Products', icon: '🏺', color: 'bg-amber-50 text-amber-600', externalHref: 'https://www.valluvamproducts.com/' },
 ];
 
 export default function CategoryScroll() {
@@ -48,9 +49,10 @@ export default function CategoryScroll() {
         className="flex gap-6 overflow-x-auto no-scrollbar pb-6 snap-x snap-mandatory"
       >
         {CATEGORIES.map((cat) => (
-          <Link 
-            key={cat.id} 
-            href={categoryHref(cat.name)}
+          <Link
+            key={cat.id}
+            href={cat.externalHref || categoryHref(cat.name)}
+            {...(cat.externalHref ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
             className="snap-start flex-shrink-0"
           >
             <motion.div 

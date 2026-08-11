@@ -52,6 +52,25 @@ const nextConfig: NextConfig = {
   typescript: {
     ignoreBuildErrors: true,
   },
+
+  // ── Valluvam Products moved to an external site ────────────────────────────
+  // Valluvam Products are no longer sold on Farmers Factory — any old link to
+  // the internal /valluvam-products shop (bookmarks, Google's old index, etc.)
+  // now sends the visitor straight to the dedicated Valluvam site instead.
+  async redirects() {
+    return [
+      {
+        source: '/valluvam-products',
+        destination: 'https://www.valluvamproducts.com/',
+        permanent: true,
+      },
+      {
+        source: '/valluvam-products/:path*',
+        destination: 'https://www.valluvamproducts.com/',
+        permanent: true,
+      },
+    ];
+  },
 };
 
 export default nextConfig;

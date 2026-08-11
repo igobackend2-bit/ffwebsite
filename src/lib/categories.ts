@@ -7,7 +7,13 @@ const PSEUDO_CATEGORIES = ['Seasonal'];
 
 // Only used if Supabase is unreachable at request time, so /[category]
 // pages never hard-fail just because the DB had a hiccup.
-const FALLBACK_CATEGORIES = ['Fruits', 'Vegetables', 'Valluvam Products'];
+const FALLBACK_CATEGORIES = ['Fruits', 'Vegetables'];
+
+// Valluvam Products is no longer sold on this site (moved to
+// https://www.valluvamproducts.com/, see next.config.ts redirects) — even if
+// active products in the DB still carry this category, it's excluded here so
+// it never resurfaces as a browsable category or URL.
+const EXCLUDED_CATEGORIES = ['Valluvam Products'];
 
 /**
  * All category names currently in use, read fresh from the product table.
@@ -30,7 +36,9 @@ export const getKnownCategories = cache(async (): Promise<string[]> => {
     const data = (await Promise.race([query, timeout])) as any[] | null;
 
     const dbCategories: string[] = data
-      ? Array.from(new Set(data.map((p) => p.category).filter(Boolean)))
+      ? Array.from(new Set(data.map((p) => p.category).filter(Boolean))).filter(
+          (c) => !EXCLUDED_CATEGORIES.includes(c)
+        )
       : [];
 
     const base = dbCategories.length > 0 ? dbCategories : FALLBACK_CATEGORIES;

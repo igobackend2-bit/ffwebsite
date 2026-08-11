@@ -85,7 +85,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       .limit(5000);
 
     if (!error && data) {
-      const categories = Array.from(new Set(data.map((p) => p.category).filter(Boolean)));
+      // Valluvam Products moved to https://www.valluvamproducts.com/ and now
+      // 301-redirects off this site (see next.config.ts) — exclude it here so
+      // the sitemap never points Google at a URL that just redirects away.
+      const nonValluvam = data.filter((p) => p.category !== 'Valluvam Products');
+
+      const categories = Array.from(new Set(nonValluvam.map((p) => p.category).filter(Boolean)));
       categoryRoutes = categories.map((category) => ({
         url: `${SITE_URL}${categoryHref(category)}`,
         lastModified: now,
@@ -94,7 +99,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       }));
 
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      productRoutes = data.map((p: any) => ({
+      productRoutes = nonValluvam.map((p: any) => ({
         url: `${SITE_URL}${productHref(p.category, p.name)}`,
         lastModified: p.updated_at
           ? new Date(p.updated_at)

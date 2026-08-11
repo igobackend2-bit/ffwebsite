@@ -712,7 +712,6 @@ function ProductsContent() {
                 <option value="all">All Categories</option>
                 <option value="Fruits">Fruits</option>
                 <option value="Vegetables">Vegetables</option>
-                <option value="Valluvam Products">Valluvam Products</option>
               </select>
             </div>
 
@@ -1372,7 +1371,6 @@ function ProductsContent() {
                       >
                         <option value="Vegetables">Vegetables</option>
                         <option value="Fruits">Fruits</option>
-                        <option value="Valluvam Products">Valluvam Products</option>
                       </select>
                     </div>
                     <div className="space-y-3">

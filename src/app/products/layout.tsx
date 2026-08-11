@@ -4,9 +4,9 @@ import { BreadcrumbJsonLd, OrganizationJsonLd, WebSiteJsonLd } from '@/component
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://famersfactory.com';
 
 export const metadata: Metadata = {
-  title: 'Shop Fresh Organic Fruits, Vegetables & Valluvam Products | Farmers Factory',
+  title: 'Shop Fresh Organic Fruits & Vegetables | Farmers Factory',
   description:
-    'Browse 100+ farm-direct organic fruits, vegetables, millets, cold-pressed oils, honey, ghee and traditional Valluvam products. Same-day harvest, 24-hour delivery, pure quality guaranteed.',
+    'Browse 100+ farm-direct organic fruits and vegetables. Same-day harvest, 24-hour delivery, pure quality guaranteed.',
   keywords: [
     // Brand
     'Farmers Factory', 'farmers factory online', 'farmers factory shop', 'farmers factory store',
@@ -30,29 +30,6 @@ export const metadata: Metadata = {
     'watermelon online', 'papaya online', 'sapota chikoo online', 'guava online',
     'sweet lime mosambi online', 'pineapple online', 'dragon fruit online', 'kiwi online',
     'strawberry online', 'amla gooseberry online', 'muskmelon online',
-    // Valluvam / Traditional
-    'valluvam products', 'tamil traditional products online', 'iyarkai products',
-    'native foods online', 'traditional foods online',
-    // Millets
-    'organic millets online', 'foxtail millet online', 'kodo millet online',
-    'barnyard millet online', 'little millet online', 'pearl millet online',
-    'browntop millet online', 'sorghum cholam online', 'thinai online', 'varagu online',
-    // Oils
-    'cold pressed oil', 'chekku oil online', 'wood pressed oil online',
-    'cold pressed coconut oil', 'cold pressed groundnut oil', 'cold pressed sesame oil',
-    'cold pressed gingelly oil', 'marachekku oil', 'ennai online',
-    // Dairy / Sweeteners
-    'a2 ghee online', 'pure ghee online', 'buffalo ghee online', 'desi ghee online',
-    'palm jaggery online', 'karuppatti online', 'panai vellam online',
-    'natural honey online', 'raw honey online', 'amla honey online',
-    // Spices / Pantry
-    'spices online', 'whole spices online', 'cardamom online', 'cinnamon online',
-    'cloves online', 'black pepper online', 'cumin jeera online', 'mustard seeds online',
-    'fennel seeds online', 'fenugreek methi online', 'bay leaves online', 'star anise online',
-    // Dry fruits / Seeds
-    'dry fruits online', 'cashew nuts online', 'almonds online', 'pistachio online',
-    'walnut online', 'figs online', 'dates online', 'raisins online', 'kismis online',
-    'chia seeds online', 'flax seeds online', 'pumpkin seeds online', 'sunflower seeds online',
     // Locality (helps local SEO)
     'organic store Chennai', 'organic store Bangalore', 'organic store Coimbatore',
     'organic store Madurai', 'organic store Tamil Nadu', 'farm fresh Tamil Nadu',
@@ -66,7 +43,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: 'Shop Farm-Direct Organic Produce | Farmers Factory',
     description:
-      '100+ organic fruits, vegetables, millets, oils & traditional products — harvested today, delivered tomorrow.',
+      '100+ organic fruits and vegetables — harvested today, delivered tomorrow.',
     url: `${SITE_URL}/products`,
     siteName: 'Farmers Factory',
     type: 'website',
@@ -77,7 +54,7 @@ export const metadata: Metadata = {
   twitter: {
     card: 'summary_large_image',
     title: 'Shop Farm-Direct Organic Produce',
-    description: 'Fresh fruits, vegetables and Valluvam essentials — straight from our farms.',
+    description: 'Fresh fruits and vegetables — straight from our farms.',
     images: [`${SITE_URL}/banner-organic.webp`],
   },
 };

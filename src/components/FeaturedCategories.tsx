@@ -57,7 +57,9 @@ export default function FeaturedCategories() {
       name: 'Valluvam Products',
       image: images.valluvam,
       count: t('categories.val_count'),
-      color: 'bg-yellow-50'
+      color: 'bg-yellow-50',
+      // Sold on its own site now, not on Farmers Factory.
+      externalHref: 'https://www.valluvamproducts.com/'
     }
   ];
 

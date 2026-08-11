@@ -45,7 +45,9 @@ const DEFAULT_SLIDES: Slide[] = [
     title: 'Traditional Valluvam',
     subtitle: 'Experience the purity of ancient traditions with our curated Valluvam collection.',
     cta: 'Explore Valluvam',
-    href: '/valluvam-products',
+    // Valluvam Products is sold on its own site now, not on Farmers Factory —
+    // this slide is a promo pointing there instead of an internal listing.
+    href: 'https://www.valluvamproducts.com/',
     media_url: '/banners/valluvam_3d.png',
     type: 'image',
     theme: 'dark'
@@ -279,8 +281,11 @@ export default function HeroSlider() {
             </p>
             
             <div className="flex flex-wrap gap-6">
-              <Link 
+              <Link
                 href={currentSlide.href}
+                {...(currentSlide.href.startsWith('http')
+                  ? { target: '_blank', rel: 'noopener noreferrer' }
+                  : {})}
                 className="group relative bg-primary text-white px-12 py-6 rounded-full font-black flex items-center gap-4 hover:bg-white hover:text-primary transition-all transform hover:scale-105 shadow-2xl shadow-primary/40 overflow-hidden"
               >
                 <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300" />

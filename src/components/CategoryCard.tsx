@@ -13,14 +13,19 @@ interface CategoryCardProps {
   count: string;
   color: string;
   priority?: boolean; // true for above-fold cards (first 2)
+  // When set, the card links out to this URL in a new tab instead of the
+  // internal category page (used for Valluvam Products, which is sold on
+  // its own site now rather than on Farmers Factory).
+  externalHref?: string;
 }
 
-export default function CategoryCard({ name, image, count, color, priority = false }: CategoryCardProps) {
+export default function CategoryCard({ name, image, count, color, priority = false, externalHref }: CategoryCardProps) {
   const { t } = useTranslation();
 
   return (
-    <Link 
-      href={categoryHref(name)}
+    <Link
+      href={externalHref || categoryHref(name)}
+      {...(externalHref ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
       className="block group"
     >
       <motion.div 

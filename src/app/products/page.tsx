@@ -152,7 +152,11 @@ export function ProductsContent({ initialCategory }: ProductsContentProps = {}) 
         ? dbProducts.filter(p => p.is_active !== false)
         : VERIFIED_INVENTORY.map(normalizeProduct);
 
+      // Valluvam Products are no longer sold on Farmers Factory (moved to
+      // https://www.valluvamproducts.com/) — filter them out of the shop
+      // entirely so they never appear in the grid, category tabs, or search.
       const finalProducts = sourceProducts
+        .filter(p => p.category !== 'Valluvam Products')
         .sort((a, b) => {
           const orderA = a.order_index ?? 999;
           const orderB = b.order_index ?? 999;
