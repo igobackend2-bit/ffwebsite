@@ -21,7 +21,15 @@ export default function SmartSearch({ isSolid = false }: { isSolid?: boolean }) 
   const searchRef = useRef<HTMLDivElement>(null);
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const recognitionRef = useRef<any>(null);
+  const voiceTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const router = useRouter();
+
+  const clearVoiceTimeout = () => {
+    if (voiceTimeoutRef.current) {
+      clearTimeout(voiceTimeoutRef.current);
+      voiceTimeoutRef.current = null;
+    }
+  };
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -36,33 +44,49 @@ export default function SmartSearch({ isSolid = false }: { isSolid?: boolean }) 
     const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
     if (SpeechRecognition) {
       recognitionRef.current = new SpeechRecognition();
-      recognitionRef.current.continuous = false;
-      recognitionRef.current.interimResults = false;
+      // continuous + interimResults keep the mic open and let the browser
+      // report speech as soon as it hears it, instead of the previous
+      // continuous:false/interimResults:false setup which relied on the
+      // browser's own (very short, ~2-3s) silence cutoff — that cutoff was
+      // firing "no-speech" before people finished getting the mic to their
+      // mouth or finished their sentence. We now stop recognition ourselves
+      // once we have a final transcript (or after a longer manual timeout).
+      recognitionRef.current.continuous = true;
+      recognitionRef.current.interimResults = true;
       recognitionRef.current.lang = 'en-IN'; // Better for Indian accents (includes Tamil/Hindi context)
+
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       recognitionRef.current.onresult = (event: any) => {
-        const transcript = event.results[0][0].transcript;
+        let finalTranscript = '';
+        for (let i = event.resultIndex; i < event.results.length; i++) {
+          if (event.results[i].isFinal) {
+            finalTranscript += event.results[i][0].transcript;
+          }
+        }
+        if (!finalTranscript.trim()) return;
+
+        const transcript = finalTranscript.trim();
         setQuery(transcript);
         setIsListening(false);
+        clearVoiceTimeout();
+        try { recognitionRef.current.stop(); } catch (e) { console.warn('Error stopping recognition:', e); }
         toast.dismiss('voice-search');
         toast.success(`Searching for "${transcript}"`, { id: 'voice-search-success' });
-        
-        // Let's not auto-push to products page if they just wanted to type, but since it's voice, it's fine.
-        // Actually, since they might just be exploring the dropdown, let's keep it simple.
       };
 
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       recognitionRef.current.onerror = (event: any) => {
         console.warn('Speech recognition error:', event.error);
         setIsListening(false);
+        clearVoiceTimeout();
         toast.dismiss('voice-search');
-        
+
         if (event.error === 'not-allowed') {
           toast.error('Microphone blocked. Click lock icon in URL bar and set Microphone to ALLOW.', { id: 'voice-search-error' });
         } else if (event.error === 'network') {
           toast.error('Network error. Check your connection.', { id: 'voice-search-error' });
         } else if (event.error === 'no-speech') {
-          toast.error('No speech detected. Please try again.', { id: 'voice-search-error' });
+          toast.error("Didn't catch that — click the mic and try speaking again.", { id: 'voice-search-error' });
         } else if (event.error === 'aborted') {
           // Ignore aborted errors (happens when user manually stops)
         } else {
@@ -72,11 +96,15 @@ export default function SmartSearch({ isSolid = false }: { isSolid?: boolean }) 
 
       recognitionRef.current.onend = () => {
         setIsListening(false);
+        clearVoiceTimeout();
         toast.dismiss('voice-search');
       };
     }
 
-    return () => document.removeEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+      clearVoiceTimeout();
+    };
   }, []);
 
   useEffect(() => {
@@ -127,6 +155,7 @@ export default function SmartSearch({ isSolid = false }: { isSolid?: boolean }) 
         console.warn('Error stopping recognition:', e);
       }
       setIsListening(false);
+      clearVoiceTimeout();
       toast.dismiss('voice-search');
       return;
     }
@@ -135,6 +164,14 @@ export default function SmartSearch({ isSolid = false }: { isSolid?: boolean }) 
       recognitionRef.current.start();
       setIsListening(true);
       toast.loading('🎙️ Voice active. Speak now...', { id: 'voice-search' });
+      // Since recognition now stays open (continuous mode) instead of the
+      // browser auto-stopping after a couple seconds of silence, cap how
+      // long we'll listen for so the mic doesn't stay on indefinitely if
+      // nothing is heard.
+      clearVoiceTimeout();
+      voiceTimeoutRef.current = setTimeout(() => {
+        try { recognitionRef.current?.stop(); } catch (e) { console.warn('Error stopping recognition:', e); }
+      }, 10000);
     } catch (err) {
       console.error('Speech start error:', err);
       // If it's already started, just ignore
