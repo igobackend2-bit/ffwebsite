@@ -69,6 +69,16 @@ const nextConfig: NextConfig = {
         destination: 'https://www.valluvamproducts.com/',
         permanent: true,
       },
+      // www -> non-www (matches the canonical URL every page already
+      // declares). Without this, both hosts served the same content
+      // directly with no redirect between them — duplicate-content
+      // exposure to search engines.
+      {
+        source: '/:path*',
+        has: [{ type: 'host', value: 'www.famersfactory.com' }],
+        destination: 'https://famersfactory.com/:path*',
+        permanent: true,
+      },
     ];
   },
 };

@@ -2,6 +2,7 @@
 
 import React, { useState, useRef } from 'react';
 import { Package, ChevronLeft, ChevronRight } from 'lucide-react';
+import { useTranslation } from '@/context/TranslationContext';
 
 // IGO Gold colour (exact match from igoagritechfarms.in)
 const GOLD = '#c5a03f';
@@ -212,9 +213,15 @@ const IGO_BRANDS = [
 
 // ─── Single brand card — exact classes from igoagritechfarms.in ──────────────
 function BrandCard({ brand }: { brand: (typeof IGO_BRANDS)[number] }) {
+  const { t } = useTranslation();
   const [imgError, setImgError] = useState(false);
   const [showTooltip, setShowTooltip] = useState(false);
   const hasLogo = brand.logo && !imgError;
+  // Brand names stay in English (proper nouns/brand identity, same as
+  // "Farmers Factory" itself not being translated) -- category and
+  // description are looked up per-brand so they follow the site language.
+  const category = t(`igo.brand.${brand.id}.category`);
+  const description = t(`igo.brand.${brand.id}.desc`);
 
   return (
     <div
@@ -241,7 +248,7 @@ function BrandCard({ brand }: { brand: (typeof IGO_BRANDS)[number] }) {
               <Package size={36} strokeWidth={1.2} className="text-slate-400" />
             </div>
             <span className="text-[10px] font-bold uppercase tracking-[0.3em] text-slate-400 text-center px-6 leading-loose">
-              DEVELOPMENT<br/>IN PROGRESS
+              {t('igo.dev_in_progress')}
             </span>
           </div>
         )}
@@ -252,7 +259,7 @@ function BrandCard({ brand }: { brand: (typeof IGO_BRANDS)[number] }) {
             className="absolute top-4 right-4 px-3 py-1.5 rounded-full text-[11px] font-bold uppercase tracking-widest shadow-lg"
             style={{ background: GOLD, color: '#fff', letterSpacing: '0.15em' }}
           >
-            Coming Soon
+            {t('igo.coming_soon')}
           </div>
         )}
       </div>
@@ -264,7 +271,7 @@ function BrandCard({ brand }: { brand: (typeof IGO_BRANDS)[number] }) {
           className="text-[10px] font-bold uppercase tracking-[0.25em] mb-2"
           style={{ color: GOLD }}
         >
-          {brand.category}
+          {category}
         </div>
 
         {/* ── Brand name ── */}
@@ -274,7 +281,7 @@ function BrandCard({ brand }: { brand: (typeof IGO_BRANDS)[number] }) {
 
         {/* ── Description ── */}
         <p className="text-sm text-gray-500 leading-relaxed line-clamp-3">
-          {brand.description}
+          {description}
         </p>
 
         {/* ── Status badge ── */}
@@ -284,12 +291,12 @@ function BrandCard({ brand }: { brand: (typeof IGO_BRANDS)[number] }) {
               className="text-[11px] font-bold uppercase tracking-[0.2em] flex items-center justify-between w-full"
               style={{ color: GOLD }}
             >
-              ACTIVE DIVISION
+              {t('igo.active_division')}
               <span className="text-base leading-none">&rarr;</span>
             </span>
           ) : (
             <span className="text-[11px] font-bold uppercase tracking-[0.2em] text-slate-400 flex items-center justify-between w-full">
-              IN DEVELOPMENT
+              {t('igo.in_development')}
               <span className="text-base leading-none">&rarr;</span>
             </span>
           )}
@@ -301,6 +308,7 @@ function BrandCard({ brand }: { brand: (typeof IGO_BRANDS)[number] }) {
 
 // ─── Main exported section ────────────────────────────────────────────────────
 export default function IgoBrandsScroll() {
+  const { t } = useTranslation();
   // Duplicate once → CSS animation translates -50% = seamless infinite loop
   const trackRef = useRef<HTMLDivElement>(null);
   const SCROLL_AMOUNT = 380; // px per button click (~1 card width)
@@ -335,6 +343,7 @@ export default function IgoBrandsScroll() {
             src="/brands/background image of brand .webp"
             alt=""
             className="absolute left-1/2 top-1/2 -translate-x-[110%] -translate-y-[35%] w-[260px] md:w-[300px] opacity-[0.15] object-contain mix-blend-multiply"
+            loading="lazy"
           />
           
           {/* IGO Group Text Logo Watermark (Right) */}
@@ -342,6 +351,7 @@ export default function IgoBrandsScroll() {
             src="/brands/igo groups .webp"
             alt=""
             className="absolute left-1/2 top-1/2 -translate-x-[20%] -translate-y-[45%] w-[380px] md:w-[460px] opacity-[0.08] object-contain mix-blend-multiply grayscale"
+            loading="lazy"
           />
         </div>
 
@@ -352,7 +362,7 @@ export default function IgoBrandsScroll() {
             className="text-[10px] font-bold uppercase tracking-[0.4em]"
             style={{ color: GOLD }}
           >
-            The Sovereign Ecosystem
+            {t('igo.section_label')}
           </p>
           <div className="h-px w-10" style={{ background: `${GOLD}88` }} />
         </div>
@@ -362,20 +372,19 @@ export default function IgoBrandsScroll() {
           className="relative z-10 text-5xl md:text-6xl font-black text-gray-950 mb-6 leading-tight drop-shadow-sm"
           style={{ fontFamily: 'Georgia, "Times New Roman", serif' }}
         >
-          The{' '}
+          {t('igo.title_part1')}{' '}
           <span
             className="italic font-black"
             style={{ color: GOLD }}
           >
-            26 Verticals
+            {t('igo.title_highlight')}
           </span>{' '}
-          of IGO.
+          {t('igo.title_part2')}
         </h2>
 
         {/* Subtitle */}
         <p className="relative z-10 text-sm text-gray-600 font-medium max-w-md mx-auto leading-relaxed mb-10 drop-shadow-sm">
-          A sovereign agricultural ecosystem covering Engineering,{' '}
-          Production, Trade, and Consumer Lifestyle.
+          {t('igo.subtitle')}
         </p>
 
         {/* Arrow nav row */}
@@ -390,7 +399,7 @@ export default function IgoBrandsScroll() {
           <span
             className="text-[10px] font-bold uppercase tracking-[0.35em] text-gray-400"
           >
-            Explore All 26 Verticals
+            {t('igo.explore_all')}
           </span>
           <button
             onClick={scrollNext}

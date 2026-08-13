@@ -82,6 +82,7 @@ export default function QuickAddCarousel({ products, title = "You might also lik
                     (e.target as HTMLImageElement).src = '/placeholder_product.webp';
                   }}
                   className="w-full h-full object-contain group-hover:scale-105 transition-transform duration-500"
+                  loading="lazy"
                 />
               </div>
 

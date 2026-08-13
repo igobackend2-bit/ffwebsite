@@ -116,6 +116,7 @@ export default function ProductCard({ product, href }: ProductCardProps) {
             className={`w-full h-full object-cover transition-transform duration-700 group-hover:scale-110 ${
               (product.stock === 0) ? 'grayscale opacity-60' : ''
             }`}
+            loading="lazy"
           />
 
           {product.stock === 0 && (
