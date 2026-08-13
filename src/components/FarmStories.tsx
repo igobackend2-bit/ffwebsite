@@ -15,8 +15,14 @@ const FALLBACK_STORIES = [
 
 export default function FarmStories() {
   const { t } = useTranslation();
+  // Initialize with the fallback stories (not an empty array) so this
+  // section has real, meaningful content in the server-rendered HTML from
+  // the very first paint — a crawler or a visitor on a slow connection
+  // sees actual farmer stories immediately instead of an empty strip while
+  // the Supabase fetch below is still in flight. The effect below replaces
+  // this with live data once it resolves, exactly as before.
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const [stories, setStories] = React.useState<any[]>([]);
+  const [stories, setStories] = React.useState<any[]>(FALLBACK_STORIES);
   const [activeVideo, setActiveVideo] = React.useState<string | null>(null);
 
   React.useEffect(() => {

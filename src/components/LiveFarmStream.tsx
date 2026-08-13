@@ -52,11 +52,16 @@ const isVideoUrl = (url: string) => {
 
 export default function LiveFarmStream() {
   const { t } = useTranslation();
+  // Same reasoning as FarmStories: start from the fallback data (and
+  // loading=false) instead of an empty/loading state, so this section
+  // renders real content in the server-rendered HTML immediately rather
+  // than only a spinner until the client-side Supabase fetch below
+  // resolves. The effect still replaces this with live data as before.
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const [streams, setStreams] = useState<any[]>([]);
+  const [streams, setStreams] = useState<any[]>(FALLBACK_STREAMS);
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const [activeStream, setActiveStream] = useState<any>(null);
-  const [loading, setLoading] = useState(true);
+  const [activeStream, setActiveStream] = useState<any>(FALLBACK_STREAMS[0]);
+  const [loading, setLoading] = useState(false);
 
   React.useEffect(() => {
     async function fetchStreams() {
