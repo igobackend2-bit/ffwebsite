@@ -395,6 +395,7 @@ export default function OrderDetailModal({ order, isOpen, onClose }: OrderDetail
                             alt={item.products?.name}
                             className="w-full h-full object-cover"
                             onError={(e) => { (e.target as HTMLImageElement).src = fallbackImage; }}
+                            loading="lazy"
                           />
                         </div>
                         <div className="flex-1 min-w-0">

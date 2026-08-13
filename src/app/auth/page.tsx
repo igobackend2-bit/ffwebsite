@@ -169,7 +169,7 @@ function AuthContent() {
     <div className="relative min-h-screen flex flex-col lg:flex-row text-white overflow-hidden">
       {/* Full-screen background image */}
       <div className="absolute inset-0 z-0">
-        <img src="/auth-bg.webp" alt="Fresh organic produce at Farmers Factory" className="w-full h-full object-cover" />
+        <img src="/auth-bg.webp" alt="Fresh organic produce at Farmers Factory" className="w-full h-full object-cover" loading="eager" fetchPriority="high" />
         <div className="absolute inset-0 bg-gradient-to-r from-black/90 via-black/70 to-black/85" />
       </div>
 
@@ -181,6 +181,7 @@ function AuthContent() {
               src="/logo.webp"
               alt="Farmers Factory Logo"
               className="w-full h-full object-contain p-1"
+              loading="eager"
               onError={(e) => {
                 (e.target as HTMLImageElement).style.display = 'none';
                 (e.target as HTMLImageElement).nextElementSibling?.classList.remove('hidden');
@@ -209,6 +210,7 @@ function AuthContent() {
               src="/logo.webp"
               alt="Farmers Factory Logo"
               className="w-full h-full object-contain p-1"
+              loading="eager"
               onError={(e) => {
                 (e.target as HTMLImageElement).style.display = 'none';
                 (e.target as HTMLImageElement).nextElementSibling?.classList.remove('hidden');

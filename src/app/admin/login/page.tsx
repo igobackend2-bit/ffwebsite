@@ -82,13 +82,25 @@ export default function AdminLogin() {
           <div className="absolute -top-24 -left-24 w-48 h-48 bg-primary/30 rounded-full blur-[80px] group-hover:bg-primary/50 transition-all duration-700" />
           
           <div className="text-center mb-10 relative">
-            <motion.div 
+            <motion.div
               initial={{ scale: 0 }}
               animate={{ scale: 1 }}
               transition={{ delay: 0.3, type: "spring", stiffness: 200 }}
-              className="w-20 h-20 bg-primary rounded-3xl mx-auto flex items-center justify-center text-white shadow-lg shadow-primary/30 mb-6 group-hover:rotate-12 transition-transform"
+              className="w-20 h-20 bg-primary rounded-3xl mx-auto flex items-center justify-center text-white shadow-lg shadow-primary/30 mb-6 group-hover:rotate-12 transition-transform overflow-hidden relative"
             >
-              <ShieldCheck size={40} />
+              <img
+                src="/logo.webp"
+                alt="Farmers Factory Logo"
+                className="w-full h-full object-contain p-2"
+                loading="eager"
+                onError={(e) => {
+                  // If the logo asset ever fails to load, fall back to the
+                  // shield icon instead of showing a broken image.
+                  (e.target as HTMLImageElement).style.display = 'none';
+                  (e.target as HTMLImageElement).nextElementSibling?.classList.remove('hidden');
+                }}
+              />
+              <ShieldCheck size={40} className="hidden absolute" />
             </motion.div>
             <h1 className="text-4xl font-black text-white tracking-tight mb-2">Team Access</h1>
             <p className="text-white/60 font-medium">Farmers Factory Admin Portal</p>

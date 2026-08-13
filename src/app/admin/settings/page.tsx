@@ -226,7 +226,7 @@ export default function AdminSettings() {
             <div key={slot} className="flex items-center gap-4">
               <div className="w-20 h-20 rounded-2xl overflow-hidden border border-border bg-muted flex-shrink-0">
                 {catImages[slot] ? (
-                  <img src={catImages[slot]} alt={label} className="w-full h-full object-cover" />
+                  <img src={catImages[slot]} alt={label} className="w-full h-full object-cover" loading="lazy" />
                 ) : (
                   <div className="w-full h-full flex items-center justify-center text-muted-foreground"><ImageIcon size={22} /></div>
                 )}

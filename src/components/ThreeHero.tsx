@@ -68,10 +68,10 @@ function Scene() {
       <pointLight position={[-10, -10, -10]} intensity={1} />
       
       {/* Premium Product Staging */}
-      <ProductStage url="/Fruits/apple.jfif" position={[6, 3, -2]} scale={3} />
-      <ProductStage url="/Vegetables/TomatoCountry.jfif" position={[-6, -2, 2]} scale={2.5} />
-      <ProductStage url="/Fruits/MangoBanganapalli.jfif" position={[4, -4, 0]} scale={2.8} />
-      <ProductStage url="/Vegetables/ooty-carrot.jpg" position={[-5, 4, -1]} scale={3.2} />
+      <ProductStage url="/Fruits/apple.webp" position={[6, 3, -2]} scale={3} />
+      <ProductStage url="/Vegetables/TomatoCountry.webp" position={[-6, -2, 2]} scale={2.5} />
+      <ProductStage url="/Fruits/MangoBanganapalli.webp" position={[4, -4, 0]} scale={2.8} />
+      <ProductStage url="/Vegetables/ooty-carrot.webp" position={[-5, 4, -1]} scale={3.2} />
 
       {/* Professional Glass Elements */}
       <GlassShape position={[8, 0, -5]} scale={1.5} color="#10b981" />

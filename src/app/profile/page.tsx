@@ -218,16 +218,29 @@ function ProfileContent() {
     }
     setSavingSettings(true);
     try {
-      const { error } = await supabase
+      const baseUpdate = {
+        full_name: fullNameState.trim(),
+        phone: phoneState.trim(),
+        email: emailState.trim() || null,
+        updated_at: new Date().toISOString()
+      };
+
+      let { error } = await supabase
         .from('profiles')
-        .update({
-          full_name: fullNameState.trim(),
-          phone: phoneState.trim(),
-          email: emailState.trim() || null,
-          email_notifications_enabled: emailNotifications,
-          updated_at: new Date().toISOString()
-        })
+        .update({ ...baseUpdate, email_notifications_enabled: emailNotifications })
         .eq('id', user?.id);
+
+      // The 'email_notifications_enabled' column is missing on the live
+      // database in some environments (schema drift from supabase_schema.sql
+      // never being fully applied), which previously made this whole save
+      // fail with "Could not find the 'email_notifications_enabled' column
+      // ... in the schema cache" and blocked saving the name/phone/email too.
+      // Retry without that one field so the rest of the form still saves.
+      let notificationPrefSaved = true;
+      if (error && /email_notifications_enabled/i.test(error.message || '')) {
+        notificationPrefSaved = false;
+        ({ error } = await supabase.from('profiles').update(baseUpdate).eq('id', user?.id));
+      }
 
       if (error) throw error;
 
@@ -237,10 +250,14 @@ function ProfileContent() {
         full_name: fullNameState.trim(),
         phone: phoneState.trim(),
         email: emailState.trim() || null,
-        email_notifications_enabled: emailNotifications
+        ...(notificationPrefSaved ? { email_notifications_enabled: emailNotifications } : {})
       }));
 
-      toast.success('Settings updated successfully!');
+      if (notificationPrefSaved) {
+        toast.success('Settings updated successfully!');
+      } else {
+        toast.success('Profile updated (notification preference could not be saved — contact support).');
+      }
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {
       toast.error(err.message || 'Failed to save changes');
@@ -531,6 +548,7 @@ function ProfileContent() {
                                 alt={prod.name}
                                 className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                                 onError={(e) => { (e.target as HTMLImageElement).src = fallbackUrl; }}
+                                loading="lazy"
                               />
                             </div>
 

@@ -34,15 +34,15 @@ export default function Hero({ greeting = 'Welcome' }: HeroProps) {
           className="relative w-full h-full"
         >
           <img 
-            src="/Vegetables/ooty-carrot.jpg" 
+            src="/Vegetables/ooty-carrot.webp"
             alt="Fresh Carrots" 
             className="absolute top-[15%] right-[10%] w-64 h-64 object-cover rounded-[3rem] shadow-2xl rotate-6 border-8 border-white" loading="lazy" />
           <img 
-            src="/Fruits/apple.jfif" 
+            src="/Fruits/apple.webp"
             alt="Fresh Apples" 
             className="absolute top-[45%] right-[25%] w-56 h-56 object-cover rounded-[3rem] shadow-2xl -rotate-12 border-8 border-white" loading="lazy" />
           <img 
-            src="/Vegetables/TomatoCountry.jfif" 
+            src="/Vegetables/TomatoCountry.webp"
             alt="Fresh Tomatoes" 
             className="absolute bottom-[10%] right-[5%] w-72 h-72 object-cover rounded-[3rem] shadow-2xl rotate-3 border-8 border-white" loading="lazy" />
         </motion.div>

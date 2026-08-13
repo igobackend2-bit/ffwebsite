@@ -31,9 +31,24 @@ const nextConfig: NextConfig = {
     ],
   },
 
-  // ── HTTP Cache-Control headers ────────────────────────────────────────────
+  // ── HTTP Cache-Control + security headers ─────────────────────────────────
   async headers() {
     return [
+      {
+        // Applies to every response. HSTS tells browsers that already know
+        // this site to always use HTTPS directly (skipping the initial
+        // http:// -> https:// redirect round-trip) and protects against
+        // SSL-stripping attacks. The site already 301-redirects http -> https
+        // and www -> non-www at the routing level; this header reinforces
+        // that at the browser level. `preload` is omitted since submitting to
+        // the HSTS preload list is a one-way, hard-to-reverse decision that
+        // should be a deliberate choice by whoever owns the domain, not
+        // something bundled into an unrelated code change.
+        source: '/:path*',
+        headers: [
+          { key: 'Strict-Transport-Security', value: 'max-age=63072000; includeSubDomains' },
+        ],
+      },
       {
         source: '/_next/static/:path*',
         headers: [

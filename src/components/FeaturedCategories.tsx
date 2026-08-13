@@ -8,8 +8,8 @@ import { supabase } from '@/lib/supabase';
 // Default images — used unless the admin overrides them in Settings.
 const DEFAULT_CATEGORY_IMAGES = {
   vegetables: '/category_vegetables.webp',
-  fruits: '/banners/Fruits banner.jpeg',
-  valluvam: '/banners/Valluvam banner.jpeg',
+  fruits: '/banners/Fruits banner.webp',
+  valluvam: '/banners/Valluvam banner.webp',
 };
 
 export default function FeaturedCategories() {

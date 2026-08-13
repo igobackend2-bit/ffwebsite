@@ -10,10 +10,14 @@ import FeaturedProducts from '@/components/FeaturedProducts';
 import Footer from '@/components/Footer';
 import IgoBrandsScroll from '@/components/IgoBrandsScroll';
 
-// Lazy-load heavy below-the-fold components for faster initial page load
-const WhyChooseUs = dynamic(() => import('@/components/WhyChooseUs'), { ssr: false });
-const FarmStories = dynamic(() => import('@/components/FarmStories'), { ssr: false });
-const LiveFarmStream = dynamic(() => import('@/components/LiveFarmStream'), { ssr: false });
+// Code-split these below-the-fold components for a smaller initial JS bundle,
+// but keep them server-rendered (no `ssr: false`) so their content — Why
+// Choose Us, farm stories, live stream cards — is present in the HTML a
+// crawler sees on first load, instead of only appearing after client-side
+// JS runs. None of the three use browser-only APIs, so this is SSR-safe.
+const WhyChooseUs = dynamic(() => import('@/components/WhyChooseUs'));
+const FarmStories = dynamic(() => import('@/components/FarmStories'));
+const LiveFarmStream = dynamic(() => import('@/components/LiveFarmStream'));
 
 export default function Home() {
   return (

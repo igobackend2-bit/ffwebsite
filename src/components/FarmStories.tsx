@@ -7,10 +7,10 @@ import { supabase } from '@/lib/supabase';
 import { useTranslation } from '@/context/TranslationContext';
 
 const FALLBACK_STORIES = [
-  { id: '1', farmer: 'Arjun', title: 'Morning Harvest', image_url: '/Vegetables/drumstick.jpg', video_url: null, is_live: true },
-  { id: '2', farmer: 'Meera', title: 'Organic Secrets', image_url: '/Fruits/MangoBanganapalli.jfif', video_url: null, is_live: true },
-  { id: '3', farmer: 'Senthil', title: 'Oil Extraction', image_url: '/Valluvam/coconut-1L.jpg', video_url: null, is_live: true },
-  { id: '4', farmer: 'Kiran', title: 'Soil Quality', image_url: '/Vegetables/ooty-carrot.jpg', video_url: null, is_live: true },
+  { id: '1', farmer: 'Arjun', title: 'Morning Harvest', image_url: '/Vegetables/drumstick.webp', video_url: null, is_live: true },
+  { id: '2', farmer: 'Meera', title: 'Organic Secrets', image_url: '/Fruits/MangoBanganapalli.webp', video_url: null, is_live: true },
+  { id: '3', farmer: 'Senthil', title: 'Oil Extraction', image_url: '/Valluvam/coconut-1L.webp', video_url: null, is_live: true },
+  { id: '4', farmer: 'Kiran', title: 'Soil Quality', image_url: '/Vegetables/ooty-carrot.webp', video_url: null, is_live: true },
 ];
 
 export default function FarmStories() {

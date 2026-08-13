@@ -111,7 +111,19 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
             className="relative z-10 w-full max-w-lg bg-[#0A0A0A] border border-white/10 rounded-[2.5rem] p-8 md:p-12 text-white shadow-2xl">
             <button onClick={onClose} className="absolute top-8 right-8 text-white/20 hover:text-white transition-colors"><X size={24} /></button>
             <div className="flex items-center gap-3 mb-10">
-              <div className="w-10 h-10 bg-primary rounded-xl flex items-center justify-center"><Leaf size={24} className="text-white" /></div>
+              <div className="w-10 h-10 bg-primary rounded-xl flex items-center justify-center overflow-hidden relative">
+                <img
+                  src="/logo.webp"
+                  alt="Farmers Factory Logo"
+                  className="w-full h-full object-contain p-1"
+                  onError={(e) => {
+                    (e.target as HTMLImageElement).style.display = 'none';
+                    (e.target as HTMLImageElement).nextElementSibling?.classList.remove('hidden');
+                  }}
+                  loading="lazy"
+                />
+                <Leaf size={24} className="text-white hidden absolute" />
+              </div>
               <span className="text-xl font-black tracking-tighter">FARMERS FACTORY</span>
             </div>
             <div className="mb-8">

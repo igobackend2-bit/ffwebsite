@@ -349,8 +349,16 @@ export default function HeroSlider() {
                 setCurrentIndex(i);
                 setProgress(0);
               }}
+              aria-label={`Go to slide ${i + 1}`}
               className="group relative"
             >
+              {/* Invisible hit-area expansion — the visible bar below is only
+                  6px tall, well under the ~44px touch-target size mobile
+                  guidelines recommend. This absolutely-positioned overlay
+                  enlarges the tappable area without affecting layout/visual
+                  appearance (it doesn't participate in normal flow, so it
+                  can't shift surrounding elements). */}
+              <span className="absolute -inset-y-4 -inset-x-2" aria-hidden="true" />
               <div className={`h-1.5 transition-all duration-500 rounded-full bg-white/20 overflow-hidden ${
                 i === currentIndex ? 'w-16' : 'w-8 hover:w-12 hover:bg-white/40'
               }`}>

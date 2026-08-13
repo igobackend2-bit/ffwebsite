@@ -1,17 +1,18 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
-import { supabase } from '@/lib/supabase';
-import { 
-  Star, 
-  MessageSquare, 
-  User, 
-  Package, 
-  Calendar, 
-  Trash2, 
-  Loader2, 
+import {
+  Star,
+  MessageSquare,
+  User,
+  Package,
+  Calendar,
+  Trash2,
+  Loader2,
   CheckCircle,
-  AlertCircle
+  AlertCircle,
+  X,
+  RotateCcw
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'react-hot-toast';
@@ -23,8 +24,11 @@ export default function AdminReviews() {
   const [stats, setStats] = useState({
     total: 0,
     average: 0,
-    pending: 0
+    pending: 0,
+    approved: 0,
+    rejected: 0
   });
+  const [updatingId, setUpdatingId] = useState<string | null>(null);
 
   useEffect(() => {
     // eslint-disable-next-line react-hooks/immutability
@@ -34,28 +38,69 @@ export default function AdminReviews() {
   async function fetchReviews() {
     try {
       setLoading(true);
-      const { data, error } = await supabase
-        .from('reviews')
-        .select('*, products(name, image_urls)')
-        .order('created_at', { ascending: false });
-
-      if (error) throw error;
-      setReviews(data || []);
+      // Goes through the admin API (service-role key) so pending/rejected
+      // reviews from every customer are visible here, not just approved
+      // ones — the public RLS policy only returns approved reviews (plus
+      // a customer's own) to a normal client.
+      const res = await fetch('/api/admin/reviews').then(r => r.json());
+      if (res.error) throw new Error(res.error);
+      const data = res.reviews || [];
+      setReviews(data);
 
       // Calculate stats
-      if (data && data.length > 0) {
-        const avg = data.reduce((acc, r) => acc + r.rating, 0) / data.length;
+      if (data.length > 0) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const avg = data.reduce((acc: number, r: any) => acc + r.rating, 0) / data.length;
         setStats({
           total: data.length,
           average: Number(avg.toFixed(1)),
-          pending: data.filter(r => !r.is_verified).length
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          pending: data.filter((r: any) => r.status === 'pending').length,
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          approved: data.filter((r: any) => r.status === 'approved').length,
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          rejected: data.filter((r: any) => r.status === 'rejected').length
         });
+      } else {
+        setStats({ total: 0, average: 0, pending: 0, approved: 0, rejected: 0 });
       }
     } catch (err) {
       console.error('Error fetching reviews:', err);
       toast.error('Failed to load reviews');
     } finally {
       setLoading(false);
+    }
+  }
+
+  async function updateStatus(id: string, status: 'pending' | 'approved' | 'rejected') {
+    setUpdatingId(id);
+    try {
+      const res = await fetch('/api/admin/reviews', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id, status })
+      }).then(r => r.json());
+      if (res.error) throw new Error(res.error);
+
+      setReviews(prev => {
+        const next = prev.map(r => (r.id === id ? { ...r, status } : r));
+        setStats({
+          total: next.length,
+          average: next.length > 0 ? Number((next.reduce((acc, r) => acc + r.rating, 0) / next.length).toFixed(1)) : 0,
+          pending: next.filter(r => r.status === 'pending').length,
+          approved: next.filter(r => r.status === 'approved').length,
+          rejected: next.filter(r => r.status === 'rejected').length
+        });
+        return next;
+      });
+
+      const label = status === 'approved' ? 'Review approved — now visible on the website' : status === 'rejected' ? 'Review rejected — hidden from the website' : 'Review marked as pending';
+      toast.success(label);
+    } catch (err) {
+      console.error('Error updating review status:', err);
+      toast.error('Failed to update review status');
+    } finally {
+      setUpdatingId(null);
     }
   }
 
@@ -86,7 +131,7 @@ export default function AdminReviews() {
   return (
     <div className="space-y-8">
       {/* Stats Header */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
         <div className="bg-white p-8 rounded-[2rem] border border-border shadow-sm">
           <div className="flex items-center gap-3 text-primary mb-2">
             <Star size={20} className="fill-primary" />
@@ -102,11 +147,18 @@ export default function AdminReviews() {
           <p className="text-4xl font-black">{stats.total}</p>
         </div>
         <div className="bg-white p-8 rounded-[2rem] border border-border shadow-sm">
+          <div className="flex items-center gap-3 text-amber-500 mb-2">
+            <AlertCircle size={20} />
+            <span className="text-xs font-black uppercase tracking-widest">Pending Approval</span>
+          </div>
+          <p className="text-4xl font-black">{stats.pending}</p>
+        </div>
+        <div className="bg-white p-8 rounded-[2rem] border border-border shadow-sm">
           <div className="flex items-center gap-3 text-blue-500 mb-2">
             <CheckCircle size={20} />
-            <span className="text-xs font-black uppercase tracking-widest">Verified Reviews</span>
+            <span className="text-xs font-black uppercase tracking-widest">Approved (Live)</span>
           </div>
-          <p className="text-4xl font-black">{stats.total - stats.pending}</p>
+          <p className="text-4xl font-black">{stats.approved}</p>
         </div>
       </div>
 
@@ -131,7 +183,7 @@ export default function AdminReviews() {
                 <div className="w-full md:w-64 flex-shrink-0">
                   <div className="flex items-center gap-3 mb-3">
                     <div className="w-12 h-12 bg-muted rounded-xl overflow-hidden border border-border">
-                      <img src={review.products?.image_urls?.[0] || '/placeholder.png'} alt="Reviewed product image" className="w-full h-full object-cover" loading="lazy" />
+                      <img src={review.products?.image_urls?.[0] || '/placeholder_product.webp'} alt="Reviewed product image" className="w-full h-full object-cover" loading="lazy" />
                     </div>
                     <div>
                       <p className="text-xs font-black uppercase tracking-widest text-primary mb-1">Product</p>
@@ -158,6 +210,21 @@ export default function AdminReviews() {
                           <CheckCircle size={8} /> Verified Buyer
                         </span>
                       )}
+                      {review.status === 'pending' && (
+                        <span className="bg-amber-100 text-amber-600 text-[8px] font-black uppercase tracking-widest px-2 py-0.5 rounded-full flex items-center gap-1">
+                          <AlertCircle size={8} /> Pending Approval
+                        </span>
+                      )}
+                      {review.status === 'approved' && (
+                        <span className="bg-blue-100 text-blue-600 text-[8px] font-black uppercase tracking-widest px-2 py-0.5 rounded-full flex items-center gap-1">
+                          <CheckCircle size={8} /> Approved
+                        </span>
+                      )}
+                      {review.status === 'rejected' && (
+                        <span className="bg-red-100 text-red-600 text-[8px] font-black uppercase tracking-widest px-2 py-0.5 rounded-full flex items-center gap-1">
+                          <X size={8} /> Rejected
+                        </span>
+                      )}
                     </div>
                     <span className="text-[10px] font-black text-muted-foreground uppercase tracking-widest flex items-center gap-1">
                       <Calendar size={12} />
@@ -171,7 +238,37 @@ export default function AdminReviews() {
 
                 {/* Actions */}
                 <div className="flex md:flex-col items-center justify-center gap-2">
-                  <button 
+                  {review.status !== 'approved' && (
+                    <button
+                      onClick={() => updateStatus(review.id, 'approved')}
+                      disabled={updatingId === review.id}
+                      className="p-3 bg-emerald-50 text-emerald-600 hover:bg-emerald-500 hover:text-white rounded-2xl transition-all shadow-sm disabled:opacity-50"
+                      title="Accept — show on website"
+                    >
+                      <CheckCircle size={18} />
+                    </button>
+                  )}
+                  {review.status !== 'rejected' && (
+                    <button
+                      onClick={() => updateStatus(review.id, 'rejected')}
+                      disabled={updatingId === review.id}
+                      className="p-3 bg-orange-50 text-orange-600 hover:bg-orange-500 hover:text-white rounded-2xl transition-all shadow-sm disabled:opacity-50"
+                      title="Reject — hide from website"
+                    >
+                      <X size={18} />
+                    </button>
+                  )}
+                  {review.status !== 'pending' && (
+                    <button
+                      onClick={() => updateStatus(review.id, 'pending')}
+                      disabled={updatingId === review.id}
+                      className="p-3 bg-slate-100 text-slate-500 hover:bg-slate-500 hover:text-white rounded-2xl transition-all shadow-sm disabled:opacity-50"
+                      title="Mark as pending"
+                    >
+                      <RotateCcw size={18} />
+                    </button>
+                  )}
+                  <button
                     onClick={() => deleteReview(review.id)}
                     className="p-3 bg-red-50 text-red-500 hover:bg-red-500 hover:text-white rounded-2xl transition-all shadow-sm"
                     title="Delete Review"

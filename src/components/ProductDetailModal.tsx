@@ -274,6 +274,7 @@ export default function ProductDetailModal({ isOpen, onClose, product }: Product
                   <img
                     src={mainImage}
                     alt={currentProduct.name}
+                    loading="eager"
                     onError={() => setImageError(true)}
                     onClick={() => setIsLightboxOpen(true)}
                     className="w-full h-full object-contain cursor-zoom-in"
@@ -453,6 +454,7 @@ export default function ProductDetailModal({ isOpen, onClose, product }: Product
                     <img
                       src={mainImage}
                       alt={currentProduct.name}
+                      loading="eager"
                       className="max-w-full max-h-full object-contain"
                     />
                   </div>

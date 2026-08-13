@@ -339,8 +339,9 @@ export default function AdminInventory() {
                           <img 
                             src={getProductImage(p)}
                             alt={p.name || 'Product image'}
-                            className="w-full h-full object-cover" 
+                            className="w-full h-full object-cover"
                             onError={(e) => { (e.target as HTMLImageElement).src = 'https://images.unsplash.com/photo-1610348725531-843dff563e2c'; }}
+                            loading="lazy"
                           />
                         </div>
                         <span className="text-foreground group-hover:text-primary transition-colors text-base">{p.name}</span>

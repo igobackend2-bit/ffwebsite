@@ -130,6 +130,7 @@ export default function Orders() {
                               alt={item.products?.name}
                               className="w-full h-full object-cover"
                               onError={(e) => { (e.target as HTMLImageElement).src = '/placeholder_product.webp'; }}
+                              loading="lazy"
                             />
                           </div>
                           <div className="flex-1 min-w-0">

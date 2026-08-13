@@ -89,6 +89,7 @@ export default function ProductMediaManager({ product, onUpdate }: ProductMediaM
             onError={(e) => {
               (e.target as HTMLImageElement).src = '/placeholder_product.webp';
             }}
+            loading="lazy"
           />
           
           <AnimatePresence>
