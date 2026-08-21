@@ -1,0 +1,71 @@
+/* Sitemap XML display stylesheet — browsers apply this directly to the raw
+   XML tags (via the <?xml-stylesheet?> instruction in sitemap.xml), so the
+   marketing team sees a readable, branded page instead of the plain XML
+   tag tree. Search engines ignore this file entirely and read the <url>
+   data exactly as before — nothing about the sitemap's content changed. */
+
+urlset {
+  display: block;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+  background: #f8f9fa;
+  padding: 40px 24px;
+}
+
+urlset::before {
+  content: "Farmers Factory — XML Sitemap";
+  display: block;
+  font-size: 26px;
+  font-weight: 900;
+  color: #1a4d36;
+  margin-bottom: 4px;
+}
+
+urlset::after {
+  content: "This file lists every page on famersfactory.com for search engines. Machine-readable — not meant for browsing, shown here for reference.";
+  display: none;
+}
+
+url {
+  display: block;
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  padding: 14px 18px;
+  margin-bottom: 10px;
+  max-width: 900px;
+}
+
+loc {
+  display: block;
+  font-weight: 700;
+  font-size: 14px;
+  color: #1a4d36;
+  word-break: break-all;
+  margin-bottom: 6px;
+}
+
+lastmod,
+changefreq,
+priority {
+  display: inline-block;
+  font-size: 11px;
+  color: #6b7280;
+  margin-right: 18px;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+lastmod::before {
+  content: "Updated: ";
+  font-weight: 700;
+}
+
+changefreq::before {
+  content: "Frequency: ";
+  font-weight: 700;
+}
+
+priority::before {
+  content: "Priority: ";
+  font-weight: 700;
+}
