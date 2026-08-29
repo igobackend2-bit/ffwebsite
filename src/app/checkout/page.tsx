@@ -40,12 +40,7 @@ export default function Checkout() {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [savedAddresses, setSavedAddresses] = useState<any[]>([]);
   const [isLocating, setIsLocating] = useState(false);
-  const [paymentMethod, setPaymentMethod] = useState<'COD' | 'CARD'>('COD');
-  const [cardDetails, setCardDetails] = useState({
-    number: '',
-    expiry: '',
-    cvv: ''
-  });
+  const [paymentMethod, setPaymentMethod] = useState<'COD' | 'ONLINE'>('COD');
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -165,17 +160,6 @@ export default function Checkout() {
     if (!address.street || !address.phone || !address.name) {
       toast.error('Please fill in your delivery details');
       return;
-    }
-
-    if (paymentMethod === 'CARD') {
-      if (!cardDetails.number || !cardDetails.expiry || !cardDetails.cvv) {
-        toast.error('Please fill in your card details');
-        return;
-      }
-      if (cardDetails.number.length < 16) {
-        toast.error('Invalid card number');
-        return;
-      }
     }
 
     const onionItems = cartItems.filter(item => item.products.name.toLowerCase().includes('onion'));
@@ -324,6 +308,60 @@ export default function Checkout() {
         localStorage.removeItem('farmers_factory_guest_cart');
       }
 
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(new Event('cart-updated'));
+      }
+
+      if (paymentMethod === 'ONLINE') {
+        // Send the customer to Cashfree's hosted checkout (UPI/card/netbanking).
+        // We deliberately do NOT fire the "order confirmed" toast/notification/
+        // email here — those only go out once /checkout/payment-callback
+        // confirms the payment actually succeeded with Cashfree, so a customer
+        // who abandons payment doesn't get a false "confirmed" message.
+        try {
+          const res = await fetch('/api/cashfree/create-order', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              orderId: order.order_number,
+              amount: total,
+              customerId: user.id,
+              customerName: address.name,
+              customerPhone: address.phone,
+              customerEmail: user.email,
+            }),
+          });
+          const data = await res.json();
+          if (!res.ok || !data.paymentSessionId) {
+            throw new Error(data.error || 'Failed to start online payment');
+          }
+
+          await new Promise<void>((resolve, reject) => {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            if ((window as any).Cashfree) return resolve();
+            const script = document.createElement('script');
+            script.src = 'https://sdk.cashfree.com/js/v3/cashfree.js';
+            script.onload = () => resolve();
+            script.onerror = () => reject(new Error('Failed to load payment SDK'));
+            document.body.appendChild(script);
+          });
+
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          const cashfree = (window as any).Cashfree({ mode: data.mode });
+          cashfree.checkout({
+            paymentSessionId: data.paymentSessionId,
+            redirectTarget: '_self',
+          });
+          return; // browser is navigating to Cashfree's hosted checkout page
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        } catch (payError: any) {
+          console.error('[Checkout] Cashfree init error:', payError);
+          toast.error(payError.message || 'Failed to start online payment. Please try Cash on Delivery instead.');
+          setLoading(false);
+          return;
+        }
+      }
+
       toast.success('Order placed successfully!');
 
       // Play a short "order placed" success chime (Web Audio — no asset/dependency needed).
@@ -349,10 +387,6 @@ export default function Checkout() {
           });
         }
       } catch { /* sound is best-effort; never block the order flow */ }
-
-      if (typeof window !== 'undefined') {
-        window.dispatchEvent(new Event('cart-updated'));
-      }
 
       const { error: notifyError } = await supabase.from('notifications').insert({
         user_id: user.id,
@@ -538,66 +572,23 @@ export default function Checkout() {
                 </div>
                 
                 <div
-                  className="p-6 border-2 rounded-2xl flex items-center justify-between opacity-50 cursor-not-allowed border-border bg-muted/20 relative overflow-hidden"
+                  onClick={() => setPaymentMethod('ONLINE')}
+                  className={`p-6 border-2 rounded-2xl flex items-center justify-between cursor-pointer transition-all ${
+                    paymentMethod === 'ONLINE'
+                      ? 'border-primary bg-primary/5 shadow-lg shadow-primary/5'
+                      : 'border-border hover:border-primary/30'
+                  }`}
                 >
                   <div className="flex items-center gap-4">
-                    <div className="w-6 h-6 border-4 rounded-full bg-white border-muted" />
+                    <div className={`w-6 h-6 border-4 rounded-full bg-white transition-all ${
+                      paymentMethod === 'ONLINE' ? 'border-primary' : 'border-muted'
+                    }`} />
                     <div>
-                      <p className="font-bold text-muted-foreground flex items-center gap-2">
-                        {t('checkout.card')}
-                        <span className="text-[10px] font-black uppercase tracking-widest bg-slate-200 text-slate-500 px-2 py-0.5 rounded-full">{t('checkout.coming_soon')}</span>
-                      </p>
+                      <p className="font-bold">{t('checkout.card')}</p>
                       <p className="text-sm text-muted-foreground">{t('checkout.card_desc')}</p>
                     </div>
                   </div>
                 </div>
-
-                {/* Card Details Form */}
-                {paymentMethod === 'CARD' && (
-                  <motion.div 
-                    initial={{ opacity: 0, height: 0 }}
-                    animate={{ opacity: 1, height: 'auto' }}
-                    className="overflow-hidden"
-                  >
-                    <div className="p-8 bg-muted/20 rounded-[2rem] border border-border mt-4 space-y-6">
-                      <div className="space-y-2">
-                        <label className="text-xs font-black text-muted-foreground uppercase tracking-widest ml-1">{t('checkout.card_number')}</label>
-                        <input 
-                          type="text" 
-                          placeholder="0000 0000 0000 0000"
-                          maxLength={16}
-                          className="w-full bg-white border border-border rounded-xl py-3 px-4 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary font-mono tracking-widest"
-                          value={cardDetails.number}
-                          onChange={e => setCardDetails({...cardDetails, number: e.target.value.replace(/\D/g, '')})}
-                        />
-                      </div>
-                      <div className="grid grid-cols-2 gap-4">
-                        <div className="space-y-2">
-                          <label className="text-xs font-black text-muted-foreground uppercase tracking-widest ml-1">{t('checkout.expiry')}</label>
-                          <input 
-                            type="text" 
-                            placeholder="MM/YY"
-                            maxLength={5}
-                            className="w-full bg-white border border-border rounded-xl py-3 px-4 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary font-mono"
-                            value={cardDetails.expiry}
-                            onChange={e => setCardDetails({...cardDetails, expiry: e.target.value})}
-                          />
-                        </div>
-                        <div className="space-y-2">
-                          <label className="text-xs font-black text-muted-foreground uppercase tracking-widest ml-1">{t('checkout.cvv')}</label>
-                          <input 
-                            type="password" 
-                            placeholder="***"
-                            maxLength={3}
-                            className="w-full bg-white border border-border rounded-xl py-3 px-4 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary font-mono"
-                            value={cardDetails.cvv}
-                            onChange={e => setCardDetails({...cardDetails, cvv: e.target.value.replace(/\D/g, '')})}
-                          />
-                        </div>
-                      </div>
-                    </div>
-                  </motion.div>
-                )}
               </div>
             </motion.div>
           </div>
