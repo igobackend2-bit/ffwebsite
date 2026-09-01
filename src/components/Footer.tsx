@@ -65,6 +65,11 @@ export default function Footer() {
           <Link href="/contact" className="text-muted-foreground hover:text-primary transition-colors text-xs font-bold uppercase tracking-widest">{t('nav.contact')}</Link>
           <Link href="/privacy" className="text-muted-foreground hover:text-primary transition-colors text-xs font-bold uppercase tracking-widest">{t('privacy.title')}</Link>
           <Link href="/terms" className="text-muted-foreground hover:text-primary transition-colors text-xs font-bold uppercase tracking-widest">{t('terms.title')}</Link>
+          {/* Added: Help Center, Return Policy, Cookie Policy, FSSAI License */}
+          <Link href="/help" className="text-muted-foreground hover:text-primary transition-colors text-xs font-bold uppercase tracking-widest">{t('help.title')}</Link>
+          <Link href="/returns" className="text-muted-foreground hover:text-primary transition-colors text-xs font-bold uppercase tracking-widest">{t('returns.title')}</Link>
+          <Link href="/cookies" className="text-muted-foreground hover:text-primary transition-colors text-xs font-bold uppercase tracking-widest">{t('cookies.title')}</Link>
+          <Link href="/fssai" className="text-muted-foreground hover:text-primary transition-colors text-xs font-bold uppercase tracking-widest">{t('fssai.title')}</Link>
         </div>
 
         {/* Social Media Links */}

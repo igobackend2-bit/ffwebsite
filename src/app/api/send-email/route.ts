@@ -886,6 +886,30 @@ function buildHtml(template: string, data: any, items: any[] = []): string {
       break;
     }
 
+    // ── Password Reset (admin-triggered from Admin > Customers, or a
+    //    customer's own "forgot password" link) ────────────────────────────────
+    case 'password_reset': {
+      rows = `
+        ${logoBar()}
+        ${heroBanner('Reset Your Password 🔑',
+          'Use the secure link below to choose a new password.',
+          `linear-gradient(135deg, #1A237E 0%, #3949AB 100%)`)}
+        ${greeting(customerName,
+          'We received a request to reset the password on your Farmers Factory account. Click the button below to choose a new one — this link expires shortly for your security.')}
+        ${ctaButton('RESET MY PASSWORD', data.resetLink)}
+        <tr>
+          <td style="padding:0 36px 20px;">
+            <p style="margin:0;font-size:13px;color:${BRAND_MUTED};line-height:1.75;">
+              If you didn't request this, you can safely ignore this email — your password will remain unchanged.
+            </p>
+          </td>
+        </tr>
+        ${securityAlert()}
+        ${supportBlock()}
+      `;
+      break;
+    }
+
     // ── Generic Fallback ───────────────────────────────────────────────────────
     default: {
       const statusTitle = template.replace('order_', '').replace(/_/g, ' ').toUpperCase();

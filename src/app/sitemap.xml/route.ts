@@ -47,6 +47,11 @@ export async function GET() {
     { url: `${SITE_URL}/streams`, lastModified: now, changeFrequency: 'weekly', priority: 0.6 },
     { url: `${SITE_URL}/privacy`, lastModified: now, changeFrequency: 'yearly', priority: 0.3 },
     { url: `${SITE_URL}/terms`, lastModified: now, changeFrequency: 'yearly', priority: 0.3 },
+    // Added: Help Center, Return Policy, Cookie Policy, FSSAI License
+    { url: `${SITE_URL}/help`, lastModified: now, changeFrequency: 'monthly', priority: 0.5 },
+    { url: `${SITE_URL}/returns`, lastModified: now, changeFrequency: 'yearly', priority: 0.3 },
+    { url: `${SITE_URL}/cookies`, lastModified: now, changeFrequency: 'yearly', priority: 0.3 },
+    { url: `${SITE_URL}/fssai`, lastModified: now, changeFrequency: 'yearly', priority: 0.3 },
   ];
 
   let categoryRoutes: SitemapEntry[] = [];

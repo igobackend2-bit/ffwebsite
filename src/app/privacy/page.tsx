@@ -41,6 +41,32 @@ export default function PrivacyPolicy() {
             <h2 className="text-2xl font-black text-foreground uppercase tracking-tight mb-4">{t('privacy.rights.title')}</h2>
             <p>{t('privacy.rights.desc')}</p>
           </section>
+
+          {/* Added: Cookies, Retention, Children's Privacy, Security, Changes & Contact */}
+          <section>
+            <h2 className="text-2xl font-black text-foreground uppercase tracking-tight mb-4">{t('privacy.cookies.title')}</h2>
+            <p>{t('privacy.cookies.desc')}</p>
+          </section>
+
+          <section>
+            <h2 className="text-2xl font-black text-foreground uppercase tracking-tight mb-4">{t('privacy.retention.title')}</h2>
+            <p>{t('privacy.retention.desc')}</p>
+          </section>
+
+          <section>
+            <h2 className="text-2xl font-black text-foreground uppercase tracking-tight mb-4">{t('privacy.children.title')}</h2>
+            <p>{t('privacy.children.desc')}</p>
+          </section>
+
+          <section>
+            <h2 className="text-2xl font-black text-foreground uppercase tracking-tight mb-4">{t('privacy.security.title')}</h2>
+            <p>{t('privacy.security.desc')}</p>
+          </section>
+
+          <section>
+            <h2 className="text-2xl font-black text-foreground uppercase tracking-tight mb-4">{t('privacy.changes.title')}</h2>
+            <p>{t('privacy.changes.desc')}</p>
+          </section>
         </div>
       </div>
       <Footer />

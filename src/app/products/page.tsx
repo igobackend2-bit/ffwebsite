@@ -40,6 +40,15 @@ export function ProductsContent({ initialCategory }: ProductsContentProps = {}) 
   const [category, setCategory] = useState(initialCategory || 'All');
   const [searchQuery, setSearchQuery] = useState('');
   const [priceRange, setPriceRange] = useState(2000);
+  // Added: sort + dietary filters. 'relevance' keeps the existing
+  // order_index/created_at ordering already applied in fetchProducts(),
+  // so it's a true no-op sort — nothing changes unless the customer picks
+  // something else.
+  const [sortBy, setSortBy] = useState<'relevance' | 'price_low' | 'price_high' | 'discount' | 'newest'>('relevance');
+  const [dietaryFilters, setDietaryFilters] = useState<string[]>([]);
+  const toggleDietaryFilter = (tag: string) => {
+    setDietaryFilters(prev => prev.includes(tag) ? prev.filter(existing => existing !== tag) : [...prev, tag]);
+  };
 
   // Slider range follows the real product prices (instead of a fixed
   // ₹0–₹2000) so dragging it always has a visible effect.
@@ -202,10 +211,46 @@ export function ProductsContent({ initialCategory }: ProductsContentProps = {}) 
     
     // 3. Price Filter
     filtered = filtered.filter(p => Number(p.price) <= priceRange);
-    
+
+    // 4. Dietary Filter (Organic / Vegan / Gluten-Free) — additive, requires
+    // the optional dietary_tags column from ADD_PRODUCT_DIETARY_AND_DISCOUNT.sql.
+    // Products with no tags yet simply won't match a selected filter; with
+    // no filters selected (the default) this is a no-op.
+    if (dietaryFilters.length > 0) {
+      filtered = filtered.filter(p => {
+        const tags: string[] = Array.isArray(p.dietary_tags) ? p.dietary_tags : [];
+        return dietaryFilters.every(f => tags.includes(f));
+      });
+    }
+
+    // 5. Sort — 'relevance' leaves fetchProducts()'s existing ordering alone.
+    // Discount % is computed from the admin panel's real MRP field; products
+    // without one set are treated as 0% discount rather than dropped.
+    if (sortBy !== 'relevance') {
+      filtered = [...filtered].sort((a, b) => {
+        if (sortBy === 'price_low') return Number(a.price) - Number(b.price);
+        if (sortBy === 'price_high') return Number(b.price) - Number(a.price);
+        if (sortBy === 'newest') return new Date(b.created_at || 0).getTime() - new Date(a.created_at || 0).getTime();
+        if (sortBy === 'discount') {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          const discountOf = (p: any) => {
+            // `mrp` is the real "was" price the admin panel already fills in
+            // (Admin > Products > MRP field). `original_price` is an older,
+            // still-supported alias kept only as a fallback for any product
+            // that has it set but no mrp — mrp always wins when both exist.
+            const original = Number(p.mrp) || Number(p.original_price) || 0;
+            const price = Number(p.price) || 0;
+            return original > price ? (original - price) / original : 0;
+          };
+          return discountOf(b) - discountOf(a);
+        }
+        return 0;
+      });
+    }
+
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setFilteredProducts(filtered);
-  }, [category, searchQuery, priceRange, products]);
+  }, [category, searchQuery, priceRange, dietaryFilters, sortBy, products]);
 
   return (
     <main className="min-h-screen bg-white">
@@ -298,6 +343,30 @@ export function ProductsContent({ initialCategory }: ProductsContentProps = {}) 
               <div className="flex justify-between text-xs font-black text-muted-foreground uppercase tracking-widest"><span>₹0</span><span className="text-primary">Up to ₹{Math.min(priceRange, sliderMax)}</span></div>
               <div className="mt-3 text-[11px] font-black uppercase tracking-widest text-muted-foreground">{filteredProducts.length} {filteredProducts.length === 1 ? 'product' : 'products'} match</div>
             </div>
+
+            {/* Added: dietary filters (Organic / Vegan / Gluten-Free) */}
+            <div className="bg-white p-8 rounded-[2rem] border border-border shadow-sm">
+              <h3 className="text-lg font-black mb-6">{t('products.dietary.label')}</h3>
+              <div className="flex flex-wrap gap-2">
+                {[
+                  { key: 'Organic', label: t('products.dietary.organic') },
+                  { key: 'Vegan', label: t('products.dietary.vegan') },
+                  { key: 'Gluten-Free', label: t('products.dietary.gluten_free') },
+                ].map(({ key, label }) => (
+                  <button
+                    key={key}
+                    onClick={() => toggleDietaryFilter(key)}
+                    className={`px-4 py-2 rounded-full text-xs font-black uppercase tracking-widest border transition-all ${
+                      dietaryFilters.includes(key)
+                        ? 'bg-primary text-white border-primary shadow-lg'
+                        : 'bg-muted/20 text-muted-foreground border-border hover:border-primary/40 hover:text-primary'
+                    }`}
+                  >
+                    {label}
+                  </button>
+                ))}
+              </div>
+            </div>
           </aside>
 
           <div className="flex-1">
@@ -306,13 +375,30 @@ export function ProductsContent({ initialCategory }: ProductsContentProps = {}) 
                 <div className="absolute left-6 top-1/2 -translate-y-1/2 text-muted-foreground/60"><Search size={22} /></div>
                 <input type="text" placeholder={t('products.search.placeholder')} className="w-full bg-white border border-border/60 rounded-[1.5rem] py-5 pl-16 pr-16 focus:outline-none focus:ring-4 focus:ring-primary/5 focus:border-primary transition-all text-lg shadow-sm" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} />
                 {searchQuery && (
-                  <button 
+                  <button
                     onClick={() => setSearchQuery('')}
                     className="absolute right-6 top-1/2 -translate-y-1/2 p-2 text-muted-foreground hover:text-foreground transition-colors"
                   >
                     <X size={20} />
                   </button>
                 )}
+              </div>
+
+              {/* Added: sort dropdown */}
+              <div className="relative w-full md:w-64 shrink-0">
+                <select
+                  value={sortBy}
+                  onChange={(e) => setSortBy(e.target.value as typeof sortBy)}
+                  aria-label={t('products.sort.label')}
+                  className="w-full bg-white border border-border/60 rounded-[1.5rem] py-5 pl-6 pr-12 focus:outline-none focus:ring-4 focus:ring-primary/5 focus:border-primary transition-all text-sm font-bold uppercase tracking-wide shadow-sm appearance-none cursor-pointer"
+                >
+                  <option value="relevance">{t('products.sort.label')}: {t('products.sort.relevance')}</option>
+                  <option value="price_low">{t('products.sort.price_low')}</option>
+                  <option value="price_high">{t('products.sort.price_high')}</option>
+                  <option value="discount">{t('products.sort.discount')}</option>
+                  <option value="newest">{t('products.sort.newest')}</option>
+                </select>
+                <ChevronDown size={18} className="absolute right-6 top-1/2 -translate-y-1/2 text-muted-foreground/60 pointer-events-none" />
               </div>
             </div>
 

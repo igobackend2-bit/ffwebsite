@@ -41,6 +41,52 @@ export default function TermsOfService() {
             <h2 className="text-2xl font-black text-foreground uppercase tracking-tight mb-4">{t('terms.sunday.title')}</h2>
             <p>{t('terms.sunday.desc')}</p>
           </section>
+
+          {/* Added: Eligibility, Pricing, Orders, Payments, Cancellations, Liability, Governing Law, Changes, Contact */}
+          <section>
+            <h2 className="text-2xl font-black text-foreground uppercase tracking-tight mb-4">{t('terms.eligibility.title')}</h2>
+            <p>{t('terms.eligibility.desc')}</p>
+          </section>
+
+          <section>
+            <h2 className="text-2xl font-black text-foreground uppercase tracking-tight mb-4">{t('terms.pricing.title')}</h2>
+            <p>{t('terms.pricing.desc')}</p>
+          </section>
+
+          <section>
+            <h2 className="text-2xl font-black text-foreground uppercase tracking-tight mb-4">{t('terms.orders.title')}</h2>
+            <p>{t('terms.orders.desc')}</p>
+          </section>
+
+          <section>
+            <h2 className="text-2xl font-black text-foreground uppercase tracking-tight mb-4">{t('terms.payments.title')}</h2>
+            <p>{t('terms.payments.desc')}</p>
+          </section>
+
+          <section>
+            <h2 className="text-2xl font-black text-foreground uppercase tracking-tight mb-4">{t('terms.cancellations.title')}</h2>
+            <p>{t('terms.cancellations.desc')}</p>
+          </section>
+
+          <section>
+            <h2 className="text-2xl font-black text-foreground uppercase tracking-tight mb-4">{t('terms.liability.title')}</h2>
+            <p>{t('terms.liability.desc')}</p>
+          </section>
+
+          <section>
+            <h2 className="text-2xl font-black text-foreground uppercase tracking-tight mb-4">{t('terms.governing.title')}</h2>
+            <p>{t('terms.governing.desc')}</p>
+          </section>
+
+          <section>
+            <h2 className="text-2xl font-black text-foreground uppercase tracking-tight mb-4">{t('terms.changes.title')}</h2>
+            <p>{t('terms.changes.desc')}</p>
+          </section>
+
+          <section>
+            <h2 className="text-2xl font-black text-foreground uppercase tracking-tight mb-4">{t('terms.contact.title')}</h2>
+            <p>{t('terms.contact.desc')}</p>
+          </section>
         </div>
       </div>
       <Footer />

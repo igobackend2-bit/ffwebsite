@@ -306,6 +306,31 @@ I'm flagging this rather than silently reporting "301" so you have the accurate 
 
 **Sitemap, canonical tags, Open Graph URLs, structured data** — re-confirmed all consistently use the canonical form (`https://famersfactory.com`, no `www`, no trailing slash) across every page checked. No changes needed.
 
+## Round 11 — final live verification, post-deploy
+
+Both commits are confirmed deployed (self-hosted Docker/Traefik platform, auto-deploys via webhook on push — resolved the earlier hosting ambiguity). Re-checked everything against the actual live site:
+
+- **Homepage crawlability fix — confirmed working.** Raw server HTML fetch (158KB, up from 138KB pre-fix) now contains "Arjun", "Morning Harvest", "SPRINKLER", the "342" viewer count, and the brand-carousel content — all previously missing. I initially got a false alarm here from `document.body.innerText` reading empty for these sections (a framer-motion animation-state quirk in how that API reports off-screen content, not a real problem) — cross-checked with the actual computed layout (1077px real height, `display: block`) and the raw HTML fetch, both confirm the content is genuinely there.
+- **Image compression — confirmed live**, e.g. a brand logo now serves as `.webp` instead of `.jpg` on the production site.
+- **Footer About link — confirmed live**, correctly points to `/about`.
+- **www → non-www redirect — confirmed live and still working.**
+- **Custom 404 — confirmed still returns the branded not-found page** on a fresh nonexistent URL.
+- **HSTS header** — confirmed in the deployed `next.config.ts`; couldn't pull the literal live header value this session (a safety filter in my tooling blocked the header-reading request), but it's part of the same confirmed-deployed commit as everything else here, so there's no specific reason to doubt it.
+
+## Round 12 — final checklist verification against the live site (all 7 items)
+
+Went through your marketing team's exact 7-item list against `https://famersfactory.com` directly, live, right now:
+
+1. **Images WebP + descriptive filenames** — every image that's part of the codebase (banners, logos, brand cards, hero images, category tiles) is WebP with descriptive names, confirmed live. **One real, non-code exception found:** scanned all 54 images on the live homepage and found 9 that are still `.png`/`.jpg`/`.jfif` — these are product photos (Watermelon Kiran, Mango Banganapalli, Guava White, etc.) stored directly in your Supabase storage bucket, added by whoever manages the product catalog by pasting an image URL into the admin panel (`ProductMediaManager.tsx` — I checked, there's no file-upload/conversion step in this codebase at all, admins just paste a URL). These aren't files in the repo — I have no code to fix and no access to your Supabase storage to convert them myself. Not a code bug; it's a content/ops gap. Fix is either: re-upload those specific product photos as `.webp`, or if you want it automated for future uploads, that's a real feature to build (an upload endpoint that converts to WebP), not a quick fix.
+2. **Mobile readability** — re-verified live: zero horizontal overflow at 320/375/390/412/430px (checked all 5 again just now), and the hero slide-indicator tap-target fix (`aria-label="Go to slide N"`) is confirmed present on the live page.
+3. **Mobile-first indexing** — confirmed live: raw server HTML now includes the farm-stories and live-stream content that was previously missing.
+4. **Page speed** — confirmed live: every image on the homepage has an explicit `loading` attribute (checked all 54, zero gaps). Minification and compression evidence unchanged from Round 7. CDN presence still not determinable from response headers — still an infrastructure question, not a code one.
+5. **404 page** — confirmed live: still returns the branded not-found page on a fresh nonexistent URL.
+6. **HTTPS + SSL** — redirects confirmed live and working. Could not re-pull the literal HSTS header value this round (tooling limitation, a safety filter blocked the header-reading request) — it's part of the same confirmed-deployed commit as everything else that did check out live, so there's no specific reason to doubt it, just couldn't visually confirm the raw header text this time.
+7. **www/non-www + trailing-slash** — confirmed live and working (Round 11).
+
+**Bottom line: nothing new needs to be pushed.** Everything code-fixable from this audit is live and verified working. The one open item (9 Supabase-hosted product images) isn't something a code push can fix — it needs either manual re-upload of those specific images or a decision on whether to build an automated conversion step for future uploads.
+
 ## Outstanding — needs your input
 1. **Delete the 14 orphaned files** in `public/` (~38MB, zero code references — full list in Section 1)? I attempted this and the deletion was declined when the confirmation prompt appeared; say the word and I'll retry.
 2. **`next/image` migration** — the single biggest performance lever left, but it's a real refactor across 41 files. Want me to scope/implement it as its own task (starting with above-the-fold images only, as the June audit suggested)?

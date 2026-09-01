@@ -45,19 +45,23 @@ export default function AdminLayout({
 
   const fetchNotifications = React.useCallback(async () => {
     try {
-      // Admin notifications = Pending / Placed orders that need attention
+      // Admin notifications = Pending / Placed orders that need attention,
+      // plus (below) any product currently running low on stock — mirroring
+      // the app's persistent "Low Stock Alert!" card so it's visible from
+      // every admin page, not just the audio siren on /admin/inventory.
       const { data, error } = await supabase
         .from('orders')
         .select('*')
         .in('status', ['PENDING', 'PLACED', 'pending', 'placed'])
         .order('created_at', { ascending: false })
         .limit(10);
-      
-      if (!error && data) {
-        const lastCheckedStr = localStorage.getItem('ff_admin_notifs_checked_at');
-        const lastCheckedAt = lastCheckedStr ? new Date(lastCheckedStr).getTime() : 0;
 
-        const formatted = data.map(o => ({
+      const lastCheckedStr = localStorage.getItem('ff_admin_notifs_checked_at');
+      const lastCheckedAt = lastCheckedStr ? new Date(lastCheckedStr).getTime() : 0;
+
+      let formatted: any[] = [];
+      if (!error && data) {
+        formatted = data.map(o => ({
           id: o.id,
           title: `New Order Received`,
           message: `Order #${o.order_number || String(o.id).slice(0, 8)} for ₹${o.total_amount}`,
@@ -67,8 +71,42 @@ export default function AdminLayout({
           is_read: new Date(o.created_at).getTime() <= lastCheckedAt,
           created_at: o.created_at
         }));
-        setNotifications(formatted);
       }
+
+      // Low stock alerts — same < 20 threshold /admin/inventory uses. Best
+      // effort: if this query fails for any reason, order notifications
+      // above still render on their own.
+      try {
+        const { data: lowStock, error: lowStockErr } = await supabase
+          .from('products')
+          .select('id, name, stock, unit')
+          .lt('stock', 20)
+          .eq('is_active', true)
+          .order('stock', { ascending: true })
+          .limit(5);
+
+        if (!lowStockErr && lowStock) {
+          const lowStockItems = lowStock.map((p) => ({
+            id: `low-stock-${p.id}`,
+            title: 'Low Stock Alert!',
+            message: `${p.name} is down to ${p.stock} ${p.unit || 'units'} remaining.`,
+            time: 'Now',
+            type: 'low_stock',
+            href: '/admin/inventory',
+            // Low-stock alerts stay visible for as long as the condition is
+            // true (they simply stop appearing once restocked), so they're
+            // never marked read from the "last checked" timestamp the way
+            // one-off order alerts are.
+            is_read: false,
+            created_at: new Date().toISOString()
+          }));
+          formatted = [...lowStockItems, ...formatted];
+        }
+      } catch (e) {
+        console.warn('Low stock lookup skipped:', e);
+      }
+
+      setNotifications(formatted);
     } catch (e) {
       console.error('Error fetching admin notifications:', e);
     }
@@ -173,6 +211,7 @@ export default function AdminLayout({
     { name: 'Customers', icon: <Users size={20} />, href: '/admin/customers' },
     { name: 'Leads', icon: <UserPlus size={20} />, href: '/admin/leads' },
     { name: 'Inventory', icon: <Zap size={20} />, href: '/admin/inventory' },
+    { name: 'Notifications', icon: <Bell size={20} />, href: '/admin/notifications' },
     { name: 'Banners', icon: <ImageIcon size={20} />, href: '/admin/banners' },
     { name: 'Live Streams', icon: <Video size={20} />, href: '/admin/streams' },
     { name: 'Farm Stories', icon: <Sparkles size={20} />, href: '/admin/stories' },
@@ -276,7 +315,7 @@ export default function AdminLayout({
                         className="absolute right-0 mt-2 w-80 bg-white rounded-3xl border border-border shadow-2xl z-50 overflow-hidden"
                       >
                         <div className="p-5 border-b border-border flex items-center justify-between">
-                          <h3 className="font-black uppercase tracking-widest text-xs">Pending Orders</h3>
+                          <h3 className="font-black uppercase tracking-widest text-xs">Alerts</h3>
                         </div>
                         <div className="max-h-[400px] overflow-y-auto">
                           {notifications.length === 0 ? (

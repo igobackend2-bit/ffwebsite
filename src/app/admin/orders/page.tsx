@@ -56,6 +56,8 @@ function OrdersContent() {
   const [orderDetails, setOrderDetails] = useState<any[]>([]);
   const [isOrderModalOpen, setIsOrderModalOpen] = useState(false);
   const [updatingOrderId, setUpdatingOrderId] = useState<string | null>(null);
+  const [editingAmountId, setEditingAmountId] = useState<string | null>(null);
+  const [amountDraft, setAmountDraft] = useState('');
   const [showHarvestSummary, setShowHarvestSummary] = useState(false);
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -76,10 +78,31 @@ function OrdersContent() {
   async function fetchOrders() {
     try {
       setLoading(true);
-      const data = await getAllOrders();
-      setOrders(data);
+      // Fetch through the service-role API route instead of getAllOrders()'s
+      // direct client-side read. Direct reads depend on the logged-in
+      // admin's own profiles.role still being 'admin' in the shared ERP
+      // database, which has been reset before (see app/api/admin/orders and
+      // app/api/admin/customers route.ts comments) and silently makes every
+      // order invisible here ("NO ORDERS FOUND") even though the rows exist.
+      const res = await fetch('/api/admin/orders').then(r => r.json());
+      if (res?.error) {
+        console.error('Failed to fetch orders:', res.error);
+        // Fall back to the old direct-read path rather than showing nothing,
+        // in case the API route itself can't run (e.g. missing service-role
+        // env var in this deployment).
+        const data = await getAllOrders();
+        setOrders(data);
+      } else {
+        setOrders(res?.orders || []);
+      }
     } catch (error) {
       console.error('Failed to fetch orders:', error);
+      try {
+        const data = await getAllOrders();
+        setOrders(data);
+      } catch (fallbackError) {
+        console.error('Fallback fetch also failed:', fallbackError);
+      }
     } finally {
       setLoading(false);
     }
@@ -235,6 +258,60 @@ function OrdersContent() {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {
       console.error('[Admin] Unexpected error:', err);
+      import('react-hot-toast').then(({ toast }) => toast.error('Unexpected error. Check console.'));
+    } finally {
+      setUpdatingOrderId(null);
+    }
+  }
+
+  // Lets an admin correct an order's total (e.g. a partial refund, a
+  // manually-applied discount, a delivery-fee waiver) straight from the
+  // Orders list — click the ₹ amount, type a new one, Enter/blur to save.
+  async function handleAmountChange(orderId: string, newAmount: number) {
+    if (!Number.isFinite(newAmount) || newAmount < 0) {
+      import('react-hot-toast').then(({ toast }) => toast.error('Enter a valid amount'));
+      return;
+    }
+
+    const order = orders.find(o => o.id === orderId);
+    if (!order) return;
+    if (Number(order.total_amount) === newAmount) return; // no-op, nothing changed
+
+    setUpdatingOrderId(orderId);
+    try {
+      const { error } = await supabase
+        .from('orders')
+        .update({ total_amount: newAmount })
+        .eq('id', orderId);
+
+      if (error) {
+        console.error('[Admin] Order amount update failed:', error.message);
+        import('react-hot-toast').then(({ toast }) => toast.error(`Update failed: ${error.message}`));
+        return;
+      }
+
+      setOrders(prev => prev.map(o => o.id === orderId ? { ...o, total_amount: newAmount } : o));
+      import('react-hot-toast').then(({ toast }) => toast.success(`Order total updated to ₹${newAmount.toLocaleString()}`));
+
+      // Let the customer know via their existing notification bell — same
+      // `notifications` table Navbar.tsx already reads from, so this needs
+      // no new plumbing.
+      const orderNumber = order.order_number || String(order.id).slice(0, 8);
+      if (order.user_id) {
+        supabase.from('notifications').insert({
+          user_id: order.user_id,
+          title: `💳 Order Total Updated — #${orderNumber}`,
+          message: `Your order total for #${orderNumber} was updated to ₹${newAmount.toLocaleString()}.`,
+          type: 'order_status',
+          link: `/profile?tab=orders&order=${orderNumber}`,
+          is_read: false
+        }).then(({ error: notifError }) => {
+          if (notifError) console.warn('[Notification] Failed:', notifError.message);
+        });
+      }
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    } catch (err: any) {
+      console.error('[Admin] Unexpected error updating amount:', err);
       import('react-hot-toast').then(({ toast }) => toast.error('Unexpected error. Check console.'));
     } finally {
       setUpdatingOrderId(null);
@@ -488,7 +565,43 @@ function OrdersContent() {
                       </div>
                     </td>
                     <td className="px-8 py-6">
-                      <span className="text-lg font-black text-primary">₹{Number(order.total_amount).toLocaleString()}</span>
+                      {editingAmountId === order.id ? (
+                        <div className="flex items-center gap-1">
+                          <span className="font-black text-primary">₹</span>
+                          <input
+                            autoFocus
+                            type="number"
+                            min={0}
+                            className="w-24 px-2 py-1 rounded-lg border-2 border-primary/30 outline-none font-black text-primary bg-white"
+                            value={amountDraft}
+                            onChange={(e) => setAmountDraft(e.target.value)}
+                            onKeyDown={(e) => {
+                              if (e.key === 'Enter') {
+                                handleAmountChange(order.id, parseFloat(amountDraft) || 0);
+                                setEditingAmountId(null);
+                              } else if (e.key === 'Escape') {
+                                setEditingAmountId(null);
+                              }
+                            }}
+                            onBlur={() => {
+                              handleAmountChange(order.id, parseFloat(amountDraft) || 0);
+                              setEditingAmountId(null);
+                            }}
+                          />
+                        </div>
+                      ) : (
+                        <button
+                          type="button"
+                          title="Click to change the order total (e.g. for a partial refund or manual discount)"
+                          onClick={() => {
+                            setEditingAmountId(order.id);
+                            setAmountDraft(String(order.total_amount));
+                          }}
+                          className="text-lg font-black text-primary hover:underline decoration-dashed underline-offset-4"
+                        >
+                          ₹{Number(order.total_amount).toLocaleString()}
+                        </button>
+                      )}
                     </td>
                     <td className="px-8 py-6">
                       <div className="relative group/status">

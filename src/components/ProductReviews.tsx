@@ -9,12 +9,14 @@ import { toast } from 'react-hot-toast';
 
 interface Review {
   id: string;
+  user_id?: string;
   user_name: string;
   rating: number;
   comment: string;
   created_at: string;
   is_verified: boolean;
   likes: number;
+  status?: 'pending' | 'approved' | 'rejected';
 }
 
 interface ProductReviewsProps {
@@ -51,8 +53,14 @@ export default function ProductReviews({ productId }: ProductReviewsProps) {
     }
   }
 
-  const averageRating = reviews.length > 0 
-    ? (reviews.reduce((acc, r) => acc + r.rating, 0) / reviews.length).toFixed(1) 
+  // Only approved reviews count toward the public rating/stats shown to
+  // everyone. `reviews` itself also includes the signed-in user's own
+  // pending/rejected review (RLS returns those to their author only) so
+  // they get feedback on their submission below.
+  const publicReviews = reviews.filter(r => (r.status ?? 'approved') === 'approved');
+
+  const averageRating = publicReviews.length > 0
+    ? (publicReviews.reduce((acc, r) => acc + r.rating, 0) / publicReviews.length).toFixed(1)
     : '5.0';
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -72,14 +80,17 @@ export default function ProductReviews({ productId }: ProductReviewsProps) {
           user_name: user.user_metadata?.full_name || 'Valued Customer',
           rating: newReview.rating,
           comment: newReview.comment,
-          is_verified: true
+          is_verified: true,
+          status: 'pending'
         }])
         .select();
 
       if (error) throw error;
 
-      toast.success('Review shared with the community!');
-      setReviews(prev => [data[0], ...prev]);
+      toast.success('Review submitted! It will appear on the site once approved by our team.');
+      if (data && data[0]) {
+        setReviews(prev => [data[0], ...prev]);
+      }
       setNewReview({ rating: 5, comment: '' });
       setShowForm(false);
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -125,15 +136,15 @@ export default function ProductReviews({ productId }: ProductReviewsProps) {
                   <Star key={s} size={20} className={s <= Math.round(Number(averageRating)) ? 'fill-primary text-primary' : 'text-muted/40'} />
                 ))}
               </div>
-              <p className="text-sm font-bold text-muted-foreground uppercase tracking-widest">{reviews.length} Verified Reviews</p>
+              <p className="text-sm font-bold text-muted-foreground uppercase tracking-widest">{publicReviews.length} Verified Reviews</p>
             </div>
           </div>
         </div>
 
         <div className="flex-1 w-full space-y-3">
           {[5, 4, 3, 2, 1].map((rating) => {
-            const count = reviews.filter(r => r.rating === rating).length;
-            const percentage = reviews.length > 0 ? (count / reviews.length) * 100 : 0;
+            const count = publicReviews.filter(r => r.rating === rating).length;
+            const percentage = publicReviews.length > 0 ? (count / publicReviews.length) * 100 : 0;
             return (
               <div key={rating} className="flex items-center gap-4">
                 <span className="text-xs font-black text-muted-foreground w-4">{rating}</span>
@@ -231,10 +242,20 @@ export default function ProductReviews({ productId }: ProductReviewsProps) {
                   <div>
                     <div className="flex items-center gap-2 mb-0.5">
                       <h4 className="text-sm font-black text-foreground uppercase tracking-tight">{review.user_name}</h4>
-                      {review.is_verified && (
+                      {(review.status ?? 'approved') === 'approved' && review.is_verified && (
                         <div className="flex items-center gap-1 text-[8px] font-black bg-green-100 text-green-700 px-1.5 py-0.5 rounded uppercase tracking-tighter">
                           <CheckCircle size={8} />
                           Verified
+                        </div>
+                      )}
+                      {review.status === 'pending' && (
+                        <div className="flex items-center gap-1 text-[8px] font-black bg-amber-100 text-amber-700 px-1.5 py-0.5 rounded uppercase tracking-tighter">
+                          Pending Approval
+                        </div>
+                      )}
+                      {review.status === 'rejected' && (
+                        <div className="flex items-center gap-1 text-[8px] font-black bg-red-100 text-red-700 px-1.5 py-0.5 rounded uppercase tracking-tighter">
+                          Not Approved
                         </div>
                       )}
                     </div>

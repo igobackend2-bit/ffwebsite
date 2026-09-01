@@ -26,6 +26,10 @@ export default function AdminCustomersPage() {
   const [customerSavedAddresses, setCustomerSavedAddresses] = useState<any[]>([]);
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [customerCoupons, setCustomerCoupons] = useState<any[]>([]);
+  // Account security info (last sign-in / last password-reset email sent) —
+  // never the password itself, see app/api/admin/customers/route.ts.
+  const [customerSecurity, setCustomerSecurity] = useState<{ recovery_sent_at: string | null; last_sign_in_at: string | null } | null>(null);
+  const [sendingReset, setSendingReset] = useState(false);
   const [loadingDetails, setLoadingDetails] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
@@ -104,12 +108,41 @@ export default function AdminCustomersPage() {
       setCustomerOrders(res.orders || []);
       setCustomerSavedAddresses(res.addresses || []);
       setCustomerCoupons(res.coupons || []);
+      setCustomerSecurity(res.security || null);
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {
       console.error('Error fetching customer details:', err.message);
       toast.error('Failed to load complete customer profile');
     } finally {
       setLoadingDetails(false);
+    }
+  };
+
+  // Sends Supabase's own "reset your password" email to this customer —
+  // support can help a locked-out customer without ever seeing or storing
+  // a password. See app/api/admin/customers/route.ts (POST) for why this
+  // is the safe alternative to showing a real password.
+  const handleSendPasswordReset = async () => {
+    if (!selectedCustomer?.email) {
+      toast.error('This customer has no email on file');
+      return;
+    }
+    setSendingReset(true);
+    try {
+      const res = await fetch('/api/admin/customers', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'send_password_reset', email: selectedCustomer.email }),
+      }).then((r) => r.json());
+      if (res.error) throw new Error(res.error);
+      toast.success(`Reset email sent to ${selectedCustomer.email}`);
+      setCustomerSecurity((prev) => ({ ...prev, recovery_sent_at: new Date().toISOString(), last_sign_in_at: prev?.last_sign_in_at || null }));
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    } catch (err: any) {
+      console.error('Error sending password reset:', err.message);
+      toast.error('Failed to send reset email');
+    } finally {
+      setSendingReset(false);
     }
   };
 
@@ -437,6 +470,38 @@ export default function AdminCustomersPage() {
                             Adjust Balance
                           </button>
                         </div>
+                      </div>
+
+                      {/* Account Security — never shows a password (Supabase
+                          only ever stores a one-way hash, unreadable by
+                          anyone including admins); just activity timestamps
+                          plus a way to help a locked-out customer safely. */}
+                      <div className="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm space-y-4">
+                        <h4 className="text-xs font-black uppercase tracking-widest text-primary border-b border-slate-100 pb-3 flex items-center gap-2">
+                          <Shield size={14} /> Account Security
+                        </h4>
+                        <div className="space-y-3">
+                          <div className="flex items-center justify-between text-xs font-medium">
+                            <span className="font-bold text-slate-400">Last Signed In:</span>
+                            <span className="font-black text-slate-800">
+                              {customerSecurity?.last_sign_in_at ? new Date(customerSecurity.last_sign_in_at).toLocaleDateString() : 'Never'}
+                            </span>
+                          </div>
+                          <div className="flex items-center justify-between text-xs font-medium">
+                            <span className="font-bold text-slate-400">Password Reset Requested:</span>
+                            <span className="font-black text-slate-800">
+                              {customerSecurity?.recovery_sent_at ? new Date(customerSecurity.recovery_sent_at).toLocaleDateString() : 'Never'}
+                            </span>
+                          </div>
+                        </div>
+                        <button
+                          onClick={handleSendPasswordReset}
+                          disabled={sendingReset}
+                          className="w-full py-2 bg-slate-800 text-white rounded-xl text-xs font-black uppercase tracking-widest hover:bg-slate-900 transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+                        >
+                          {sendingReset ? <Loader2 size={14} className="animate-spin" /> : <Shield size={14} />}
+                          {sendingReset ? 'Sending...' : 'Send Password Reset Email'}
+                        </button>
                       </div>
 
                       {/* Saved Addresses */}

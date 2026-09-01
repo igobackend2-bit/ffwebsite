@@ -110,11 +110,21 @@ function ProductsContent() {
             category_slug = 'trad';
           }
 
+          // MRP: an optional "MRP"/"mrp" column lets a bulk sheet set a real
+          // was-price for the discount sort; when the sheet has none, mrp
+          // falls back to price exactly as before (0% discount, unchanged).
+          // (Dietary tags are deliberately NOT set from bulk upload — that
+          // column only exists once ADD_PRODUCT_DIETARY_AND_DISCOUNT.sql has
+          // been run, and a bad column reference here would fail every row
+          // in the sheet at once rather than just one product.)
+          const rowPrice = parseFloat(item.Price || item.price || '0');
+          const rowMrp = item.MRP || item.mrp;
+
           const dbProduct = {
             name,
             description: item.Description || item.description || '',
-            price: parseFloat(item.Price || item.price || '0'),
-            mrp: parseFloat(item.Price || item.price || '0'),
+            price: rowPrice,
+            mrp: rowMrp ? parseFloat(rowMrp) : rowPrice,
             unit: item.Unit || item.unit || 'kg',
             stock: parseInt(item.Stock || item.stock || '100'),
             is_featured: !!(item.Seasonal || item.is_seasonal),
@@ -153,6 +163,8 @@ function ProductsContent() {
     name: '',
     category: 'Vegetables',
     price: '',
+    mrp: '',
+    dietary_tags: [] as string[],
     description: '',
     unit: 'kg',
     image_url: '',
@@ -180,6 +192,8 @@ function ProductsContent() {
     name: '',
     category: 'Vegetables',
     price: '',
+    mrp: '',
+    dietary_tags: [] as string[],
     description: '',
     unit: 'kg',
     image_url: '',
@@ -431,6 +445,11 @@ function ProductsContent() {
       name: product.name || '',
       category: product.category || 'Vegetables',
       price: (product.price || 0).toString(),
+      // Only show a real MRP if it differs from price — most existing rows
+      // have mrp silently mirroring price (see save logic below), so those
+      // display as an empty "no discount set" field rather than a fake ₹0 gap.
+      mrp: product.mrp && Number(product.mrp) !== Number(product.price) ? product.mrp.toString() : '',
+      dietary_tags: Array.isArray(product.dietary_tags) ? product.dietary_tags : [],
       description: product.description || '',
       unit: product.unit || 'kg',
       image_url: product.image_url || '',
@@ -506,7 +525,10 @@ function ProductsContent() {
         name: editFormData.name,
         description: editFormData.description,
         price: parseFloat(editFormData.price),
-        mrp: parseFloat(editFormData.price),
+        // A blank MRP field means "no discount" — mirror price exactly as
+        // this save always did before the MRP field existed.
+        mrp: editFormData.mrp ? parseFloat(editFormData.mrp) : parseFloat(editFormData.price),
+        dietary_tags: editFormData.dietary_tags,
         unit: editFormData.unit,
         stock: editFormData.stock,
         is_seasonal: editFormData.is_seasonal,
@@ -547,10 +569,30 @@ function ProductsContent() {
           .single();
       }
 
-      const { data, error } = response;
-      
+      let { data, error } = response;
+
+      // dietary_tags only exists once ADD_PRODUCT_DIETARY_AND_DISCOUNT.sql has
+      // been run in Supabase. If it hasn't, retry the same save without that
+      // one field rather than losing every other edit (price, stock, etc.)
+      // on the missing column.
+      let tagsColumnMissing = false;
+      if (error?.message?.includes('dietary_tags')) {
+        tagsColumnMissing = true;
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        const { dietary_tags: _omit, ...dbUpdateNoTags } = dbUpdate;
+        const retry = isUUID
+          ? await updateProduct(editingProduct.id, dbUpdateNoTags)
+          : await supabase.from('products').upsert({ ...dbUpdateNoTags, in_stock: true, is_active: true }, { onConflict: 'name' }).select().single();
+        data = retry.data;
+        error = retry.error;
+      }
+
       if (!error && data) {
-        toast.success('Product updated successfully!');
+        if (tagsColumnMissing) {
+          toast.error('Saved, but Dietary Tags need a one-time database update first — see ADD_PRODUCT_DIETARY_AND_DISCOUNT.sql.', { duration: 6000 });
+        } else {
+          toast.success('Product updated successfully!');
+        }
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         setProducts((prev: any[]) => prev.map((p: any) => p.id === editingProduct.id ? data : p));
         setIsAddModalOpen(false);
@@ -580,7 +622,10 @@ function ProductsContent() {
         name: newProduct.name,
         description: newProduct.description,
         price: parseFloat(newProduct.price),
-        mrp: parseFloat(newProduct.price),
+        // A blank MRP field means "no discount" — mirror price exactly as
+        // this save always did before the MRP field existed.
+        mrp: newProduct.mrp ? parseFloat(newProduct.mrp) : parseFloat(newProduct.price),
+        dietary_tags: newProduct.dietary_tags,
         unit: newProduct.unit,
         stock: newProduct.stock,
         is_seasonal: newProduct.is_seasonal,
@@ -602,14 +647,30 @@ function ProductsContent() {
         updated_at: new Date().toISOString()
       };
 
-      const { data, error } = await supabase
+      let { data, error } = await supabase
         .from('products')
         .insert([dbInsert])
         .select()
         .single();
 
+      // Same fallback as the edit path above: dietary_tags only exists once
+      // ADD_PRODUCT_DIETARY_AND_DISCOUNT.sql has been run in Supabase.
+      let tagsColumnMissing = false;
+      if (error?.message?.includes('dietary_tags')) {
+        tagsColumnMissing = true;
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        const { dietary_tags: _omit, ...dbInsertNoTags } = dbInsert;
+        const retry = await supabase.from('products').insert([dbInsertNoTags]).select().single();
+        data = retry.data;
+        error = retry.error;
+      }
+
       if (!error && data) {
-        toast.success('Product added successfully!');
+        if (tagsColumnMissing) {
+          toast.error('Added, but Dietary Tags need a one-time database update first — see ADD_PRODUCT_DIETARY_AND_DISCOUNT.sql.', { duration: 6000 });
+        } else {
+          toast.success('Product added successfully!');
+        }
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         setProducts((prev: any[]) => [data, ...prev]);
         setIsAddModalOpen(false);
@@ -617,6 +678,8 @@ function ProductsContent() {
           name: '',
           category: 'Vegetables',
           price: '',
+          mrp: '',
+          dietary_tags: [],
           description: '',
           unit: 'kg',
           image_url: '',
@@ -1406,6 +1469,23 @@ function ProductsContent() {
                       </div>
                     </div>
                     <div className="space-y-3">
+                      <label className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 ml-1">
+                        MRP / Was Price (₹) <span className="text-primary/70 normal-case">— optional, for a discount badge</span>
+                      </label>
+                      <div className="relative">
+                        <span className="absolute left-6 top-1/2 -translate-y-1/2 font-black text-slate-300 text-lg">₹</span>
+                        <input
+                          type="number"
+                          className="w-full pl-12 pr-6 py-4 rounded-2xl border-2 border-slate-100 focus:border-primary/30 focus:ring-4 focus:ring-primary/5 outline-none font-black transition-all text-lg"
+                          placeholder="Leave blank for no discount"
+                          value={editingProduct ? editFormData.mrp : newProduct.mrp}
+                          onChange={(e) => editingProduct
+                            ? setEditFormData({...editFormData, mrp: e.target.value})
+                            : setNewProduct({...newProduct, mrp: e.target.value})}
+                        />
+                      </div>
+                    </div>
+                    <div className="space-y-3">
                       <label className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 ml-1">Selling Unit</label>
                       {(() => {
                         const currentCategory = editingProduct ? editFormData.category : newProduct.category;
@@ -1500,6 +1580,35 @@ function ProductsContent() {
                         />
                         <span className="font-bold text-slate-700">Mark as Seasonal Product</span>
                       </label>
+                    </div>
+                    <div className="space-y-3">
+                      <label className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 ml-1">
+                        Dietary Tags <span className="text-primary/70 normal-case">— powers the storefront filters</span>
+                      </label>
+                      <div className="flex flex-wrap gap-2">
+                        {['Organic', 'Vegan', 'Gluten-Free'].map((tag) => {
+                          const current = editingProduct ? editFormData.dietary_tags : newProduct.dietary_tags;
+                          const active = current.includes(tag);
+                          return (
+                            <button
+                              key={tag}
+                              type="button"
+                              onClick={() => {
+                                const next = active ? current.filter((t) => t !== tag) : [...current, tag];
+                                if (editingProduct) setEditFormData({...editFormData, dietary_tags: next});
+                                else setNewProduct({...newProduct, dietary_tags: next});
+                              }}
+                              className={`px-4 py-2 rounded-full text-xs font-black uppercase tracking-wider border-2 transition-all ${
+                                active
+                                  ? 'bg-primary text-white border-primary'
+                                  : 'bg-slate-50 text-slate-500 border-slate-100 hover:border-primary/30'
+                              }`}
+                            >
+                              {tag}
+                            </button>
+                          );
+                        })}
+                      </div>
                     </div>
                     <div className="md:col-span-2 space-y-3">
                       <label className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 ml-1">Product Promo Video (URL or Local Upload)</label>

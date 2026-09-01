@@ -47,8 +47,15 @@ export async function GET(req: Request) {
       if (ordersRes.error) {
         return NextResponse.json({ error: ordersRes.error.message }, { status: 500 });
       }
+      // The "addresses" table doesn't exist in this project's schema (no
+      // migration ever creates it -- delivery addresses are actually stored
+      // inline on each order's delivery_address field instead). Previously
+      // this missing table's error aborted the ENTIRE customer lookup,
+      // wiping out real orders/coupons/LTV data along with it and showing
+      // "Failed to load complete customer profile" even when the customer's
+      // order history existed. Treat it as "no saved addresses" instead.
       if (addressesRes.error) {
-        return NextResponse.json({ error: addressesRes.error.message }, { status: 500 });
+        console.warn('[admin/customers] addresses lookup skipped (table not present):', addressesRes.error.message);
       }
 
       const orders = ordersRes.data || [];
@@ -63,7 +70,26 @@ export async function GET(req: Request) {
         coupons = couponsData || [];
       }
 
-      return NextResponse.json({ orders, addresses: addressesRes.data || [], coupons });
+      // Account security info for the CRM panel — NEVER the password itself
+      // (Supabase only ever stores a one-way hash of it, so it can't be
+      // read back by anyone, admin included). Only the last time a reset
+      // email was sent and the last sign-in time, both plain metadata
+      // auth.users already tracks. Best effort: a failure here just means
+      // the security card shows nothing, not that the whole lookup fails.
+      let security: { recovery_sent_at: string | null; last_sign_in_at: string | null } | null = null;
+      try {
+        const { data: authUser, error: authErr } = await supabase.auth.admin.getUserById(customerId);
+        if (!authErr && authUser?.user) {
+          security = {
+            recovery_sent_at: authUser.user.recovery_sent_at || null,
+            last_sign_in_at: authUser.user.last_sign_in_at || null,
+          };
+        }
+      } catch (e) {
+        console.warn('[admin/customers] auth security lookup skipped:', e);
+      }
+
+      return NextResponse.json({ orders, addresses: addressesRes.data || [], coupons, security });
     }
 
     const { data, error } = await supabase
@@ -76,6 +102,98 @@ export async function GET(req: Request) {
     }
 
     return NextResponse.json({ profiles: data || [] });
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  } catch (error: any) {
+    return NextResponse.json({ error: error.message }, { status: 500 });
+  }
+}
+
+// POST /api/admin/customers — { action: 'send_password_reset', email }
+// Lets support trigger a password-reset email on a customer's behalf. This
+// never reveals or stores a password — it only sends the customer a secure
+// link to /auth/reset-password (an existing page that already handles
+// updating the password once a valid recovery link is opened).
+//
+// IMPORTANT: this deliberately does NOT use supabase.auth.resetPasswordForEmail(),
+// which sends the email through Supabase Auth's own built-in mailer. This
+// project has never configured that mailer — every other transactional
+// email (order confirmations, status updates, etc.) already goes through
+// this project's own working SMTP pipeline at /api/send-email instead,
+// which is why customers were never actually receiving the reset email
+// even though this endpoint reported success. Fix: generate the recovery
+// link ourselves (generateLink sends nothing, it just returns the link),
+// then deliver it through the same /api/send-email route everything else
+// already uses successfully.
+export async function POST(req: Request) {
+  try {
+    const supabase = getAdminClient();
+    if (!supabase) {
+      return NextResponse.json({ error: 'Server is missing Supabase service-role configuration' }, { status: 500 });
+    }
+
+    const { action, email } = await req.json();
+
+    if (action !== 'send_password_reset') {
+      return NextResponse.json({ error: 'Unsupported action' }, { status: 400 });
+    }
+    if (!email) {
+      return NextResponse.json({ error: 'Missing email' }, { status: 400 });
+    }
+
+    // Same origin this request came in on (works on localhost during
+    // development and on whichever domain serves production, without
+    // needing a hardcoded/possibly-stale site URL).
+    const origin = new URL(req.url).origin;
+
+    const { data: linkData, error: linkError } = await supabase.auth.admin.generateLink({
+      type: 'recovery',
+      email,
+      options: { redirectTo: `${origin}/auth/reset-password` },
+    });
+
+    if (linkError) {
+      return NextResponse.json({ error: linkError.message }, { status: 500 });
+    }
+
+    const resetLink = linkData?.properties?.action_link;
+    if (!resetLink) {
+      return NextResponse.json({ error: 'Could not generate a reset link for this email' }, { status: 500 });
+    }
+
+    // Best-effort friendly name for the email greeting — never blocks sending.
+    let customerName = '';
+    try {
+      const userId = linkData?.user?.id;
+      if (userId) {
+        const { data: profile } = await supabase.from('profiles').select('full_name').eq('id', userId).single();
+        customerName = profile?.full_name || '';
+      }
+    } catch (e) {
+      console.warn('[admin/customers] name lookup for reset email skipped:', e);
+    }
+
+    const emailRes = await fetch(`${origin}/api/send-email`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        to: email,
+        subject: 'Reset Your Password — Farmers Factory',
+        template: 'password_reset',
+        data: { resetLink, customerName },
+      }),
+    }).then((r) => r.json());
+
+    if (emailRes?.error) {
+      return NextResponse.json({ error: `Link generated but email failed to send: ${emailRes.error}` }, { status: 500 });
+    }
+    if (emailRes?.skipped) {
+      // /api/send-email returns this when SMTP_HOST/SMTP_USER/SMTP_PASS
+      // aren't set on the server — surfacing it here (rather than a false
+      // "success") is exactly the bug this whole fix addresses.
+      return NextResponse.json({ error: 'Email server is not configured (SMTP_HOST/SMTP_USER/SMTP_PASS missing) — the reset link was generated but nothing was sent.' }, { status: 500 });
+    }
+
+    return NextResponse.json({ success: true });
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (error: any) {
     return NextResponse.json({ error: error.message }, { status: 500 });

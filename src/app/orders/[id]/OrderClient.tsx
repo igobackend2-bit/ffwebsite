@@ -79,7 +79,11 @@ export default function OrderClient() {
   }, [id]);
 
   const copyOrderId = () => {
-    navigator.clipboard.writeText(`FF-${id.slice(0, 8).toUpperCase()}`);
+    // Use the real order_number saved at checkout (matches what admin shows)
+    // instead of always fabricating one from the raw UUID — otherwise this
+    // page shows customers a different-looking order number than admin does
+    // for the exact same order, which reads as "my order is missing".
+    navigator.clipboard.writeText(order?.order_number || `FF-${id.slice(0, 8).toUpperCase()}`);
     setCopied(true);
     toast.success('Order ID copied!');
     setTimeout(() => setCopied(false), 2000);
@@ -131,7 +135,7 @@ export default function OrderClient() {
               </div>
 
               <h1 className="text-5xl md:text-7xl font-black tracking-tighter mb-4">
-                {t('orders.title').split(' ')[1] || 'Order'} <span className="text-primary font-mono tracking-normal ml-2">#FF-{id.slice(0, 8).toUpperCase()}</span>
+                {t('orders.title').split(' ')[1] || 'Order'} <span className="text-primary font-mono tracking-normal ml-2">#{order.order_number || `FF-${id.slice(0, 8).toUpperCase()}`}</span>
               </h1>
 
               <div className="flex items-center gap-6 mt-8">
