@@ -97,3 +97,69 @@ export async function GET() {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }
+
+// PATCH /api/admin/orders — { id, status? , total_amount? }
+//
+// Why this exists: admin/orders/page.tsx's handleStatusChange() and
+// handleAmountChange() were writing straight to the `orders` table with the
+// plain client-side supabase client (`.update(...).eq('id', orderId)`,
+// no `.select()`). Under Postgres RLS, an UPDATE whose USING clause the
+// current session fails to satisfy for a given row simply updates 0 rows —
+// it is NOT reported as an error unless the caller chains `.select()`.
+// This is exactly what "admin marks an order Shipped, sees a success toast,
+// but the status reverts to Pending on reload" looks like: the write never
+// actually landed, silently, because the logged-in admin's own
+// profiles.role check (see the GET handler above and
+// app/api/admin/customers/route.ts) failed for the write just like it did
+// for reads before that was fixed. Routing writes through the service-role
+// key here — the same bypass already used for reads — makes them land for
+// real, and this handler returns the updated row so the caller can confirm
+// it actually changed.
+export async function PATCH(req: Request) {
+  try {
+    const supabase = getAdminClient();
+    if (!supabase) {
+      return NextResponse.json({ error: 'Server is missing Supabase service-role configuration' }, { status: 500 });
+    }
+
+    const { id, status, total_amount } = await req.json();
+    if (!id) {
+      return NextResponse.json({ error: 'Missing id' }, { status: 400 });
+    }
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const updates: Record<string, any> = {};
+    if (status !== undefined) updates.status = status;
+    if (total_amount !== undefined) {
+      const n = Number(total_amount);
+      if (!Number.isFinite(n) || n < 0) {
+        return NextResponse.json({ error: 'Invalid total_amount' }, { status: 400 });
+      }
+      updates.total_amount = n;
+    }
+    if (Object.keys(updates).length === 0) {
+      return NextResponse.json({ error: 'Nothing to update — provide status and/or total_amount' }, { status: 400 });
+    }
+
+    const { data, error } = await supabase
+      .from('orders')
+      .update(updates)
+      .eq('id', id)
+      .select()
+      .single();
+
+    if (error) {
+      return NextResponse.json({ error: error.message }, { status: 500 });
+    }
+    if (!data) {
+      // With the service-role key this should never happen (it bypasses
+      // RLS), but guard anyway rather than silently reporting success.
+      return NextResponse.json({ error: 'Order not found or update did not apply' }, { status: 404 });
+    }
+
+    return NextResponse.json({ success: true, order: data });
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  } catch (error: any) {
+    return NextResponse.json({ error: error.message }, { status: 500 });
+  }
+}

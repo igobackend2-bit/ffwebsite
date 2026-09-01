@@ -147,16 +147,23 @@ function OrdersContent() {
     const dbStatus = dbStatusMap[newStatus] || newStatus.toUpperCase();
 
     try {
-      // Direct Supabase update
-      const { error } = await supabase
-        .from('orders')
-        .update({ status: dbStatus })
-        .eq('id', orderId);
+      // Write through the service-role API route instead of a direct
+      // client-side update. A direct .update(...).eq('id', orderId) with no
+      // .select() silently updates 0 rows (no error reported) whenever RLS
+      // blocks the write for the logged-in admin's session — which looks
+      // exactly like "I marked it Shipped, saw a success toast, but it's
+      // back to Pending after reload." See app/api/admin/orders/route.ts
+      // (PATCH) for the full explanation.
+      const patchRes = await fetch('/api/admin/orders', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: orderId, status: dbStatus }),
+      }).then(r => r.json());
 
-      if (error) {
-        console.error('[Admin] DB update failed:', error.message, '| Status:', dbStatus);
+      if (patchRes?.error) {
+        console.error('[Admin] DB update failed:', patchRes.error, '| Status:', dbStatus);
         import('react-hot-toast').then(({ toast }) =>
-          toast.error(`Update failed: ${error.message}`)
+          toast.error(`Update failed: ${patchRes.error}`)
         );
         return;
       }
@@ -279,14 +286,18 @@ function OrdersContent() {
 
     setUpdatingOrderId(orderId);
     try {
-      const { error } = await supabase
-        .from('orders')
-        .update({ total_amount: newAmount })
-        .eq('id', orderId);
+      // Same service-role write path as handleStatusChange, for the same
+      // reason: a direct .update() with no .select() can silently affect 0
+      // rows under RLS instead of reporting an error.
+      const patchRes = await fetch('/api/admin/orders', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: orderId, total_amount: newAmount }),
+      }).then(r => r.json());
 
-      if (error) {
-        console.error('[Admin] Order amount update failed:', error.message);
-        import('react-hot-toast').then(({ toast }) => toast.error(`Update failed: ${error.message}`));
+      if (patchRes?.error) {
+        console.error('[Admin] Order amount update failed:', patchRes.error);
+        import('react-hot-toast').then(({ toast }) => toast.error(`Update failed: ${patchRes.error}`));
         return;
       }
 
