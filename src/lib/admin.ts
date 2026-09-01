@@ -29,7 +29,35 @@ export async function updateAdminPassword(newPassword: string) {
   const { error } = await supabase
     .from('site_settings')
     .upsert({ key: 'admin_password', value: newPassword });
-  
+
+  return { success: !error, error };
+}
+
+// Minimum cart subtotal (₹) required before a customer can place an order —
+// same site_settings key/value pattern as the admin password above, so
+// admin can lower it (e.g. from ₹600 to ₹100/200/300) without a code
+// change. checkout/page.tsx reads this instead of a hardcoded constant;
+// falls back to the original ₹600 default if the setting was never saved.
+export async function getMinOrderValue() {
+  const { data, error } = await supabase
+    .from('site_settings')
+    .select('value')
+    .eq('key', 'min_order_value')
+    .single();
+
+  if (error || !data) return 600; // Fallback: original hardcoded minimum
+  const n = Number(data.value);
+  return Number.isFinite(n) && n >= 0 ? n : 600;
+}
+
+export async function updateMinOrderValue(newValue: number) {
+  if (!Number.isFinite(newValue) || newValue < 0) {
+    return { success: false, error: new Error('Invalid minimum order value') };
+  }
+  const { error } = await supabase
+    .from('site_settings')
+    .upsert({ key: 'min_order_value', value: String(newValue) });
+
   return { success: !error, error };
 }
 

@@ -11,6 +11,7 @@ import { useAuth } from '@/context/AuthContext';
 import { useCart } from '@/context/CartContext';
 import { useTranslation } from '@/context/TranslationContext';
 import { getEffectiveLineTotal, getEffectiveUnitPrice } from '@/lib/pricing';
+import { getMinOrderValue } from '@/lib/admin';
 
 export default function Checkout() {
   const { t } = useTranslation();
@@ -21,6 +22,14 @@ export default function Checkout() {
   } = useCart();
   const [loading, setLoading] = useState(false);
   const router = useRouter();
+
+  // Admin-configurable minimum order value (Admin > Settings). Starts at
+  // the original ₹600 default so nothing changes until an admin actually
+  // saves a different value, then loads the real setting.
+  const [minOrderValue, setMinOrderValue] = useState(600);
+  useEffect(() => {
+    getMinOrderValue().then(setMinOrderValue).catch(() => {});
+  }, []);
 
   // Real "reached checkout" count for the admin Conversion Funnel widget —
   // fires once per visit to this page, replacing the old fragile proxy of
@@ -141,8 +150,10 @@ export default function Checkout() {
   const deliveryFee = subtotal > 0 && subtotal < FREE_DELIVERY_THRESHOLD ? DELIVERY_FEE : 0;
   const total = Math.max(0, subtotal - discount) + deliveryFee;
 
-  // Minimum order value: customers can only place an order once their cart subtotal is ₹600 or more.
-  const MIN_ORDER_VALUE = 600;
+  // Minimum order value: customers can only place an order once their cart
+  // subtotal reaches this amount. Admin-configurable via Admin > Settings
+  // (see minOrderValue state above); defaults to ₹600 if never set.
+  const MIN_ORDER_VALUE = minOrderValue;
   const isBelowMinOrder = subtotal < MIN_ORDER_VALUE;
   const amountToReachMin = MIN_ORDER_VALUE - subtotal;
 

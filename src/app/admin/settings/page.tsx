@@ -16,7 +16,7 @@ import {
 import { useState, useEffect } from 'react';
 import { toast } from 'react-hot-toast';
 import { AnimatePresence, motion } from 'framer-motion';
-import { updateAdminPassword } from '@/lib/admin';
+import { updateAdminPassword, getMinOrderValue, updateMinOrderValue } from '@/lib/admin';
 import { supabase } from '@/lib/supabase';
 import { uploadProductMedia } from '@/lib/storage';
 
@@ -48,6 +48,35 @@ export default function AdminSettings() {
     }
     setSavingPassword(false);
   };
+
+  // ── Minimum order value ─────────────────────────────────────────────────
+  // Customers currently can't check out below this cart subtotal (checkout
+  // enforces it). Editable here instead of the ₹600 that used to be
+  // hardcoded, so it can be lowered to ₹100/200/300 etc. without a code
+  // change. See lib/admin.ts getMinOrderValue()/updateMinOrderValue().
+  const [minOrderValue, setMinOrderValue] = useState('600');
+  const [savingMinOrder, setSavingMinOrder] = useState(false);
+
+  useEffect(() => {
+    getMinOrderValue().then(v => setMinOrderValue(String(v)));
+  }, []);
+
+  async function handleSaveMinOrder() {
+    const n = parseFloat(minOrderValue);
+    if (!Number.isFinite(n) || n < 0) {
+      toast.error('Enter a valid minimum order value');
+      return;
+    }
+    setSavingMinOrder(true);
+    const { success, error } = await updateMinOrderValue(n);
+    if (success) {
+      toast.success(`Minimum order value set to ₹${n}`);
+    } else {
+      toast.error('Failed to save. Make sure the site_settings table exists.');
+      console.error('[Admin] Failed to save min order value:', error);
+    }
+    setSavingMinOrder(false);
+  }
 
   // ── Homepage category images (Vegetables / Fruits / Valluvam) ──────────────
   const CAT_KEYS = {
@@ -207,6 +236,39 @@ export default function AdminSettings() {
             </button>
             <button className="w-full text-left p-4 bg-muted/30 rounded-2xl font-bold hover:bg-muted/50 transition-all">
               Manage API Keys
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* Checkout Rules — minimum order value customers must reach to place an order */}
+      <div className="bg-white rounded-[2.5rem] border border-border shadow-sm overflow-hidden">
+        <div className="p-8 border-b border-border">
+          <div className="flex items-center gap-3 mb-1">
+            <CreditCard className="text-primary" size={24} />
+            <h3 className="text-xl font-black uppercase tracking-tight">Checkout Rules</h3>
+          </div>
+          <p className="text-sm text-muted-foreground font-medium">Set the minimum cart value a customer must reach before they can place an order. Currently applies at checkout.</p>
+        </div>
+        <div className="p-8">
+          <div className="flex flex-col sm:flex-row sm:items-end gap-4 max-w-md">
+            <div className="flex-1 space-y-2">
+              <label className="text-xs font-black uppercase tracking-widest text-muted-foreground ml-1">Minimum Order Value (₹)</label>
+              <input
+                type="number"
+                min="0"
+                value={minOrderValue}
+                onChange={e => setMinOrderValue(e.target.value)}
+                placeholder="600"
+                className="w-full px-5 py-4 rounded-2xl border border-border focus:ring-2 focus:ring-primary/20 outline-none font-bold"
+              />
+            </div>
+            <button
+              onClick={handleSaveMinOrder}
+              disabled={savingMinOrder}
+              className="bg-primary text-white px-8 py-4 rounded-2xl font-black uppercase tracking-widest flex items-center justify-center gap-2 hover:shadow-xl transition-all disabled:opacity-50 whitespace-nowrap"
+            >
+              {savingMinOrder ? <Loader2 size={18} className="animate-spin" /> : <Save size={18} />} Save
             </button>
           </div>
         </div>
