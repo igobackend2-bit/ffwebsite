@@ -225,7 +225,10 @@ export default function OrderDetailModal({ order, isOpen, onClose }: OrderDetail
   }
 
   const copyOrderId = () => {
-    navigator.clipboard.writeText(generateOrderNumber(order?.id || ''));
+    // Prefer the real order_number saved at checkout (matches admin) over
+    // the always-fabricated UUID-based fallback.
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    navigator.clipboard.writeText((order as any)?.order_number || generateOrderNumber(order?.id || ''));
     setCopied(true);
     toast.success('Order ID copied!');
     setTimeout(() => setCopied(false), 2000);
@@ -303,7 +306,8 @@ export default function OrderDetailModal({ order, isOpen, onClose }: OrderDetail
                   <div className="flex items-center bg-white/10 backdrop-blur-md rounded-xl overflow-hidden border border-white/10">
                     <div className="px-4 py-2 border-r border-white/10">
                       <span className="text-[8px] font-black uppercase tracking-widest text-white/40 block mb-0.5">Order Number</span>
-                      <span className="font-mono text-xs font-bold tracking-widest text-white/95">{generateOrderNumber(order.id)}</span>
+                      {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
+                      <span className="font-mono text-xs font-bold tracking-widest text-white/95">{(order as any).order_number || generateOrderNumber(order.id)}</span>
                     </div>
                     <button
                       onClick={copyOrderId}

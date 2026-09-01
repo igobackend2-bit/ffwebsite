@@ -127,6 +127,21 @@ function ProfileContent() {
         // eslint-disable-next-line react-hooks/set-state-in-effect
         setSelectedOrder(order);
         setIsOrderModalOpen(true);
+
+        // This page's `orders` list is only fetched once (on load/user
+        // change), not live. Clicking a notification link like
+        // "?order=..." doesn't remount the page — it's an in-app
+        // navigation — so without this, the invoice can show a stale
+        // status (e.g. still "Pending" after admin already marked it
+        // Processing). Re-fetch just this one order in the background so
+        // the modal reflects its real current status.
+        // eslint-disable-next-line react-hooks/immutability
+        supabase.from('orders').select('*').eq('id', order.id).single().then(({ data: fresh, error }) => {
+          if (!error && fresh) {
+            setSelectedOrder((prev: any) => (prev && prev.id === fresh.id ? { ...prev, ...fresh } : prev));
+            setOrders(prev => prev.map(o => (o.id === fresh.id ? { ...o, ...fresh } : o)));
+          }
+        });
       }
     }
   }, [orders, searchParams]);
