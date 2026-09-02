@@ -54,11 +54,26 @@ export async function updateMinOrderValue(newValue: number) {
   if (!Number.isFinite(newValue) || newValue < 0) {
     return { success: false, error: new Error('Invalid minimum order value') };
   }
-  const { error } = await supabase
-    .from('site_settings')
-    .upsert({ key: 'min_order_value', value: String(newValue) });
+  // Write through the service-role /api/admin/settings route instead of a
+  // direct client-side upsert. A direct write here failed with "Failed to
+  // save. Make sure the site_settings table exists." even though the table
+  // is fine — the real cause is the same RLS/profiles.role issue already
+  // fixed for orders and customers. See app/api/admin/settings/route.ts.
+  try {
+    const res = await fetch('/api/admin/settings', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ key: 'min_order_value', value: String(newValue) }),
+    }).then(r => r.json());
 
-  return { success: !error, error };
+    if (res?.error) {
+      return { success: false, error: new Error(res.error) };
+    }
+    return { success: true, error: null };
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  } catch (error: any) {
+    return { success: false, error };
+  }
 }
 
 export async function getAdminStats() {
