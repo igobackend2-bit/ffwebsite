@@ -55,6 +55,17 @@ export default function ProductDetailClient({ product, relatedProducts }: Produc
   // still open a sold-out product directly and complete checkout for it.
   const isOutOfStock = product.stock === 0;
 
+  // Same "low stock" concept ProductCard already shows on the listing grid
+  // (stock > 0 and < 20) — this page had no stock awareness at all beyond
+  // the sold-out check above, so a customer opening a single product never
+  // saw how little was left, or that the quantity they picked was more
+  // than what's actually available.
+  const hasStockInfo = typeof product.stock === 'number';
+  const isLowStock = hasStockInfo && product.stock > 0 && product.stock < 20;
+  const requestedQty = quantity * parseFloat(selectedWeight || '1');
+  const exceedsStock = hasStockInfo && !isOutOfStock && requestedQty > product.stock;
+  const stockUnitLabel = product.unit ? ` ${product.unit}` : '';
+
   const handleAddToCart = async (isBuyNow = false) => {
     if (!product) return;
     if (isOutOfStock) return;
@@ -234,11 +245,31 @@ export default function ProductDetailClient({ product, relatedProducts }: Produc
                 </div>
               ) : (
                 <>
+                  {isLowStock && (
+                    <div className="inline-flex items-center gap-2 bg-orange-50 text-orange-600 px-4 py-1.5 rounded-full text-[11px] font-black uppercase tracking-widest border border-orange-100 mb-4 w-fit animate-pulse">
+                      Only {product.stock}{stockUnitLabel} left in stock
+                    </div>
+                  )}
+                  {exceedsStock && (
+                    <p className="text-xs font-bold text-red-500 mb-4">
+                      Only {product.stock}{stockUnitLabel} available right now — we&apos;ll add the maximum we have if you continue.
+                    </p>
+                  )}
                   <div className="flex flex-col xl:flex-row items-stretch gap-6 mb-8">
                     <div className="flex items-center justify-between bg-white rounded-[1.5rem] px-6 py-4 border border-slate-200 shadow-sm min-w-[180px]">
                       <button onClick={() => setQuantity(q => Math.max(1, q - 1))} className="text-slate-400 hover:text-primary transition-colors p-2"><Minus size={20} /></button>
                       <span className="text-2xl font-black min-w-[2rem] text-center">{quantity}</span>
-                      <button onClick={() => setQuantity(q => q + 1)} className="text-slate-400 hover:text-primary transition-colors p-2"><Plus size={20} /></button>
+                      <button
+                        onClick={() => setQuantity(q => {
+                          const nextTotal = (q + 1) * parseFloat(selectedWeight || '1');
+                          if (hasStockInfo && nextTotal > product.stock) {
+                            toast.error(`Only ${product.stock}${stockUnitLabel} available right now.`, { duration: 4000 });
+                            return q;
+                          }
+                          return q + 1;
+                        })}
+                        className="text-slate-400 hover:text-primary transition-colors p-2"
+                      ><Plus size={20} /></button>
                     </div>
 
                     <div className="flex flex-1 items-center gap-4">

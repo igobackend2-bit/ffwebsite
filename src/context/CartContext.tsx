@@ -148,6 +148,25 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     }
   }, [fetchCart]);
 
+  // Caps a desired cart quantity at how much stock is actually left, warning
+  // the customer instead of silently letting the basket hold more than the
+  // farm has. `stock` is only as fresh as the product data the caller
+  // already had on hand (a listing/detail page fetch) — the real,
+  // authoritative check still happens at checkout via the decrement_stock
+  // RPC, which rejects the order outright if stock ran out in the meantime.
+  // This is the earlier, friendlier warning so a customer finds out at
+  // "add to basket" time instead of after filling in their address.
+  const clampToStock = (desiredQty: number, stock: unknown, unit?: string): number => {
+    if (typeof stock !== 'number') return desiredQty;
+    const unitLabel = unit ? ` ${unit}` : '';
+    if (stock <= 0) return 0;
+    if (desiredQty > stock) {
+      toast.error(`Only ${stock}${unitLabel} available — we've added the maximum we have in stock.`, { duration: 5000 });
+      return stock;
+    }
+    return desiredQty;
+  };
+
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const addToCart = async (productId: string, quantity = 1, productData?: any): Promise<boolean> => {
     // Guard against non-database (demo/fallback) product ids, e.g. "v-23".
@@ -156,6 +175,10 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     if (!isValidUuid) {
       console.error('[Cart] Rejected non-UUID product id:', productId);
       toast.error('Sorry, not able to add this item right now.', { duration: 4000 });
+      return false;
+    }
+    if (productData && typeof productData.stock === 'number' && productData.stock <= 0) {
+      toast.error('Sorry, this item just went out of stock.', { duration: 4000 });
       return false;
     }
     try {
@@ -175,7 +198,11 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
           throw fetchError;
         }
 
-        const newQuantity = existing ? existing.quantity + quantity : quantity;
+        const requestedQuantity = existing ? existing.quantity + quantity : quantity;
+        const newQuantity = clampToStock(requestedQuantity, productData?.stock, productData?.unit);
+        if (newQuantity <= 0) {
+          return false;
+        }
 
         // ── Optimistic UI Update ──
         const existingIndex = cartItems.findIndex(item => item.product_id === productId);
@@ -199,7 +226,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
             products: normalizedProduct as any
           });
         }
-        
+
         setCartItems(optimisticCart);
         if (typeof window !== 'undefined') {
           window.dispatchEvent(new Event('cart-updated'));
@@ -237,20 +264,29 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
         } : null;
 
         if (existingIndex > -1) {
+          const existingGuestQty = newCart[existingIndex].quantity;
+          const cappedGuestQty = clampToStock(
+            existingGuestQty + quantity,
+            newCart[existingIndex].products?.stock,
+            newCart[existingIndex].products?.unit
+          );
+          if (cappedGuestQty <= 0) {
+            return false;
+          }
           newCart[existingIndex] = {
             ...newCart[existingIndex],
-            quantity: newCart[existingIndex].quantity + quantity
+            quantity: cappedGuestQty
           };
         } else {
           let product = normalizedProduct;
-          
+
           if (!product) {
             const { data, error } = await supabase
               .from('products')
               .select('*')
               .eq('id', productId)
               .single();
-            
+
             if (error || !data) {
               console.error('Failed to fetch product for guest cart:', error);
               toast.error('Failed to load product details. Please refresh.');
@@ -262,10 +298,15 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
             };
           }
 
+          const cappedQuantity = clampToStock(quantity, product?.stock, product?.unit);
+          if (cappedQuantity <= 0) {
+            return false;
+          }
+
           newCart.push({
             id: Math.random().toString(36).substring(7),
             product_id: productId,
-            quantity,
+            quantity: cappedQuantity,
             products: product
           });
         }
@@ -296,12 +337,20 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
-  const updateQuantity = async (cartItemId: string, newQty: number) => {
-    if (newQty < 0) return;
-    
+  const updateQuantity = async (cartItemId: string, requestedQty: number) => {
+    if (requestedQty < 0) return;
+
     const targetItem = cartItems.find(item => item.id === cartItemId);
     if (!targetItem) return;
     const productId = targetItem.product_id;
+
+    // Cap increases at the stock already known for this cart line (joined
+    // in from `products` by fetchCart) — same "only X available" warning
+    // as adding a fresh item, so the +/- steppers on the cart and product
+    // cards can't push a line past what's actually in stock.
+    const newQty = requestedQty > targetItem.quantity
+      ? clampToStock(requestedQty, targetItem.products?.stock, targetItem.products?.unit)
+      : requestedQty;
 
     // ── Optimistic Update ──
     let newCart;
