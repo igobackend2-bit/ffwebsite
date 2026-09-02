@@ -7,10 +7,10 @@ import Navbar from '@/components/Navbar';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/context/AuthContext';
 import { motion, AnimatePresence } from 'framer-motion';
-import { 
-  User, Package, MapPin, Bell, LogOut, 
+import {
+  User, Package, MapPin, Bell, LogOut,
   ChevronRight, Truck, Mail, Phone,
-  Settings, Inbox, Heart, HelpCircle, Wallet, ShoppingBag
+  Settings, Inbox, Heart, HelpCircle, Wallet, ShoppingBag, Trash2
 } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import OrderDetailModal from '@/components/OrderDetailModal';
@@ -102,6 +102,57 @@ function ProfileContent() {
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [updatingPassword, setUpdatingPassword] = useState(false);
+
+  // Delete Account States
+  const [deletionPending, setDeletionPending] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [deletionReason, setDeletionReason] = useState('');
+  const [requestingDeletion, setRequestingDeletion] = useState(false);
+
+  // Check whether this customer already has a pending "delete my account"
+  // request, so the Settings tab shows "Request Pending" instead of the
+  // button again after they've asked once.
+  useEffect(() => {
+    if (!user?.id) return;
+    fetch(`/api/account/request-deletion?user_id=${user.id}`)
+      .then((res) => res.json())
+      .then((data) => setDeletionPending(!!data.pending))
+      .catch(() => {});
+  }, [user?.id]);
+
+  const handleRequestDeletion = async () => {
+    if (!user) return;
+    setRequestingDeletion(true);
+    try {
+      const res = await fetch('/api/account/request-deletion', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          user_id: user.id,
+          email: user.email || emailState,
+          full_name: fullNameState || profile?.full_name,
+          reason: deletionReason,
+        }),
+      });
+      const result = await res.json();
+      if (!res.ok || !result.success) {
+        toast.error(result.error || 'Could not submit your request. Please try again.');
+        return;
+      }
+      setDeletionPending(true);
+      setShowDeleteConfirm(false);
+      toast.success(
+        result.alreadyPending
+          ? "You've already requested account deletion — our team will review it soon."
+          : 'Your account deletion request has been sent. Our team will review it shortly.'
+      );
+    } catch (e) {
+      console.error('Account deletion request failed:', e);
+      toast.error('Could not submit your request. Please check your connection and try again.');
+    } finally {
+      setRequestingDeletion(false);
+    }
+  };
 
   // Handle tab switching via URL query params (reactive — updates when the
   // ?tab= value changes, e.g. clicking My Orders / Wallet / Settings in the navbar).
@@ -727,7 +778,7 @@ function ProfileContent() {
                             />
                           </div>
                         </div>
-                        <button 
+                        <button
                           type="submit"
                           disabled={updatingPassword}
                           className="bg-slate-900 text-white px-8 py-3 rounded-xl font-bold text-xs uppercase tracking-widest hover:bg-slate-800 disabled:opacity-50 transition-colors"
@@ -736,6 +787,62 @@ function ProfileContent() {
                         </button>
                       </form>
                     </div>
+                  </div>
+
+                  {/* Danger Zone — Delete Account */}
+                  <div className="bg-white rounded-3xl p-10 border-2 border-red-100 shadow-sm mt-8">
+                    <div className="flex items-start gap-4 mb-6">
+                      <div className="w-12 h-12 bg-red-50 rounded-2xl flex items-center justify-center text-red-500 shrink-0">
+                        <Trash2 size={24} />
+                      </div>
+                      <div>
+                        <h3 className="font-bold text-slate-900 text-lg">Delete My Account</h3>
+                        <p className="text-sm text-slate-500 mt-1 max-w-lg">
+                          This permanently deletes your account — profile, order history, cart, wishlist,
+                          saved addresses and notifications. This cannot be undone. Our team reviews every
+                          request before it&apos;s actioned.
+                        </p>
+                      </div>
+                    </div>
+
+                    {deletionPending ? (
+                      <div className="bg-amber-50 border border-amber-100 rounded-2xl px-6 py-4 text-sm font-bold text-amber-700">
+                        Your account deletion request is pending review. Our team will process it shortly.
+                      </div>
+                    ) : showDeleteConfirm ? (
+                      <div className="space-y-4">
+                        <textarea
+                          value={deletionReason}
+                          onChange={(e) => setDeletionReason(e.target.value)}
+                          placeholder="Optional — tell us why you're leaving"
+                          rows={3}
+                          className="w-full bg-slate-50 border border-slate-100 rounded-xl py-3 px-6 text-sm font-medium focus:ring-2 focus:ring-red-200 outline-none resize-none"
+                        />
+                        <div className="flex gap-3">
+                          <button
+                            onClick={handleRequestDeletion}
+                            disabled={requestingDeletion}
+                            className="bg-red-600 text-white px-8 py-3 rounded-xl font-black text-xs uppercase tracking-widest hover:bg-red-700 disabled:opacity-50 transition-colors"
+                          >
+                            {requestingDeletion ? 'Submitting...' : 'Confirm Deletion Request'}
+                          </button>
+                          <button
+                            onClick={() => setShowDeleteConfirm(false)}
+                            disabled={requestingDeletion}
+                            className="bg-white border border-slate-200 text-slate-500 px-8 py-3 rounded-xl font-black text-xs uppercase tracking-widest hover:bg-slate-50 transition-colors"
+                          >
+                            Cancel
+                          </button>
+                        </div>
+                      </div>
+                    ) : (
+                      <button
+                        onClick={() => setShowDeleteConfirm(true)}
+                        className="bg-white border-2 border-red-200 text-red-600 px-8 py-3 rounded-xl font-black text-xs uppercase tracking-widest hover:bg-red-50 transition-colors"
+                      >
+                        Delete My Account
+                      </button>
+                    )}
                   </div>
                 </motion.div>
               )}

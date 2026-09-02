@@ -23,7 +23,8 @@ import {
   Video,
   Sparkles,
   UserPlus,
-  Star
+  Star,
+  UserX
 } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import { toast } from 'react-hot-toast';
@@ -209,6 +210,7 @@ export default function AdminLayout({
     { name: 'Orders', icon: <ShoppingBag size={20} />, href: '/admin/orders' },
     { name: 'Products', icon: <Package size={20} />, href: '/admin/products' },
     { name: 'Customers', icon: <Users size={20} />, href: '/admin/customers' },
+    { name: 'Account Requests', icon: <UserX size={20} />, href: '/admin/account-requests' },
     { name: 'Leads', icon: <UserPlus size={20} />, href: '/admin/leads' },
     { name: 'Inventory', icon: <Zap size={20} />, href: '/admin/inventory' },
     { name: 'Notifications', icon: <Bell size={20} />, href: '/admin/notifications' },
