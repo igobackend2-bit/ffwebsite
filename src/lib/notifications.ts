@@ -1,7 +1,7 @@
 import { supabase } from './supabase';
 import { sendLiveEmail } from './email';
 
-export type NotificationType = 'order_status' | 'security' | 'promo' | 'system';
+export type NotificationType = 'order_status' | 'security' | 'promo' | 'system' | 'restock';
 
 interface NotificationPayload {
   userId: string;

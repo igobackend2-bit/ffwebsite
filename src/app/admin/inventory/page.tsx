@@ -164,17 +164,30 @@ export default function AdminInventory() {
   const handleSaveStock = async (productId: string, val: number) => {
     const newStock = Math.max(0, val);
     const inStock = newStock > 0;
+    // Was this product actually at 0 before this save? Used below to fire
+    // the "back in stock" notification only on a genuine restock, not
+    // every stock edit. See ADD_STOCK_NOTIFICATIONS.sql and
+    // app/api/admin/notify-restock/route.ts.
+    const wasOutOfStock = (products.find(p => p.id === productId)?.stock ?? 0) === 0;
     try {
       const { error } = await supabase
         .from('products')
         .update({ stock: newStock, in_stock: inStock })
         .eq('id', productId);
-      
+
       if (error) throw error;
-      
+
       setProducts(prev => prev.map(p => p.id === productId ? { ...p, stock: newStock, in_stock: inStock } : p));
       setEditingStocks(prev => ({ ...prev, [productId]: newStock }));
       toast.success('Stock level updated successfully');
+
+      if (inStock && wasOutOfStock) {
+        fetch('/api/admin/notify-restock', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ product_id: productId }),
+        }).catch(err => console.error('[Restock] Failed to notify waiting customers:', err));
+      }
     } catch (e) {
       toast.error('Failed to update stock');
     }

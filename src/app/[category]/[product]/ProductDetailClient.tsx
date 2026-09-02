@@ -27,6 +27,7 @@ import ProductCard from '@/components/ProductCard';
 import ProductReviews from '@/components/ProductReviews';
 import SmartMealBundling from '@/components/SmartMealBundling';
 import ProductGallery from '@/components/ProductGallery';
+import NotifyMeButton from '@/components/NotifyMeButton';
 import { useTranslation } from '@/context/TranslationContext';
 import { categoryHref, productHref } from '@/lib/categorySlug';
 
@@ -49,9 +50,14 @@ export default function ProductDetailClient({ product, relatedProducts }: Produc
   const [showAddedOverlay, setShowAddedOverlay] = useState(false);
 
   const isLiked = isInWishlist(product.id);
+  // The listing page (ProductCard) already hides "Add to Basket" once
+  // stock === 0 — this page had no such check at all, so a customer could
+  // still open a sold-out product directly and complete checkout for it.
+  const isOutOfStock = product.stock === 0;
 
   const handleAddToCart = async (isBuyNow = false) => {
     if (!product) return;
+    if (isOutOfStock) return;
     const finalQty = quantity * parseFloat(selectedWeight);
 
     if (isBuyNow && !user) {
@@ -204,40 +210,66 @@ export default function ProductDetailClient({ product, relatedProducts }: Produc
             )}
 
             <div className="bg-slate-50 rounded-[3rem] p-8 md:p-12 border border-slate-100 mb-16 shadow-inner">
-              <div className="flex flex-col xl:flex-row items-stretch gap-6 mb-8">
-                <div className="flex items-center justify-between bg-white rounded-[1.5rem] px-6 py-4 border border-slate-200 shadow-sm min-w-[180px]">
-                  <button onClick={() => setQuantity(q => Math.max(1, q - 1))} className="text-slate-400 hover:text-primary transition-colors p-2"><Minus size={20} /></button>
-                  <span className="text-2xl font-black min-w-[2rem] text-center">{quantity}</span>
-                  <button onClick={() => setQuantity(q => q + 1)} className="text-slate-400 hover:text-primary transition-colors p-2"><Plus size={20} /></button>
+              {isOutOfStock ? (
+                <div className="flex flex-col items-center text-center gap-6">
+                  <div className="inline-flex items-center gap-2 bg-red-50 text-red-600 px-5 py-2 rounded-full text-xs font-black uppercase tracking-widest border border-red-100">
+                    Sold Out
+                  </div>
+                  <p className="text-slate-500 font-medium max-w-sm">
+                    This item is temporarily out of stock. Ask to be notified the moment our farmers restock it.
+                  </p>
+                  <div className="flex items-center gap-4 w-full max-w-md">
+                    <NotifyMeButton productId={product.id} className="flex-1 h-[72px] rounded-[1.5rem] font-black text-sm lg:text-base" />
+                    <button
+                      onClick={() => toggleWishlist(product.id)}
+                      className={`w-[72px] h-[72px] rounded-[1.5rem] border-2 flex items-center justify-center transition-all flex-shrink-0 shadow-sm ${
+                        isLiked
+                          ? 'bg-red-50 border-red-200 text-red-500'
+                          : 'bg-white border-slate-100 text-slate-300 hover:bg-red-50 hover:border-red-100 hover:text-red-500'
+                      }`}
+                    >
+                      <Heart size={28} className={isLiked ? 'fill-current' : ''} />
+                    </button>
+                  </div>
                 </div>
+              ) : (
+                <>
+                  <div className="flex flex-col xl:flex-row items-stretch gap-6 mb-8">
+                    <div className="flex items-center justify-between bg-white rounded-[1.5rem] px-6 py-4 border border-slate-200 shadow-sm min-w-[180px]">
+                      <button onClick={() => setQuantity(q => Math.max(1, q - 1))} className="text-slate-400 hover:text-primary transition-colors p-2"><Minus size={20} /></button>
+                      <span className="text-2xl font-black min-w-[2rem] text-center">{quantity}</span>
+                      <button onClick={() => setQuantity(q => q + 1)} className="text-slate-400 hover:text-primary transition-colors p-2"><Plus size={20} /></button>
+                    </div>
 
-                <div className="flex flex-1 items-center gap-4">
-                  <button
-                    onClick={() => handleAddToCart(false)}
-                    className="flex-1 h-[72px] rounded-[1.5rem] font-black text-sm lg:text-base bg-white border-2 border-primary text-primary hover:bg-primary/5 transition-all shadow-xl shadow-primary/5 flex items-center justify-center gap-3 px-6"
-                  >
-                    <ShoppingBag size={20} />
-                    {t('product.details.add_to_basket')}
-                  </button>
-                  <button
-                    onClick={() => toggleWishlist(product.id)}
-                    className={`w-[72px] h-[72px] rounded-[1.5rem] border-2 flex items-center justify-center transition-all flex-shrink-0 shadow-sm ${
-                      isLiked
-                        ? 'bg-red-50 border-red-200 text-red-500'
-                        : 'bg-white border-slate-100 text-slate-300 hover:bg-red-50 hover:border-red-100 hover:text-red-500'
-                    }`}
-                  >
-                    <Heart size={28} className={isLiked ? 'fill-current' : ''} />
-                  </button>
-                </div>
-              </div>
+                    <div className="flex flex-1 items-center gap-4">
+                      <button
+                        onClick={() => handleAddToCart(false)}
+                        className="flex-1 h-[72px] rounded-[1.5rem] font-black text-sm lg:text-base bg-white border-2 border-primary text-primary hover:bg-primary/5 transition-all shadow-xl shadow-primary/5 flex items-center justify-center gap-3 px-6"
+                      >
+                        <ShoppingBag size={20} />
+                        {t('product.details.add_to_basket')}
+                      </button>
+                      <button
+                        onClick={() => toggleWishlist(product.id)}
+                        className={`w-[72px] h-[72px] rounded-[1.5rem] border-2 flex items-center justify-center transition-all flex-shrink-0 shadow-sm ${
+                          isLiked
+                            ? 'bg-red-50 border-red-200 text-red-500'
+                            : 'bg-white border-slate-100 text-slate-300 hover:bg-red-50 hover:border-red-100 hover:text-red-500'
+                        }`}
+                      >
+                        <Heart size={28} className={isLiked ? 'fill-current' : ''} />
+                      </button>
+                    </div>
+                  </div>
 
-              <button
-                onClick={() => handleAddToCart(true)}
-                className="w-full py-6 rounded-[2rem] font-black text-xl lg:text-2xl bg-primary text-white hover:bg-primary/90 transition-all shadow-2xl shadow-primary/20 flex items-center justify-center gap-3 active:scale-[0.98]"
-              >
-                {t('product.details.buy_now')}
-              </button>
+                  <button
+                    onClick={() => handleAddToCart(true)}
+                    className="w-full py-6 rounded-[2rem] font-black text-xl lg:text-2xl bg-primary text-white hover:bg-primary/90 transition-all shadow-2xl shadow-primary/20 flex items-center justify-center gap-3 active:scale-[0.98]"
+                  >
+                    {t('product.details.buy_now')}
+                  </button>
+                </>
+              )}
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 pt-12 border-t border-border">

@@ -77,109 +77,49 @@ export async function updateMinOrderValue(newValue: number) {
 }
 
 export async function getAdminStats() {
+  // Fetches via the service-role /api/admin/stats route instead of direct
+  // client-side reads of `orders`/`profiles`. Those direct reads depend on
+  // the logged-in admin's own profiles.role still being 'admin' in the
+  // shared ERP database (see app/api/admin/stats/route.ts for the full
+  // explanation) and were silently returning empty results — Total
+  // Revenue / Active Orders / Total Customers all showing 0 even though
+  // real data exists, while Stock Alerts (a products read) kept working.
+  const fallback = {
+    totalRevenue: '₹0',
+    totalOrders: '0',
+    activeProducts: '0',
+    totalCustomers: '0',
+    outOfStockCount: '0',
+  };
   try {
-    const { data: rawOrders, error: ordersError } = await supabase
-      .from('orders')
-      .select('total_amount, status');
-
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const orders = (rawOrders || []).map((o: any) => ({
-      ...o,
-      status: o.status?.toLowerCase() === 'placed' ? 'pending' : (o.status?.toLowerCase() || 'pending')
-    }));
-
-    const { count: productCount, error: productsError } = await supabase
-      .from('products')
-      .select('*', { count: 'exact', head: true });
-
-    const { count: customerCount, error: customersError } = await supabase
-      .from('profiles')
-      .select('*', { count: 'exact', head: true });
-
-    if (ordersError || productsError || customersError) {
-      console.warn('Minor error fetching admin stats (likely schema mismatch):', { ordersError, productsError, customersError });
-      // Don't return null, return partial data or zeros to keep UI alive
+    const res = await fetch('/api/admin/stats').then(r => r.json());
+    if (res?.error) {
+      console.warn('Failed to fetch admin stats:', res.error);
+      return fallback;
     }
-
-    // Safely calculate revenue handling missing columns
-    const totalRevenue = orders?.reduce((sum, order) => sum + Number(order.total_amount || 0), 0) || 0;
-    const totalOrders = orders?.length || 0;
-
-    const { count: outOfStockCount } = await supabase
-      .from('products')
-      .select('*', { count: 'exact', head: true })
-      .or('stock.eq.0,in_stock.eq.false');
-
-    return {
-      totalRevenue: `₹${totalRevenue.toLocaleString()}`,
-      totalOrders: totalOrders.toString(),
-      activeProducts: (productCount || 0).toString(),
-      totalCustomers: (customerCount || 0).toString(),
-      outOfStockCount: (outOfStockCount || 0).toString(),
-    };
+    return res;
   } catch (err) {
     console.error('Fatal error in getAdminStats:', err);
-    return {
-      totalRevenue: '₹0',
-      totalOrders: '0',
-      activeProducts: '0',
-      totalCustomers: '0',
-      outOfStockCount: '0',
-    };
+    return fallback;
   }
 }
 
 export async function getAllOrders() {
+  // Fetches via the service-role /api/admin/orders route instead of a
+  // direct client-side read. The direct read (this function's old body)
+  // depends on the logged-in admin's own profiles.role still being 'admin'
+  // — the same fragile check documented in app/api/admin/orders/route.ts —
+  // and was silently returning [] (showing "NO ORDERS FOUND" / 0 Active
+  // Orders on the dashboard) even though real orders exist. The API route
+  // does the exact same profile/user enrichment this function used to do
+  // inline, so callers see the same shape as before.
   try {
-    const { data: orders, error: ordersError } = await supabase
-      .from('orders')
-      .select('*')
-      .order('created_at', { ascending: false });
-
-    if (ordersError) {
-      console.error('Error fetching orders:', ordersError);
+    const res = await fetch('/api/admin/orders').then(r => r.json());
+    if (res?.error) {
+      console.error('Error fetching orders:', res.error);
       return [];
     }
-
-    if (!orders || orders.length === 0) return [];
-
-    // Fetch profiles and users concurrently for these orders
-    const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-    const userIds = [...new Set(orders.map(o => o.user_id).filter((id): id is string => typeof id === 'string' && UUID_RE.test(id)))];
-    const [profilesRes, usersRes] = await Promise.all([
-      supabase.from('profiles').select('id, full_name, email, phone').in('id', userIds),
-      supabase.from('users').select('id, name, email').in('id', userIds)
-    ]);
-
-    const profiles = profilesRes.data || [];
-    const users = usersRes.data || [];
-
-    return orders.map(order => {
-      const prof = profiles.find(p => p.id === order.user_id);
-      const usr = users.find(u => u.id === order.user_id);
-      // Fallback: orders store delivery_address as "name\nphone\nstreet, city - zip".
-      // This lets the admin always show the customer's name / phone / address even
-      // when the profiles table can't be read (e.g. RLS) or the user has no profile row.
-      const addrLines = String(order.delivery_address || '')
-        .split('\n')
-        .map((s: string) => s.trim())
-        .filter(Boolean);
-      const addrName = addrLines[0] || '';
-      const addrPhone = addrLines[1] || '';
-      const addrText = addrLines.length > 2 ? addrLines.slice(2).join(', ') : '';
-      return {
-        ...order,
-        status: order.status?.toLowerCase() === 'placed' ? 'pending' : (order.status?.toLowerCase() || 'pending'),
-        customer: {
-          id: order.user_id,
-          full_name: prof?.full_name || usr?.name || addrName || 'Guest Customer',
-          avatar_url: prof?.avatar_url || '',
-          email: prof?.email || usr?.email || '',
-          phone: prof?.phone || addrPhone || '',
-          address: addrText
-        }
-      };
-    });
+    return res?.orders || [];
   } catch (err) {
     console.error('Fatal error in getAllOrders:', err);
     return [];
@@ -273,10 +213,28 @@ export async function getAllProducts(includeInactive = true) {
 }
 
 export async function updateProductStock(productId: string, inStock: boolean) {
+  // Check whether this is actually a restock (product was at 0) BEFORE
+  // applying the update, so customers who used "Notify Me" on the
+  // product page can be told once it's genuinely back — see
+  // ADD_STOCK_NOTIFICATIONS.sql and app/api/admin/notify-restock/route.ts.
+  let wasOutOfStock = false;
+  if (inStock) {
+    const { data: before } = await supabase.from('products').select('stock').eq('id', productId).single();
+    wasOutOfStock = (before?.stock ?? 0) === 0;
+  }
+
   const { error } = await supabase
     .from('products')
-    .update({ stock: inStock ? 100 : 0, in_stock: inStock }) 
+    .update({ stock: inStock ? 100 : 0, in_stock: inStock })
     .eq('id', productId);
+
+  if (!error && inStock && wasOutOfStock) {
+    fetch('/api/admin/notify-restock', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ product_id: productId }),
+    }).catch(err => console.error('[Restock] Failed to notify waiting customers:', err));
+  }
 
   return { error };
 }
