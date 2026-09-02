@@ -316,16 +316,27 @@ function NotificationsDrawer({ isOpen, onClose, onMarkRead }: { isOpen: boolean,
         // Customer has now seen these notifications — mark any unread ones
         // as read so the bell's red unread count clears immediately.
         const unreadIds = list.filter((n) => !n.is_read).map((n) => n.id);
-        if (unreadIds.length > 0) {
-          const { error: markErr } = await supabase
-            .from('notifications')
-            .update({ is_read: true })
-            .in('id', unreadIds);
-          if (!markErr) {
-            setNotifications(prev => prev.map(n => unreadIds.includes(n.id) ? { ...n, is_read: true } : n));
-            onMarkRead?.();
-          } else {
-            console.warn('[Navbar] Failed to mark notifications read:', markErr.message);
+        if (unreadIds.length > 0 && user?.id) {
+          // Marking as read goes through a service-role API route instead of
+          // a direct client update — a plain .update() here silently affects
+          // 0 rows under RLS (same pattern as the admin write bugs fixed
+          // earlier), which is why the unread badge used to stay stuck even
+          // after the customer opened and viewed every notification.
+          try {
+            const res = await fetch('/api/notifications/mark-read', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ ids: unreadIds, user_id: user.id }),
+            });
+            const result = await res.json();
+            if (res.ok && result?.success) {
+              setNotifications(prev => prev.map(n => unreadIds.includes(n.id) ? { ...n, is_read: true } : n));
+              onMarkRead?.();
+            } else {
+              console.warn('[Navbar] Failed to mark notifications read:', result?.error);
+            }
+          } catch (markErr) {
+            console.warn('[Navbar] Failed to mark notifications read:', markErr);
           }
         }
       }
@@ -416,9 +427,18 @@ function NotificationsDrawer({ isOpen, onClose, onMarkRead }: { isOpen: boolean,
                   key={notif.id}
                   href={targetLink}
                   onClick={async () => {
-                    // Mark as read locally, in DB, and sync the navbar's unread badge instantly
+                    // Mark as read locally, in DB, and sync the navbar's unread badge instantly.
+                    // Goes through the same service-role API route as the
+                    // bulk mark-as-read above — a direct client update here
+                    // silently affects 0 rows under RLS.
                     setNotifications(prev => prev.map(n => n.id === notif.id ? { ...n, is_read: true } : n));
-                    await supabase.from('notifications').update({ is_read: true }).eq('id', notif.id);
+                    if (user?.id) {
+                      fetch('/api/notifications/mark-read', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ ids: [notif.id], user_id: user.id }),
+                      }).catch(() => {});
+                    }
                     onMarkRead?.();
                     onClose();
                   }}

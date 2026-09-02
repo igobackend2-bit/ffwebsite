@@ -44,20 +44,32 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Missing product_id' }, { status: 400 });
     }
 
-    const { data: pending, error: pendingError } = await supabase
+    // Claim the pending rows FIRST (atomically), then send. Restocking a
+    // product can trigger this route more than once for the same event —
+    // e.g. an admin double-clicking Save, or toggling stock from both the
+    // Products page and the Inventory page in quick succession — and the
+    // old code read the pending rows, sent notifications, and only THEN
+    // marked them notified_at. That left a window where a second call could
+    // read the same still-NULL rows before the first call's update landed,
+    // sending the same "back in stock" notification twice. A single
+    // UPDATE ... WHERE notified_at IS NULL ... RETURNING is atomic per row
+    // in Postgres, so if this route runs twice at once each pending row is
+    // claimed by exactly one of the calls — no more duplicate sends.
+    const { data: claimed, error: claimError } = await supabase
       .from('stock_notifications')
-      .select('id, user_id')
+      .update({ notified_at: new Date().toISOString() })
       .eq('product_id', product_id)
-      .is('notified_at', null);
+      .is('notified_at', null)
+      .select('user_id');
 
-    if (pendingError) {
+    if (claimError) {
       // Table probably doesn't exist yet (ADD_STOCK_NOTIFICATIONS.sql not
       // run) — this is a best-effort feature, so don't fail the restock.
-      console.warn('[notify-restock] Skipped (stock_notifications not available):', pendingError.message);
+      console.warn('[notify-restock] Skipped (stock_notifications not available):', claimError.message);
       return NextResponse.json({ success: true, notified: 0, skipped: true });
     }
 
-    if (!pending || pending.length === 0) {
+    if (!claimed || claimed.length === 0) {
       return NextResponse.json({ success: true, notified: 0 });
     }
 
@@ -70,7 +82,7 @@ export async function POST(req: Request) {
     const productName = product?.name || 'An item on your wishlist';
     const link = product?.category ? `/${slugify(product.category)}/${slugify(product.name)}` : '/products';
 
-    const rows = pending.map((p: { user_id: string }) => ({
+    const rows = claimed.map((p: { user_id: string }) => ({
       user_id: p.user_id,
       title: `🌱 Back in Stock — ${productName}`,
       message: `Good news! ${productName} is back in stock. Grab it before it sells out again.`,
@@ -81,14 +93,16 @@ export async function POST(req: Request) {
 
     const { error: insertError } = await supabase.from('notifications').insert(rows);
     if (insertError) {
+      // We already claimed these rows above — since sending failed, release
+      // the claim so a future restock still notifies these customers
+      // instead of silently skipping them forever.
+      await supabase
+        .from('stock_notifications')
+        .update({ notified_at: null })
+        .in('user_id', claimed.map((p: { user_id: string }) => p.user_id))
+        .eq('product_id', product_id);
       return NextResponse.json({ error: insertError.message }, { status: 500 });
     }
-
-    await supabase
-      .from('stock_notifications')
-      .update({ notified_at: new Date().toISOString() })
-      .eq('product_id', product_id)
-      .is('notified_at', null);
 
     return NextResponse.json({ success: true, notified: rows.length });
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
