@@ -127,21 +127,30 @@ export async function getAllOrders() {
 }
 
 export async function getOrderDetails(orderId: string) {
-  const { data: items, error: itemsError } = await supabase
-    .from('order_items')
-    .select('*, products(*)')
-    .eq('order_id', orderId);
-
-  if (itemsError) {
-    console.error('Error fetching order items:', itemsError);
+  // Reads through the service-role API route instead of a direct
+  // client-side query. Same root cause as every other broken admin read
+  // this session (see app/api/admin/orders' comments) — a direct read here
+  // depends on the logged-in admin's own profiles.role still being 'admin'
+  // in the shared ERP database, which keeps getting reset, so it silently
+  // returned an empty array instead of an error. That's exactly why
+  // clicking an order in Admin > Orders opened the details modal but the
+  // "Ordered Items" section never showed the products the customer placed.
+  try {
+    const res = await fetch(`/api/admin/order-items?order_id=${orderId}`);
+    const result = await res.json();
+    if (!res.ok || result.error) {
+      console.error('Error fetching order items:', result.error);
+      return [];
+    }
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    return (result.items || []).map((item: any) => ({
+      ...item,
+      price_at_purchase: item.price_at_purchase ?? item.unit_price ?? 0
+    }));
+  } catch (error) {
+    console.error('Error fetching order items:', error);
     return [];
   }
-
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  return (items || []).map((item: any) => ({
-    ...item,
-    price_at_purchase: item.price_at_purchase ?? item.unit_price ?? 0
-  }));
 }
 
 export async function updateOrderStatus(orderId: string, status: string) {
