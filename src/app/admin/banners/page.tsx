@@ -69,13 +69,16 @@ export default function AdminBanners() {
     }
   }
 
+  // Writes through the service-role /api/admin/banners route instead of a
+  // direct client-side update — see that route's comment for why.
   const handleToggleActive = async (banner: Banner) => {
     try {
-      const { error } = await supabase
-        .from('banners')
-        .update({ is_active: !banner.is_active })
-        .eq('id', banner.id);
-      if (error) throw error;
+      const res = await fetch('/api/admin/banners', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: banner.id, is_active: !banner.is_active }),
+      }).then(r => r.json());
+      if (res?.error) throw new Error(res.error);
       setBanners(banners.map(b => b.id === banner.id ? { ...b, is_active: !b.is_active } : b));
       toast.success(`Banner ${banner.is_active ? 'deactivated' : 'activated'}`);
     } catch (err) {
@@ -83,11 +86,15 @@ export default function AdminBanners() {
     }
   };
 
+  // Writes through the service-role /api/admin/banners route instead of a
+  // direct client-side delete — see that route's comment for why.
   const handleDelete = async (id: string) => {
     if (!confirm('Are you sure you want to delete this banner?')) return;
     try {
-      const { error } = await supabase.from('banners').delete().eq('id', id);
-      if (error) throw error;
+      const res = await fetch(`/api/admin/banners?id=${encodeURIComponent(id)}`, {
+        method: 'DELETE',
+      }).then(r => r.json());
+      if (res?.error) throw new Error(res.error);
       setBanners(banners.filter(b => b.id !== id));
       toast.success('Banner deleted');
     } catch (err) {
@@ -131,30 +138,34 @@ export default function AdminBanners() {
     }
   };
 
+  // Writes through the service-role /api/admin/banners route instead of a
+  // direct client-side insert/update. This replaces the old "Silent
+  // Session Healer", which tried to work around the write failing by
+  // silently re-logging in as admin@famersfactory.com with a password
+  // hardcoded in this file — a security problem on its own, and it still
+  // failed with "Session expired. Please log in to the admin panel again."
+  // once that hardcoded password no longer matched the real admin
+  // password. The write failing was never actually a login/session
+  // problem — same RLS/profiles.role cause already fixed elsewhere in
+  // this admin panel. See app/api/admin/banners/route.ts.
   const handleSave = async () => {
     try {
-      // Silent Session Healer: Automatically restore admin session to guarantee RLS permission
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session || session.user.email !== 'admin@famersfactory.com') {
-        console.log('Restoring admin session silently to prevent RLS conflict...');
-        const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
-          email: 'admin@famersfactory.com',
-          password: 'AdminPassword123!'
-        });
-        if (signInError || !signInData.session) {
-          toast.error('Session expired. Please log in to the admin panel again.');
-          return;
-        }
-      }
-
       if (isEditing === 'new') {
-        const { data, error } = await supabase.from('banners').insert([editForm]).select();
-        if (error) throw error;
-        setBanners([...banners, data[0]]);
+        const res = await fetch('/api/admin/banners', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(editForm),
+        }).then(r => r.json());
+        if (res?.error) throw new Error(res.error);
+        setBanners([...banners, res.banner]);
         toast.success('Banner created');
       } else {
-        const { error } = await supabase.from('banners').update(editForm).eq('id', isEditing);
-        if (error) throw error;
+        const res = await fetch('/api/admin/banners', {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ id: isEditing, ...editForm }),
+        }).then(r => r.json());
+        if (res?.error) throw new Error(res.error);
         setBanners(banners.map(b => b.id === isEditing ? { ...b, ...editForm } as Banner : b));
         toast.success('Banner updated');
       }
