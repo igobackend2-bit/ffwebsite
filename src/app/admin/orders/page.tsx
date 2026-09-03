@@ -194,18 +194,27 @@ function OrdersContent() {
         shipped: '🚚', delivered: '🌿', cancelled: '❌', rejected: '🚫', pending: '⏳'
       };
 
-      // In-app notification
+      // In-app notification — through the shared service-role
+      // /api/notifications/create route instead of a direct client-side
+      // insert, which was silently blocked under RLS (same admin
+      // profiles.role issue as every other admin write on this page). See
+      // that route's comment for the full explanation.
       if (order.user_id) {
-        supabase.from('notifications').insert({
-          user_id: order.user_id,
-          title: `${statusEmoji[newStatus] || '📋'} Order ${newStatus.toUpperCase()} — #${orderNumber}`,
-          message: statusMsg,
-          type: 'order_status',
-          link: `/profile?tab=orders&order=${orderNumber}`,
-          is_read: false
-        }).then(({ error: notifError }) => {
-          if (notifError) console.warn('[Notification] Failed:', notifError.message);
-        });
+        fetch('/api/notifications/create', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            user_id: order.user_id,
+            title: `${statusEmoji[newStatus] || '📋'} Order ${newStatus.toUpperCase()} — #${orderNumber}`,
+            message: statusMsg,
+            type: 'order_status',
+            link: `/profile?tab=orders&order=${orderNumber}`,
+          }),
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        }).then(r => r.json()).then((res: any) => {
+          if (res?.error) console.warn('[Notification] Failed:', res.error);
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        }).catch((err: any) => console.warn('[Notification] Failed:', err));
       }
 
       // Email to customer
@@ -304,21 +313,27 @@ function OrdersContent() {
       setOrders(prev => prev.map(o => o.id === orderId ? { ...o, total_amount: newAmount } : o));
       import('react-hot-toast').then(({ toast }) => toast.success(`Order total updated to ₹${newAmount.toLocaleString()}`));
 
-      // Let the customer know via their existing notification bell — same
-      // `notifications` table Navbar.tsx already reads from, so this needs
-      // no new plumbing.
+      // Let the customer know via their existing notification bell — routed
+      // through the shared service-role /api/notifications/create route
+      // instead of a direct client-side insert, for the same RLS reason as
+      // handleStatusChange above.
       const orderNumber = order.order_number || String(order.id).slice(0, 8);
       if (order.user_id) {
-        supabase.from('notifications').insert({
-          user_id: order.user_id,
-          title: `💳 Order Total Updated — #${orderNumber}`,
-          message: `Your order total for #${orderNumber} was updated to ₹${newAmount.toLocaleString()}.`,
-          type: 'order_status',
-          link: `/profile?tab=orders&order=${orderNumber}`,
-          is_read: false
-        }).then(({ error: notifError }) => {
-          if (notifError) console.warn('[Notification] Failed:', notifError.message);
-        });
+        fetch('/api/notifications/create', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            user_id: order.user_id,
+            title: `💳 Order Total Updated — #${orderNumber}`,
+            message: `Your order total for #${orderNumber} was updated to ₹${newAmount.toLocaleString()}.`,
+            type: 'order_status',
+            link: `/profile?tab=orders&order=${orderNumber}`,
+          }),
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        }).then(r => r.json()).then((res: any) => {
+          if (res?.error) console.warn('[Notification] Failed:', res.error);
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        }).catch((err: any) => console.warn('[Notification] Failed:', err));
       }
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {

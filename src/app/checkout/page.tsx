@@ -399,15 +399,24 @@ export default function Checkout() {
         }
       } catch { /* sound is best-effort; never block the order flow */ }
 
-      const { error: notifyError } = await supabase.from('notifications').insert({
-        user_id: user.id,
-        title: 'Order Confirmed! 🌿',
-        message: `Your order #${order.order_number || String(order.id).slice(0, 8)} has been successfully placed and is being prepared.`,
-        type: 'order_status',
-        link: `/profile?tab=orders&order=${order.order_number || String(order.id).slice(0, 8)}`,
-        is_read: false
-      });
-      if (notifyError) console.warn('[Checkout] Notification insert failed:', notifyError.message);
+      // Write through the service-role /api/notifications/create route
+      // instead of a direct client-side insert — that insert was silently
+      // failing under RLS, so the order placed fine but the customer's
+      // notification bell never got it. See that route's comment for the
+      // full explanation.
+      const notifyRes = await fetch('/api/notifications/create', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          user_id: user.id,
+          title: 'Order Confirmed! 🌿',
+          message: `Your order #${order.order_number || String(order.id).slice(0, 8)} has been successfully placed and is being prepared.`,
+          type: 'order_status',
+          link: `/profile?tab=orders&order=${order.order_number || String(order.id).slice(0, 8)}`,
+        }),
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      }).then(r => r.json()).catch((err: any) => ({ error: err?.message }));
+      if (notifyRes?.error) console.warn('[Checkout] Notification create failed:', notifyRes.error);
 
       import('@/lib/email').then(({ sendOrderConfirmation }) => {
         sendOrderConfirmation(user.email || address.name, order.id, total, order.order_number);
