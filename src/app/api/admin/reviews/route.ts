@@ -54,10 +54,15 @@ export async function GET() {
 // POST: admin adds a review directly (e.g. to seed a new product's first
 // reviews, or record feedback a customer gave outside the website). Unlike
 // a customer's own review (src/components/ProductReviews.tsx), this has no
-// real signed-in customer behind it, so it's inserted with user_id = null
-// (see ADD_ADMIN_REVIEW_SUPPORT.sql, which makes that column nullable) and
-// defaults to status 'approved' so it appears on the product page
-// immediately rather than waiting in the pending-approval queue.
+// real signed-in customer behind it. The live `reviews` table (checked
+// directly via information_schema — it has drifted from supabase_schema.sql,
+// same as a couple of other tables in this project) requires a NOT NULL
+// customer_id, has no `status` column at all, and instead uses an
+// `is_visible` boolean to control whether a review shows on the product
+// page. See ADD_ADMIN_REVIEW_SUPPORT.sql, which makes customer_id (and
+// user_id) nullable so an admin-added row — with no real customer account
+// behind it — can be inserted. is_visible is set true so it appears on the
+// product page immediately.
 // Body: { product_id, user_name, rating, comment?, is_verified? }
 export async function POST(req: Request) {
   try {
@@ -77,36 +82,20 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Rating must be a number from 1 to 5' }, { status: 400 });
     }
 
-    const baseRow = {
-      product_id,
-      user_id: null,
-      user_name: String(user_name).trim(),
-      rating: numericRating,
-      comment: comment ? String(comment).trim() : null,
-      is_verified: !!is_verified,
-    };
-
-    // Try with status: 'approved' first (the normal case — this column
-    // exists on every environment this project has actually deployed
-    // against). Retry without it only if the live database's `reviews`
-    // table genuinely doesn't have a status column yet, the same
-    // defensive-retry pattern already used in src/app/profile/page.tsx for
-    // email_notifications_enabled — so this route still works even against
-    // an older schema, instead of failing the whole request over one
-    // optional field.
-    let { data, error } = await supabase
+    const { data, error } = await supabase
       .from('reviews')
-      .insert({ ...baseRow, status: 'approved' })
+      .insert({
+        product_id,
+        customer_id: null,
+        user_id: null,
+        user_name: String(user_name).trim(),
+        rating: numericRating,
+        comment: comment ? String(comment).trim() : null,
+        is_verified: !!is_verified,
+        is_visible: true,
+      })
       .select('*, products(name, image_urls)')
       .single();
-
-    if (error && /status/i.test(error.message || '')) {
-      ({ data, error } = await supabase
-        .from('reviews')
-        .insert(baseRow)
-        .select('*, products(name, image_urls)')
-        .single());
-    }
 
     if (error) {
       return NextResponse.json({ error: error.message }, { status: 500 });
