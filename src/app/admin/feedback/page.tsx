@@ -1,14 +1,18 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
-import { supabase } from '@/lib/supabase';
 import { Star, MessageSquare, Loader2, AlertTriangle, Send } from 'lucide-react';
 
 // ============================================================================
 // Admin view of customer feedback (part of the Customer Feedback System).
-// Reads public.feedback directly — allowed by the feedback_admin_select RLS
-// policy (public.ff_is_admin()), same access model every other admin page
-// already uses. The L1/CEO view lives in the separate ERP, which reads this
+// Reads through /api/admin/feedback (service-role) instead of a direct
+// client-side supabase.from('feedback').select(...). The direct read relied
+// on the feedback_admin_select RLS policy (public.ff_is_admin()) passing for
+// the logged-in admin's own session, which — same as every other admin read
+// in this project — silently returns zero rows instead of an error whenever
+// it doesn't, making real feedback responses invisible here even though they
+// exist in the table. See src/app/api/admin/feedback/route.ts for the full
+// explanation. The L1/CEO view lives in the separate ERP, which reads this
 // same table — see the note at the bottom of ADD_CUSTOMER_FEEDBACK_SYSTEM.sql.
 // ============================================================================
 
@@ -59,11 +63,13 @@ export default function AdminFeedbackPage() {
 
   async function load() {
     setLoading(true);
-    const { data, error } = await supabase
-      .from('feedback')
-      .select('*')
-      .order('created_at', { ascending: false });
-    if (!error && data) setRows(data as FeedbackRow[]);
+    try {
+      const res = await fetch('/api/admin/feedback').then((r) => r.json());
+      if (!res?.error && res?.rows) setRows(res.rows as FeedbackRow[]);
+      else if (res?.error) console.error('[Admin Feedback] Failed to load:', res.error);
+    } catch (err) {
+      console.error('[Admin Feedback] Failed to load:', err);
+    }
     setLoading(false);
   }
 
