@@ -12,13 +12,14 @@
 //    and neither changes the visual design.
 //  - breadcrumb / "show all" links point at the product's real category
 //    page (/vegetables) instead of the old /products listing.
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ShoppingBag, Heart, Star, Plus, Minus, Check, ChevronRight, Truck, ShieldCheck, Timer } from 'lucide-react';
 import { toast } from 'react-hot-toast';
+import { supabase } from '@/lib/supabase';
 import { useCart } from '@/context/CartContext';
 import { useAuth } from '@/context/AuthContext';
 import { useWishlist } from '@/context/WishlistContext';
@@ -48,6 +49,36 @@ export default function ProductDetailClient({ product, relatedProducts }: Produc
   const [quantity, setQuantity] = useState(1);
   const [selectedWeight, setSelectedWeight] = useState('1');
   const [showAddedOverlay, setShowAddedOverlay] = useState(false);
+
+  // Real per-product rating badge (average + count of approved reviews).
+  // This used to be a fixed "4.9 • 1,200+ Reviews" string shown identically
+  // on every product regardless of whether it had any reviews at all — now
+  // it reflects this specific product's actual public.reviews rows, the
+  // same table <ProductReviews> further down the page already reads from.
+  const [reviewStats, setReviewStats] = useState<{ average: number; count: number } | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    supabase
+      .from('reviews')
+      .select('rating, status')
+      .eq('product_id', product.id)
+      .then(({ data }) => {
+        if (cancelled) return;
+        // Same "no status column yet = treat as approved" fallback
+        // ProductReviews.tsx already uses, so this keeps working even
+        // against an older reviews table.
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const approved = (data || []).filter((r: any) => (r.status ?? 'approved') === 'approved');
+        if (approved.length === 0) {
+          setReviewStats({ average: 0, count: 0 });
+          return;
+        }
+        const avg = approved.reduce((sum, r) => sum + (r.rating || 0), 0) / approved.length;
+        setReviewStats({ average: Number(avg.toFixed(1)), count: approved.length });
+      });
+    return () => { cancelled = true; };
+  }, [product.id]);
 
   const isLiked = isInWishlist(product.id);
   // The listing page (ProductCard) already hides "Add to Basket" once
@@ -142,7 +173,11 @@ export default function ProductDetailClient({ product, relatedProducts }: Produc
             <div className="flex flex-wrap items-center gap-4 mb-8">
               <div className="flex items-center gap-1 bg-amber-50 text-amber-700 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest border border-amber-100">
                 <Star size={14} className="fill-amber-500 text-amber-500" />
-                <span>4.9 • 1,200+ {t('product.details.reviews')}</span>
+                {reviewStats && reviewStats.count > 0 ? (
+                  <span>{reviewStats.average} • {reviewStats.count} {t('product.details.reviews')}</span>
+                ) : (
+                  <span>New • Be the first to review</span>
+                )}
               </div>
               <div className="flex items-center gap-1 bg-emerald-50 text-emerald-700 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest border border-emerald-100">
                 <Timer size={14} />

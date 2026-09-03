@@ -12,10 +12,20 @@ import {
   CheckCircle,
   AlertCircle,
   X,
-  RotateCcw
+  RotateCcw,
+  Plus,
+  Send
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'react-hot-toast';
+import { getAllProducts } from '@/lib/admin';
+
+// Lets an admin add a review to a product directly (e.g. to seed a new
+// product's first reviews, or record feedback a customer gave outside the
+// website) — posts to POST /api/admin/reviews, which inserts it with no
+// customer account attached and status 'approved' so it's live right away.
+// See ADD_ADMIN_REVIEW_SUPPORT.sql for the one-time database change this
+// depends on (reviews.user_id needs to allow NULL for admin-added rows).
 
 export default function AdminReviews() {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -30,10 +40,61 @@ export default function AdminReviews() {
   });
   const [updatingId, setUpdatingId] = useState<string | null>(null);
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const [products, setProducts] = useState<any[]>([]);
+  const [showAddModal, setShowAddModal] = useState(false);
+  const [addingReview, setAddingReview] = useState(false);
+  const [newReview, setNewReview] = useState({
+    product_id: '',
+    user_name: '',
+    rating: 5,
+    comment: '',
+    is_verified: true,
+  });
+
   useEffect(() => {
     // eslint-disable-next-line react-hooks/immutability
     fetchReviews();
+    // eslint-disable-next-line react-hooks/immutability
+    getAllProducts(true).then(({ data }) => setProducts(data || []));
   }, []);
+
+  async function handleAddReview(e: React.FormEvent) {
+    e.preventDefault();
+    if (!newReview.product_id) {
+      toast.error('Choose a product');
+      return;
+    }
+    if (!newReview.user_name.trim()) {
+      toast.error('Enter a customer name');
+      return;
+    }
+    setAddingReview(true);
+    try {
+      const res = await fetch('/api/admin/reviews', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          product_id: newReview.product_id,
+          user_name: newReview.user_name.trim(),
+          rating: newReview.rating,
+          comment: newReview.comment.trim(),
+          is_verified: newReview.is_verified,
+        }),
+      }).then((r) => r.json());
+      if (res?.error) throw new Error(res.error);
+
+      toast.success('Review added — it’s live on the product page now.');
+      setShowAddModal(false);
+      setNewReview({ product_id: '', user_name: '', rating: 5, comment: '', is_verified: true });
+      await fetchReviews();
+    } catch (err) {
+      console.error('Error adding review:', err);
+      toast.error(err instanceof Error ? err.message : 'Failed to add review');
+    } finally {
+      setAddingReview(false);
+    }
+  }
 
   async function fetchReviews() {
     try {
@@ -130,6 +191,20 @@ export default function AdminReviews() {
 
   return (
     <div className="space-y-8">
+      <div className="flex items-center justify-between gap-4 flex-wrap">
+        <div>
+          <h1 className="text-3xl font-black uppercase tracking-tight">Product Reviews</h1>
+          <p className="text-sm text-muted-foreground font-medium">Customer star ratings & comments on individual products.</p>
+        </div>
+        <button
+          onClick={() => setShowAddModal(true)}
+          className="flex items-center gap-2 px-5 py-3 bg-primary text-white rounded-xl font-black uppercase tracking-widest text-xs hover:opacity-90 transition-all shrink-0"
+        >
+          <Plus size={16} />
+          Add Review
+        </button>
+      </div>
+
       {/* Stats Header */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
         <div className="bg-white p-8 rounded-[2rem] border border-border shadow-sm">
@@ -289,6 +364,116 @@ export default function AdminReviews() {
           )}
         </div>
       </div>
+
+      {/* Add Review Modal */}
+      <AnimatePresence>
+        {showAddModal && (
+          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => !addingReview && setShowAddModal(false)}
+              className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+            />
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.9, y: 20 }}
+              className="bg-white w-full max-w-lg rounded-[2.5rem] shadow-2xl relative z-10 overflow-hidden"
+            >
+              <div className="p-8 border-b border-border flex items-center justify-between bg-muted/10">
+                <div>
+                  <h2 className="text-xl font-black uppercase tracking-tight">Add a Review</h2>
+                  <p className="text-xs text-muted-foreground font-medium">Goes live on the product page immediately.</p>
+                </div>
+                <button
+                  onClick={() => !addingReview && setShowAddModal(false)}
+                  className="p-2 hover:bg-muted rounded-full transition-all"
+                >
+                  <X size={22} />
+                </button>
+              </div>
+
+              <form onSubmit={handleAddReview} className="p-8 space-y-6">
+                <div className="space-y-2">
+                  <label className="text-xs font-black text-muted-foreground uppercase tracking-widest">Product</label>
+                  <select
+                    required
+                    value={newReview.product_id}
+                    onChange={(e) => setNewReview({ ...newReview, product_id: e.target.value })}
+                    className="w-full bg-muted/30 border border-border rounded-xl py-3 px-4 text-sm font-bold outline-none focus:ring-2 focus:ring-primary/20"
+                  >
+                    <option value="">Choose a product…</option>
+                    {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
+                    {products.map((p: any) => (
+                      <option key={p.id} value={p.id}>{p.name}</option>
+                    ))}
+                  </select>
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-xs font-black text-muted-foreground uppercase tracking-widest">Customer Name</label>
+                  <input
+                    required
+                    type="text"
+                    value={newReview.user_name}
+                    onChange={(e) => setNewReview({ ...newReview, user_name: e.target.value })}
+                    placeholder="e.g. Priya S."
+                    className="w-full bg-muted/30 border border-border rounded-xl py-3 px-4 text-sm font-bold outline-none focus:ring-2 focus:ring-primary/20"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-xs font-black text-muted-foreground uppercase tracking-widest">Rating</label>
+                  <div className="flex items-center gap-2">
+                    {[1, 2, 3, 4, 5].map((s) => (
+                      <button
+                        key={s}
+                        type="button"
+                        onClick={() => setNewReview({ ...newReview, rating: s })}
+                        className="p-1 transition-transform hover:scale-110 active:scale-95"
+                      >
+                        <Star size={28} className={s <= newReview.rating ? 'fill-primary text-primary' : 'text-muted/40'} />
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-xs font-black text-muted-foreground uppercase tracking-widest">Comment (optional)</label>
+                  <textarea
+                    value={newReview.comment}
+                    onChange={(e) => setNewReview({ ...newReview, comment: e.target.value })}
+                    placeholder="What did they say about it?"
+                    rows={3}
+                    className="w-full bg-muted/30 border border-border rounded-xl py-3 px-4 text-sm font-medium outline-none focus:ring-2 focus:ring-primary/20 resize-none"
+                  />
+                </div>
+
+                <label className="flex items-center gap-3 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={newReview.is_verified}
+                    onChange={(e) => setNewReview({ ...newReview, is_verified: e.target.checked })}
+                    className="w-4 h-4 accent-primary"
+                  />
+                  <span className="text-sm font-bold text-slate-600">Mark as &quot;Verified Buyer&quot;</span>
+                </label>
+
+                <button
+                  type="submit"
+                  disabled={addingReview}
+                  className="w-full flex items-center justify-center gap-2 bg-primary text-white py-4 rounded-2xl font-black uppercase tracking-widest text-sm hover:opacity-90 transition-all disabled:opacity-50"
+                >
+                  {addingReview ? <Loader2 size={18} className="animate-spin" /> : <Send size={18} />}
+                  {addingReview ? 'Adding…' : 'Add Review'}
+                </button>
+              </form>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
