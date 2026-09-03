@@ -16,7 +16,16 @@ import { createClient } from '@supabase/supabase-js';
 
 const FROM_EMAIL  = process.env.EMAIL_FROM  || 'Farmers Factory <info.thefarmersfactory@gmail.com>';
 const SITE_URL    = process.env.NEXT_PUBLIC_SITE_URL || 'https://famersfactory.com';
-const LOGO_URL    = `${SITE_URL}/logo.png`;
+// The site's regular /logo.png has a light-grey background baked into the
+// file itself (not real transparency) with the actual green logo mark
+// covering only about half the canvas. On the site that grey margin blends
+// in against light backgrounds, but at the small size these emails show it
+// (44-52px) it reads as a washed-out grey blob with a shrunken logo inside
+// it, and it looks even worse against this email footer's black
+// background. /logo-email.png is a cleaned version — same logo artwork,
+// cropped edge-to-edge with a real transparent background — so it renders
+// as a crisp circular mark on both the white header and black footer.
+const LOGO_URL    = `${SITE_URL}/logo-email.png`;
 
 // ─── Brand Constants ──────────────────────────────────────────────────────────
 const BRAND_PRIMARY   = '#E75129';
