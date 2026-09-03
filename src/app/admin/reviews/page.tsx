@@ -19,6 +19,25 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'react-hot-toast';
 import { getAllProducts } from '@/lib/admin';
 
+// image_urls sometimes comes back from Supabase as a raw JSON *string*
+// (e.g. '["https://..."]') instead of a real array — the same issue
+// already documented and worked around in Admin > Inventory
+// (src/app/admin/inventory/page.tsx). Without parsing it, indexing [0]
+// on the string just grabs its first character ('['), which is why every
+// review's product thumbnail was showing as a broken image. This also
+// replaces the '/placeholder_product.webp' fallback — that file doesn't
+// exist in this project's public/ folder, so it was broken too — with a
+// small inline placeholder that always renders.
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function getProductThumb(p: any): string {
+  let urls = p?.image_urls;
+  if (typeof urls === 'string') {
+    try { urls = JSON.parse(urls); } catch { urls = []; }
+  }
+  const first = Array.isArray(urls) ? urls[0] : null;
+  return first || p?.image_url || "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100'%3E%3Crect width='100' height='100' fill='%23e5e7eb'/%3E%3C/svg%3E";
+}
+
 // Lets an admin add a review to a product directly (e.g. to seed a new
 // product's first reviews, or record feedback a customer gave outside the
 // website) — posts to POST /api/admin/reviews, which inserts it with no
@@ -265,7 +284,7 @@ export default function AdminReviews() {
                 <div className="w-full md:w-64 flex-shrink-0">
                   <div className="flex items-center gap-3 mb-3">
                     <div className="w-12 h-12 bg-muted rounded-xl overflow-hidden border border-border">
-                      <img src={review.products?.image_urls?.[0] || '/placeholder_product.webp'} alt="Reviewed product image" className="w-full h-full object-cover" loading="lazy" />
+                      <img src={getProductThumb(review.products)} alt="Reviewed product image" className="w-full h-full object-cover" loading="lazy" />
                     </div>
                     <div>
                       <p className="text-xs font-black uppercase tracking-widest text-primary mb-1">Product</p>
