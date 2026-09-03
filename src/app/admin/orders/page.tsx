@@ -237,10 +237,27 @@ function OrdersContent() {
 
       // Post-delivery feedback request — fires once, only on the transition
       // to 'delivered'. Creates the feedback row + sends the survey email.
+      // A failure here used to only be logged to the browser console — the
+      // "Order marked as DELIVERED" toast above still showed either way, so
+      // there was no way to tell from the admin panel itself that the
+      // customer's survey email never went out. Now a failed/skipped
+      // request (e.g. no email on file for that customer) surfaces its own
+      // toast so it's visible without opening devtools.
       if (newStatus === 'delivered') {
-        createFeedbackRequest(order).catch(err =>
-          console.error('[Feedback] Failed to create request:', err)
-        );
+        createFeedbackRequest(order)
+          .then((result) => {
+            if (!result?.success) {
+              import('react-hot-toast').then(({ toast }) =>
+                toast.error(`Feedback email not sent: ${result?.error || 'unknown error'}`)
+              );
+            }
+          })
+          .catch(err => {
+            console.error('[Feedback] Failed to create request:', err);
+            import('react-hot-toast').then(({ toast }) =>
+              toast.error('Feedback email failed to send — check console for details')
+            );
+          });
       }
 
       // Restore stock — fires once, only on the transition INTO cancelled/
