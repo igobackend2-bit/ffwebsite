@@ -130,9 +130,30 @@ export default function AdminSettings() {
       { key: CAT_KEYS.fruits, value: catImages.fruits },
       { key: CAT_KEYS.valluvam, value: catImages.valluvam },
     ].filter(r => r.value && r.value.trim() !== '');
-    const { error } = await supabase.from('site_settings').upsert(rows, { onConflict: 'key' });
-    if (error) toast.error('Failed to save: ' + error.message);
-    else toast.success('Homepage category images saved');
+    // Write through the existing service-role /api/admin/settings route
+    // (already used by Min Order Value above) instead of a direct
+    // client-side upsert. The direct upsert failed with "new row violates
+    // row-level security policy for table site_settings" — same
+    // RLS/profiles.role cause already fixed elsewhere in Admin > Settings
+    // and across the other admin pages. See app/api/admin/settings/route.ts.
+    try {
+      const results = await Promise.all(
+        rows.map(r =>
+          fetch('/api/admin/settings', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ key: r.key, value: r.value }),
+          }).then(res => res.json())
+        )
+      );
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const failed = results.find((r: any) => r?.error);
+      if (failed) toast.error('Failed to save: ' + failed.error);
+      else toast.success('Homepage category images saved');
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    } catch (e: any) {
+      toast.error(e.message || 'Failed to save images');
+    }
     setSavingImages(false);
   }
 
