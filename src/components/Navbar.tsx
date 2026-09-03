@@ -294,6 +294,13 @@ function NotificationsDrawer({ isOpen, onClose, onMarkRead }: { isOpen: boolean,
   const { user } = useAuth();
   const { t } = useTranslation();
 
+  // Always-current mirror of `isOpen`, readable from inside fetchNotifications
+  // even when it's invoked from the realtime subscription below (whose
+  // callback was set up once on mount and would otherwise see a stale
+  // `isOpen` from that render instead of whether the drawer is open now).
+  const isOpenRef = React.useRef(isOpen);
+  isOpenRef.current = isOpen;
+
   const fetchNotifications = async () => {
     try {
       const { data, error } = await supabase
@@ -314,9 +321,17 @@ function NotificationsDrawer({ isOpen, onClose, onMarkRead }: { isOpen: boolean,
         setNotifications(list);
 
         // Customer has now seen these notifications — mark any unread ones
-        // as read so the bell's red unread count clears immediately.
+        // as read so the bell's red unread count clears immediately. Only
+        // do this while the drawer is actually open: fetchNotifications()
+        // is also called by the realtime subscription below every time a
+        // NEW notification arrives (even while the drawer is closed), and
+        // without this isOpenRef check that background refresh marked the
+        // brand-new notification read before the customer ever saw the
+        // bell — which is why a fresh "Order Confirmed" notification never
+        // showed a red count at all, even though it appeared in the list
+        // once opened.
         const unreadIds = list.filter((n) => !n.is_read).map((n) => n.id);
-        if (unreadIds.length > 0 && user?.id) {
+        if (unreadIds.length > 0 && user?.id && isOpenRef.current) {
           // Marking as read goes through a service-role API route instead of
           // a direct client update — a plain .update() here silently affects
           // 0 rows under RLS (same pattern as the admin write bugs fixed
