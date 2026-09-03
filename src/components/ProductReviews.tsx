@@ -72,6 +72,19 @@ export default function ProductReviews({ productId }: ProductReviewsProps) {
 
     setIsSubmitting(true);
     try {
+      // Was inserting { user_id, ..., status: 'pending' } — the live
+      // `reviews` table has no `status` column at all (checked directly via
+      // information_schema; the reference schema.sql in this repo has
+      // drifted from what's actually deployed) and additionally required a
+      // NOT NULL customer_id this insert never set, so every real customer
+      // review submission failed outright with a database error, silently
+      // caught below and shown as a generic "Failed to submit review" toast.
+      // See ADD_ADMIN_REVIEW_SUPPORT.sql, which makes customer_id (and
+      // user_id) nullable. is_visible is the real column controlling
+      // whether a review shows — set true here since there's no working
+      // moderation gate to hold it behind (see also
+      // src/app/api/admin/reviews/route.ts's POST handler, fixed the same
+      // way for admin-added reviews).
       const { data, error } = await supabase
         .from('reviews')
         .insert([{
@@ -81,13 +94,13 @@ export default function ProductReviews({ productId }: ProductReviewsProps) {
           rating: newReview.rating,
           comment: newReview.comment,
           is_verified: true,
-          status: 'pending'
+          is_visible: true,
         }])
         .select();
 
       if (error) throw error;
 
-      toast.success('Review submitted! It will appear on the site once approved by our team.');
+      toast.success('Review submitted — thank you for your feedback!');
       if (data && data[0]) {
         setReviews(prev => [data[0], ...prev]);
       }
