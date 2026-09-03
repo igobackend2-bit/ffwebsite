@@ -82,37 +82,36 @@ export default function ProductReviews({ productId }: ProductReviewsProps) {
 
     setIsSubmitting(true);
     try {
-      // Was inserting { user_id, ..., status: 'pending' } — the live
-      // `reviews` table has no `status` column at all (checked directly via
-      // information_schema; the reference schema.sql in this repo has
-      // drifted from what's actually deployed) and additionally required a
-      // NOT NULL customer_id this insert never set, so every real customer
-      // review submission failed outright with a database error, silently
-      // caught below and shown as a generic "Failed to submit review" toast.
-      // See ADD_ADMIN_REVIEW_SUPPORT.sql, which makes customer_id (and
-      // user_id) nullable. is_visible is the real column controlling
-      // whether a review shows publicly — starts false here so it waits in
-      // Admin > Reviews for approval before appearing on the site, same as
-      // this form's own "It will appear on the site once approved by our
-      // team" message always promised.
-      const { data, error } = await supabase
-        .from('reviews')
-        .insert([{
+      // Goes through /api/reviews/submit (service-role key) instead of
+      // inserting directly from the browser. A direct insert here started
+      // failing with "new row violates row-level security policy for table
+      // reviews" once this form began submitting reviews as pending
+      // (is_visible: false) rather than immediately live — the live INSERT
+      // policy on this table doesn't allow that combination from a
+      // customer's own browser session. See that route for the full
+      // explanation. (Earlier still, before is_visible existed on this
+      // insert at all, this same insert failed a different way — a
+      // NOT NULL customer_id constraint the live table has that
+      // supabase_schema.sql in this repo doesn't mention; see
+      // ADD_ADMIN_REVIEW_SUPPORT.sql.)
+      const res = await fetch('/api/reviews/submit', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
           product_id: productId,
           user_id: user.id,
           user_name: user.user_metadata?.full_name || 'Valued Customer',
           rating: newReview.rating,
           comment: newReview.comment,
           is_verified: true,
-          is_visible: false,
-        }])
-        .select();
+        }),
+      }).then((r) => r.json());
 
-      if (error) throw error;
+      if (res?.error) throw new Error(res.error);
 
       toast.success('Review submitted! It will appear on the site once approved by our team.');
-      if (data && data[0]) {
-        setReviews(prev => [data[0], ...prev]);
+      if (res?.review) {
+        setReviews(prev => [res.review, ...prev]);
       }
       setNewReview({ rating: 5, comment: '' });
       setShowForm(false);
