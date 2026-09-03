@@ -37,7 +37,15 @@ export default async function CategoryPage({
   // Products, and any other legacy/traditional category still sitting in
   // the product data) moved to https://www.valluvamproducts.com/ — send
   // visitors there instead of rendering a retired category page.
-  if (!['fruits', 'vegetables'].includes(category.toLowerCase())) {
+  //
+  // "Seasonal" is NOT one of those retired categories — it's the pseudo
+  // category from lib/categories.ts (PSEUDO_CATEGORIES) that shows
+  // whichever Fruits/Vegetables are currently in season (filtered by the
+  // is_seasonal flag in ProductsContent, src/app/products/page.tsx), so it
+  // must be excluded from this external redirect or clicking "Seasonal"
+  // sends customers to the Valluvam site instead of showing them seasonal
+  // produce on this site.
+  if (!['fruits', 'vegetables', 'seasonal'].includes(category.toLowerCase())) {
     redirect('https://www.valluvamproducts.com/');
   }
 
