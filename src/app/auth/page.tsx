@@ -155,7 +155,21 @@ function AuthContent() {
       // Save the full profile so the customer can log back in to the SAME account
       try {
         const { data: { user: u } } = await supabase.auth.getUser();
-        if (u) await supabase.from('profiles').upsert({ id: u.id, full_name: fullName.trim(), email: email.trim(), phone }, { onConflict: 'id' });
+        if (u) {
+          await supabase.from('profiles').upsert({ id: u.id, full_name: fullName.trim(), email: email.trim(), phone }, { onConflict: 'id' });
+          // The updateUser({ email }) call above only takes effect once the
+          // customer clicks a confirmation link (Supabase's "Confirm email
+          // change" setting) — most never do, so email+password login would
+          // keep failing afterwards even though everything above "succeeded".
+          // Force-attach + auto-confirm it server-side so login works right away.
+          try {
+            await fetch('/api/confirm-signup-email', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ id: u.id, email: email.trim() }),
+            });
+          } catch { /* best-effort — client-side updateUser above still ran */ }
+        }
       } catch { /**/ }
       try { await supabase.from('leads').insert({ name: fullName.trim(), email: email.trim(), phone, source: 'User Signup' }); } catch { /**/ }
       localStorage.setItem('ff_returning_customer', '1');

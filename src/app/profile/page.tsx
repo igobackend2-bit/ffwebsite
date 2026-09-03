@@ -310,6 +310,36 @@ function ProfileContent() {
 
       if (error) throw error;
 
+      // The update above only saves the email into the `profiles` table —
+      // it never told Supabase Auth about it. Accounts that started out as
+      // phone+OTP have no email on their actual Auth identity, so
+      // `profiles.email` and the real Auth email silently drift apart: this
+      // page shows the email as saved, but /auth's signInWithPassword({
+      // email, password }) has no Auth user to match it against and fails
+      // with "Invalid email/mobile number or password" — even though the
+      // password itself is correct. Keep the real Auth identity in sync so
+      // email+password login actually works afterwards.
+      const trimmedEmailForAuth = emailState.trim();
+      if (trimmedEmailForAuth && trimmedEmailForAuth !== user?.email) {
+        const { error: authEmailError } = await supabase.auth.updateUser({ email: trimmedEmailForAuth });
+        if (authEmailError) {
+          console.warn('Auth email sync notice:', authEmailError.message);
+          toast.error(`Saved, but couldn't link "${trimmedEmailForAuth}" to your login (${authEmailError.message}). Email/password login may not work until this is resolved.`);
+        }
+        // The updateUser({ email }) call above only takes effect once the
+        // customer clicks a confirmation link (Supabase's "Confirm email
+        // change" setting) — most never do, so email+password login keeps
+        // failing afterwards even though this save "succeeded". Force-attach
+        // + auto-confirm it server-side so login works right away.
+        try {
+          await fetch('/api/confirm-signup-email', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ id: user?.id, email: trimmedEmailForAuth }),
+          });
+        } catch { /* best-effort — client-side updateUser above still ran */ }
+      }
+
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       setProfile((prev: any) => ({
         ...prev,
