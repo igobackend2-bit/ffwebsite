@@ -16,7 +16,10 @@ interface Review {
   created_at: string;
   is_verified: boolean;
   likes: number;
-  status?: 'pending' | 'approved' | 'rejected';
+  // Real moderation flag on the live `reviews` table — a customer's review
+  // starts false (pending) and only shows publicly once an admin approves
+  // it from Admin > Reviews. See src/app/api/admin/reviews/route.ts.
+  is_visible?: boolean;
 }
 
 interface ProductReviewsProps {
@@ -53,11 +56,18 @@ export default function ProductReviews({ productId }: ProductReviewsProps) {
     }
   }
 
-  // Only approved reviews count toward the public rating/stats shown to
-  // everyone. `reviews` itself also includes the signed-in user's own
-  // pending/rejected review (RLS returns those to their author only) so
-  // they get feedback on their submission below.
-  const publicReviews = reviews.filter(r => (r.status ?? 'approved') === 'approved');
+  // Only admin-approved (is_visible: true) reviews count toward the public
+  // rating/stats, and only those are shown in the list below to visitors
+  // in general — a customer's own not-yet-approved review is the one
+  // exception (see the `visibleReviews` filter used for rendering), so
+  // they still get feedback that their submission went through while it
+  // waits for approval.
+  const publicReviews = reviews.filter(r => r.is_visible === true);
+
+  // What actually renders in the list: everyone's approved reviews, plus —
+  // if the current visitor is signed in — their own review even while it's
+  // still pending approval.
+  const visibleReviews = reviews.filter(r => r.is_visible === true || (user && r.user_id === user.id));
 
   const averageRating = publicReviews.length > 0
     ? (publicReviews.reduce((acc, r) => acc + r.rating, 0) / publicReviews.length).toFixed(1)
@@ -81,10 +91,10 @@ export default function ProductReviews({ productId }: ProductReviewsProps) {
       // caught below and shown as a generic "Failed to submit review" toast.
       // See ADD_ADMIN_REVIEW_SUPPORT.sql, which makes customer_id (and
       // user_id) nullable. is_visible is the real column controlling
-      // whether a review shows — set true here since there's no working
-      // moderation gate to hold it behind (see also
-      // src/app/api/admin/reviews/route.ts's POST handler, fixed the same
-      // way for admin-added reviews).
+      // whether a review shows publicly — starts false here so it waits in
+      // Admin > Reviews for approval before appearing on the site, same as
+      // this form's own "It will appear on the site once approved by our
+      // team" message always promised.
       const { data, error } = await supabase
         .from('reviews')
         .insert([{
@@ -94,13 +104,13 @@ export default function ProductReviews({ productId }: ProductReviewsProps) {
           rating: newReview.rating,
           comment: newReview.comment,
           is_verified: true,
-          is_visible: true,
+          is_visible: false,
         }])
         .select();
 
       if (error) throw error;
 
-      toast.success('Review submitted — thank you for your feedback!');
+      toast.success('Review submitted! It will appear on the site once approved by our team.');
       if (data && data[0]) {
         setReviews(prev => [data[0], ...prev]);
       }
@@ -239,7 +249,7 @@ export default function ProductReviews({ productId }: ProductReviewsProps) {
 
       <div className="space-y-6">
         <AnimatePresence mode="popLayout">
-          {reviews.map((review) => (
+          {visibleReviews.map((review) => (
             <motion.div 
               key={review.id}
               layout
@@ -255,20 +265,15 @@ export default function ProductReviews({ productId }: ProductReviewsProps) {
                   <div>
                     <div className="flex items-center gap-2 mb-0.5">
                       <h4 className="text-sm font-black text-foreground uppercase tracking-tight">{review.user_name}</h4>
-                      {(review.status ?? 'approved') === 'approved' && review.is_verified && (
+                      {review.is_visible && review.is_verified && (
                         <div className="flex items-center gap-1 text-[8px] font-black bg-green-100 text-green-700 px-1.5 py-0.5 rounded uppercase tracking-tighter">
                           <CheckCircle size={8} />
                           Verified
                         </div>
                       )}
-                      {review.status === 'pending' && (
+                      {!review.is_visible && (
                         <div className="flex items-center gap-1 text-[8px] font-black bg-amber-100 text-amber-700 px-1.5 py-0.5 rounded uppercase tracking-tighter">
                           Pending Approval
-                        </div>
-                      )}
-                      {review.status === 'rejected' && (
-                        <div className="flex items-center gap-1 text-[8px] font-black bg-red-100 text-red-700 px-1.5 py-0.5 rounded uppercase tracking-tighter">
-                          Not Approved
                         </div>
                       )}
                     </div>

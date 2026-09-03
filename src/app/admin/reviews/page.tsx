@@ -12,7 +12,6 @@ import {
   CheckCircle,
   AlertCircle,
   X,
-  RotateCcw,
   Plus,
   Send
 } from 'lucide-react';
@@ -99,16 +98,23 @@ export default function AdminReviews() {
   async function fetchReviews() {
     try {
       setLoading(true);
-      // Goes through the admin API (service-role key) so pending/rejected
+      // Goes through the admin API (service-role key) so not-yet-approved
       // reviews from every customer are visible here, not just approved
-      // ones — the public RLS policy only returns approved reviews (plus
-      // a customer's own) to a normal client.
+      // ones — the public RLS policy returns every review to a normal
+      // client (there's no per-status filtering at the database level),
+      // but is_visible: false ones are meant to be hidden from the
+      // storefront until an admin approves them here.
       const res = await fetch('/api/admin/reviews').then(r => r.json());
       if (res.error) throw new Error(res.error);
       const data = res.reviews || [];
       setReviews(data);
 
-      // Calculate stats
+      // Calculate stats. This used to read a `status` column
+      // ('pending'/'approved'/'rejected') that doesn't exist on the live
+      // `reviews` table — every review silently counted as neither pending
+      // nor approved, so these numbers were always 0 regardless of reality.
+      // is_visible is the real column: true = live on the site, false =
+      // waiting for approval.
       if (data.length > 0) {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const avg = data.reduce((acc: number, r: any) => acc + r.rating, 0) / data.length;
@@ -116,11 +122,10 @@ export default function AdminReviews() {
           total: data.length,
           average: Number(avg.toFixed(1)),
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          pending: data.filter((r: any) => r.status === 'pending').length,
+          pending: data.filter((r: any) => !r.is_visible).length,
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          approved: data.filter((r: any) => r.status === 'approved').length,
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          rejected: data.filter((r: any) => r.status === 'rejected').length
+          approved: data.filter((r: any) => r.is_visible).length,
+          rejected: 0
         });
       } else {
         setStats({ total: 0, average: 0, pending: 0, approved: 0, rejected: 0 });
@@ -133,33 +138,35 @@ export default function AdminReviews() {
     }
   }
 
-  async function updateStatus(id: string, status: 'pending' | 'approved' | 'rejected') {
+  // Approves a customer's review so it appears on the product page. (There
+  // is no separate "reject" state — a review an admin doesn't want either
+  // stays pending, or is removed entirely with Delete below.)
+  async function approveReview(id: string) {
     setUpdatingId(id);
     try {
       const res = await fetch('/api/admin/reviews', {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ id, status })
+        body: JSON.stringify({ id, is_visible: true })
       }).then(r => r.json());
       if (res.error) throw new Error(res.error);
 
       setReviews(prev => {
-        const next = prev.map(r => (r.id === id ? { ...r, status } : r));
+        const next = prev.map(r => (r.id === id ? { ...r, is_visible: true } : r));
         setStats({
           total: next.length,
           average: next.length > 0 ? Number((next.reduce((acc, r) => acc + r.rating, 0) / next.length).toFixed(1)) : 0,
-          pending: next.filter(r => r.status === 'pending').length,
-          approved: next.filter(r => r.status === 'approved').length,
-          rejected: next.filter(r => r.status === 'rejected').length
+          pending: next.filter(r => !r.is_visible).length,
+          approved: next.filter(r => r.is_visible).length,
+          rejected: 0
         });
         return next;
       });
 
-      const label = status === 'approved' ? 'Review approved — now visible on the website' : status === 'rejected' ? 'Review rejected — hidden from the website' : 'Review marked as pending';
-      toast.success(label);
+      toast.success('Review approved — now live on the website');
     } catch (err) {
-      console.error('Error updating review status:', err);
-      toast.error('Failed to update review status');
+      console.error('Error approving review:', err);
+      toast.error('Failed to approve review');
     } finally {
       setUpdatingId(null);
     }
@@ -285,19 +292,13 @@ export default function AdminReviews() {
                           <CheckCircle size={8} /> Verified Buyer
                         </span>
                       )}
-                      {review.status === 'pending' && (
+                      {!review.is_visible ? (
                         <span className="bg-amber-100 text-amber-600 text-[8px] font-black uppercase tracking-widest px-2 py-0.5 rounded-full flex items-center gap-1">
                           <AlertCircle size={8} /> Pending Approval
                         </span>
-                      )}
-                      {review.status === 'approved' && (
+                      ) : (
                         <span className="bg-blue-100 text-blue-600 text-[8px] font-black uppercase tracking-widest px-2 py-0.5 rounded-full flex items-center gap-1">
-                          <CheckCircle size={8} /> Approved
-                        </span>
-                      )}
-                      {review.status === 'rejected' && (
-                        <span className="bg-red-100 text-red-600 text-[8px] font-black uppercase tracking-widest px-2 py-0.5 rounded-full flex items-center gap-1">
-                          <X size={8} /> Rejected
+                          <CheckCircle size={8} /> Live On Site
                         </span>
                       )}
                     </div>
@@ -313,9 +314,9 @@ export default function AdminReviews() {
 
                 {/* Actions */}
                 <div className="flex md:flex-col items-center justify-center gap-2">
-                  {review.status !== 'approved' && (
+                  {!review.is_visible && (
                     <button
-                      onClick={() => updateStatus(review.id, 'approved')}
+                      onClick={() => approveReview(review.id)}
                       disabled={updatingId === review.id}
                       className="p-3 bg-emerald-50 text-emerald-600 hover:bg-emerald-500 hover:text-white rounded-2xl transition-all shadow-sm disabled:opacity-50"
                       title="Accept — show on website"
@@ -323,30 +324,10 @@ export default function AdminReviews() {
                       <CheckCircle size={18} />
                     </button>
                   )}
-                  {review.status !== 'rejected' && (
-                    <button
-                      onClick={() => updateStatus(review.id, 'rejected')}
-                      disabled={updatingId === review.id}
-                      className="p-3 bg-orange-50 text-orange-600 hover:bg-orange-500 hover:text-white rounded-2xl transition-all shadow-sm disabled:opacity-50"
-                      title="Reject — hide from website"
-                    >
-                      <X size={18} />
-                    </button>
-                  )}
-                  {review.status !== 'pending' && (
-                    <button
-                      onClick={() => updateStatus(review.id, 'pending')}
-                      disabled={updatingId === review.id}
-                      className="p-3 bg-slate-100 text-slate-500 hover:bg-slate-500 hover:text-white rounded-2xl transition-all shadow-sm disabled:opacity-50"
-                      title="Mark as pending"
-                    >
-                      <RotateCcw size={18} />
-                    </button>
-                  )}
                   <button
                     onClick={() => deleteReview(review.id)}
                     className="p-3 bg-red-50 text-red-500 hover:bg-red-500 hover:text-white rounded-2xl transition-all shadow-sm"
-                    title="Delete Review"
+                    title={review.is_visible ? 'Not needed anymore — delete' : 'Delete Review'}
                   >
                     <Trash2 size={18} />
                   </button>

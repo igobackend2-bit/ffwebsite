@@ -108,8 +108,13 @@ export async function POST(req: Request) {
   }
 }
 
-// PATCH: admin approve / reject / manually re-mark a review's status.
-// Body: { id: string, status: 'pending' | 'approved' | 'rejected' }
+// PATCH: admin approves (or un-approves) a customer's review.
+// Used to update a `status` column ('pending' | 'approved' | 'rejected')
+// that, it turns out, doesn't exist on the live `reviews` table at all —
+// so this button never actually did anything before. The real column
+// controlling whether a review shows on the site is `is_visible`
+// (boolean); this now updates that instead.
+// Body: { id: string, is_visible: boolean }
 export async function PATCH(req: Request) {
   try {
     const supabase = getAdminClient();
@@ -118,20 +123,17 @@ export async function PATCH(req: Request) {
     }
 
     const body = await req.json();
-    const { id, status } = body || {};
+    const { id, is_visible } = body || {};
 
-    if (!id || !status) {
-      return NextResponse.json({ error: 'Missing id or status' }, { status: 400 });
-    }
-    if (!['pending', 'approved', 'rejected'].includes(status)) {
-      return NextResponse.json({ error: 'Invalid status' }, { status: 400 });
+    if (!id || typeof is_visible !== 'boolean') {
+      return NextResponse.json({ error: 'Missing id or is_visible' }, { status: 400 });
     }
 
     const { data, error } = await supabase
       .from('reviews')
-      .update({ status })
+      .update({ is_visible })
       .eq('id', id)
-      .select()
+      .select('*, products(name, image_urls)')
       .single();
 
     if (error) {

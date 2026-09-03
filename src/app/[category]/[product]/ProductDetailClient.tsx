@@ -50,26 +50,24 @@ export default function ProductDetailClient({ product, relatedProducts }: Produc
   const [selectedWeight, setSelectedWeight] = useState('1');
   const [showAddedOverlay, setShowAddedOverlay] = useState(false);
 
-  // Real per-product rating badge (average + count of approved reviews).
-  // This used to be a fixed "4.9 • 1,200+ Reviews" string shown identically
-  // on every product regardless of whether it had any reviews at all — now
-  // it reflects this specific product's actual public.reviews rows, the
-  // same table <ProductReviews> further down the page already reads from.
+  // Real per-product rating badge (average + count of admin-approved
+  // reviews only). This used to be a fixed "4.9 • 1,200+ Reviews" string
+  // shown identically on every product regardless of whether it had any
+  // reviews at all — now it reflects this specific product's actual
+  // public.reviews rows, filtered to is_visible (approved) ones only, the
+  // same rule <ProductReviews> further down the page uses.
   const [reviewStats, setReviewStats] = useState<{ average: number; count: number } | null>(null);
 
   useEffect(() => {
     let cancelled = false;
     supabase
       .from('reviews')
-      .select('rating, status')
+      .select('rating, is_visible')
       .eq('product_id', product.id)
       .then(({ data }) => {
         if (cancelled) return;
-        // Same "no status column yet = treat as approved" fallback
-        // ProductReviews.tsx already uses, so this keeps working even
-        // against an older reviews table.
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const approved = (data || []).filter((r: any) => (r.status ?? 'approved') === 'approved');
+        const approved = (data || []).filter((r: any) => r.is_visible === true);
         if (approved.length === 0) {
           setReviewStats({ average: 0, count: 0 });
           return;
