@@ -165,7 +165,7 @@ const IGO_BRANDS = [
     id: 'india-green',
     name: 'India Green',
     category: 'Sustainability',
-    logo: '',
+    logo: '/brands/india green.webp',
     description: 'Dedicated sustainability initiative focusing on environmental conservation and green farming practices.',
     active: false,
   },
