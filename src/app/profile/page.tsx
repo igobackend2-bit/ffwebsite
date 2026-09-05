@@ -307,10 +307,21 @@ function ProfileContent() {
         updated_at: new Date().toISOString()
       };
 
+      // .select().single() on both writes below is the same fix already
+      // applied throughout this project's admin pages (see e.g.
+      // src/app/admin/farmers/page.tsx): a plain .update(...).eq('id', x)
+      // with no .select() silently "succeeds" (no error) even when RLS
+      // blocks the write and 0 rows actually change — which is exactly what
+      // "I toggled Email Notifications, saw Settings Updated, but it's back
+      // on next visit" would look like. Chaining .select().single() makes a
+      // blocked write throw a real, catchable error instead of a false
+      // success.
       let { error } = await supabase
         .from('profiles')
         .update({ ...baseUpdate, email_notifications_enabled: emailNotifications })
-        .eq('id', user?.id);
+        .eq('id', user?.id)
+        .select()
+        .single();
 
       // The 'email_notifications_enabled' column is missing on the live
       // database in some environments (schema drift from supabase_schema.sql
@@ -321,7 +332,7 @@ function ProfileContent() {
       let notificationPrefSaved = true;
       if (error && /email_notifications_enabled/i.test(error.message || '')) {
         notificationPrefSaved = false;
-        ({ error } = await supabase.from('profiles').update(baseUpdate).eq('id', user?.id));
+        ({ error } = await supabase.from('profiles').update(baseUpdate).eq('id', user?.id).select().single());
       }
 
       if (error) throw error;
