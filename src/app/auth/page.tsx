@@ -153,6 +153,44 @@ function AuthContent() {
     finally { setLoading(false); }
   };
 
+  // "Forgot password?" — reuses the same working, already-branded reset-email
+  // pipeline the admin panel uses (Admin > Customers > "Send Password
+  // Reset"), just exposed to the customer themselves instead of requiring
+  // support to trigger it on their behalf. See
+  // src/app/api/admin/customers/route.ts's POST handler for why this route
+  // (rather than supabase.auth.resetPasswordForEmail directly) is what
+  // actually delivers the email — this project's Supabase project has never
+  // had its own built-in mailer configured, only the site's own SMTP one.
+  const handleForgotPassword = async () => {
+    const typed = identifier.trim();
+    const isEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(typed);
+    let targetEmail = isEmail ? typed : '';
+    if (!targetEmail) {
+      const entered = window.prompt('Enter the email address on your account to receive a password reset link:', isEmail ? typed : '');
+      if (!entered) return;
+      targetEmail = entered.trim();
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(targetEmail)) {
+        toast.error('Enter a valid email address');
+        return;
+      }
+    }
+    setLoading(true);
+    try {
+      const res = await fetch('/api/admin/customers', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'send_password_reset', email: targetEmail }),
+      });
+      const result = await res.json();
+      if (!res.ok || result?.error) throw new Error(result?.error || 'Could not send reset link');
+      toast.success(`Password reset link sent to ${targetEmail}. Please check your inbox.`, { duration: 6000 });
+    } catch (e: unknown) {
+      toast.error((e as Error).message || 'Failed to send reset link');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleCompleteSignup = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!fullName.trim()) { toast.error('Please enter your name'); return; }
@@ -308,6 +346,12 @@ function AuthContent() {
                         className="w-full bg-white/5 border border-white/10 rounded-2xl py-4 pl-6 pr-14 focus:outline-none focus:ring-2 focus:ring-primary/50 text-sm font-bold placeholder:text-white/20 text-white" />
                       <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-5 top-1/2 -translate-y-1/2 text-white/20 hover:text-white/60">
                         {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                      </button>
+                    </div>
+                    <div className="text-right">
+                      <button type="button" onClick={handleForgotPassword} disabled={loading}
+                        className="text-[10px] font-black uppercase tracking-widest text-primary/80 hover:text-primary transition-colors disabled:opacity-50">
+                        Forgot Password?
                       </button>
                     </div>
                   </div>
