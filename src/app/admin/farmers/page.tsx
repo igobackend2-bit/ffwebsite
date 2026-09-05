@@ -78,7 +78,11 @@ export default function AdminFarmers() {
         setFarmers([...farmers, data[0]]);
         toast.success('Farmer profile created');
       } else {
-        const { error } = await supabase.from('farmers').update(editForm).eq('id', isEditing);
+        // .select().single() so a write silently blocked by RLS (0 rows
+        // updated) surfaces as a real error instead of a false success —
+        // same fix already applied to orders/customers/products elsewhere
+        // in this admin.
+        const { error } = await supabase.from('farmers').update(editForm).eq('id', isEditing).select().single();
         if (error) throw error;
         setFarmers(farmers.map(f => f.id === isEditing ? { ...f, ...editForm } : f));
         toast.success('Farmer profile updated');

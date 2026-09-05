@@ -60,7 +60,12 @@ export async function PUT(req: Request) {
       return NextResponse.json({ error: 'Missing id' }, { status: 400 });
     }
 
-    const { error } = await supabase.from('banners').update(fields).eq('id', id);
+    // .select().single() so an id that doesn't actually match any row (e.g.
+    // a banner already deleted elsewhere) reports a real "not found" error
+    // instead of a false success with nothing actually changed — same
+    // .select() fix already applied to every other admin write in this
+    // project (orders, customers, products, etc.).
+    const { error } = await supabase.from('banners').update(fields).eq('id', id).select().single();
 
     if (error) {
       return NextResponse.json({ error: error.message }, { status: 500 });

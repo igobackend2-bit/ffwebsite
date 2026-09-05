@@ -40,11 +40,17 @@ export default function AdminLeadsPage() {
 
   const updateLeadStatus = async (id: string, newStatus: string) => {
     try {
+      // .select().single() so a write silently blocked by RLS (0 rows
+      // updated) surfaces as a real error instead of a false success —
+      // same fix already applied to orders/customers/products elsewhere
+      // in this admin.
       const { error } = await supabase
         .from('leads')
         .update({ status: newStatus })
-        .eq('id', id);
-      
+        .eq('id', id)
+        .select()
+        .single();
+
       if (error) throw error;
       
       toast.success('Lead status updated');

@@ -84,7 +84,11 @@ export default function AdminCoupons() {
         setCoupons([data[0], ...coupons]);
         toast.success('Coupon created');
       } else {
-        const { error } = await supabase.from('coupons').update(editForm).eq('id', isEditing);
+        // .select().single() so a write silently blocked by RLS (0 rows
+        // updated) surfaces as a real error instead of a false success —
+        // same fix already applied to orders/customers/products elsewhere
+        // in this admin.
+        const { error } = await supabase.from('coupons').update(editForm).eq('id', isEditing).select().single();
         if (error) throw error;
         setCoupons(coupons.map(c => c.id === isEditing ? { ...c, ...editForm } : c));
         toast.success('Coupon updated');

@@ -123,7 +123,11 @@ export default function AdminStories() {
         setStories([...stories, data[0]]);
         toast.success('Story added successfully');
       } else {
-        const { error } = await supabase.from('farm_stories').update(storyData).eq('id', isEditing);
+        // .select().single() so a write silently blocked by RLS (0 rows
+        // updated) surfaces as a real error instead of a false success —
+        // same fix already applied to orders/customers/products elsewhere
+        // in this admin.
+        const { error } = await supabase.from('farm_stories').update(storyData).eq('id', isEditing).select().single();
         if (error) throw error;
         setStories(stories.map(s => s.id === isEditing ? { ...s, ...storyData } as Story : s));
         toast.success('Story updated successfully');

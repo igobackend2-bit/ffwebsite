@@ -142,13 +142,23 @@ export default function AdminInventory() {
     try {
       setLoading(true);
       // Perform database updates
-      const { error } = await supabase
+      // .select() (this is a bulk multi-row update, so .single() doesn't
+      // apply here) so that a write silently blocked by RLS — 0 rows
+      // updated, no error from Postgres itself — is caught explicitly
+      // instead of reporting success while nothing actually changed. Same
+      // underlying fix already applied to orders/customers/products
+      // elsewhere in this admin.
+      const { data, error } = await supabase
         .from('products')
         .update({ stock: 200, in_stock: true })
-        .neq('id', '00000000-0000-0000-0000-000000000000'); // Standard check to update all rows in PostgREST
+        .neq('id', '00000000-0000-0000-0000-000000000000') // Standard check to update all rows in PostgREST
+        .select();
 
       if (error) throw error;
-      
+      if (!data || data.length === 0) {
+        throw new Error('No products were updated — check admin write permissions (RLS).');
+      }
+
       toast.success('Successfully reset all products stock levels to 200 KG!');
       await fetchInventory();
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -170,10 +180,16 @@ export default function AdminInventory() {
     // app/api/admin/notify-restock/route.ts.
     const wasOutOfStock = (products.find(p => p.id === productId)?.stock ?? 0) === 0;
     try {
+      // .select().single() so a write silently blocked by RLS (0 rows
+      // updated) surfaces as a real error instead of a false success —
+      // same fix already applied to orders/customers/products elsewhere
+      // in this admin.
       const { error } = await supabase
         .from('products')
         .update({ stock: newStock, in_stock: inStock })
-        .eq('id', productId);
+        .eq('id', productId)
+        .select()
+        .single();
 
       if (error) throw error;
 

@@ -138,7 +138,12 @@ export default function AdminStreams() {
         setStreams([...streams, data[0]]);
         toast.success('Live stream added successfully');
       } else {
-        const { error } = await supabase.from('farm_streams').update(streamData).eq('id', isEditing);
+        // .select().single() (matching the same fix already applied to
+        // orders/customers/products elsewhere in this admin) so that a
+        // write silently blocked by RLS (0 rows updated) surfaces as a
+        // real error here instead of reporting success while nothing
+        // actually changed.
+        const { error } = await supabase.from('farm_streams').update(streamData).eq('id', isEditing).select().single();
         if (error) throw error;
         setStreams(streams.map(s => s.id === isEditing ? { ...s, ...streamData } : s));
         toast.success('Stream updated successfully');

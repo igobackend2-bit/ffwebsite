@@ -31,6 +31,36 @@ import ProductGallery from '@/components/ProductGallery';
 import NotifyMeButton from '@/components/NotifyMeButton';
 import { useTranslation } from '@/context/TranslationContext';
 import { categoryHref, productHref } from '@/lib/categorySlug';
+import { normalizeWeightOptions, getEffectiveLineTotal } from '@/lib/pricing';
+
+// Same admin-configured weight list ProductDetailModal.tsx already reads via
+// normalizeWeightOptions()/getEffectiveLineTotal() (see src/lib/pricing.ts).
+// This page used to have its own hardcoded { 500g, 1kg, 2kg, 5kg } list
+// instead, completely ignoring whatever an admin ticked on the product's
+// "Customer Quantity Options" — so unticking 1kg/2kg/5kg and enabling e.g.
+// 25kg/50kg on a product never showed up here, only in the quick-view modal.
+// Falls back to that same original hardcoded list only when a product has no
+// weight_options configured at all (or is in 'range' mode, which this
+// button-list UI doesn't represent), so nothing regresses for products that
+// were never touched in admin.
+function formatWeightLabel(weight: number): string {
+  return weight < 1 ? `${Math.round(weight * 1000)}g` : `${weight}kg`;
+}
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function getWeightOptions(product: any): { label: string; value: string }[] {
+  if (product?.weight_mode === 'fixed') {
+    const configured = normalizeWeightOptions(product.weight_options).sort((a, b) => a.weight - b.weight);
+    if (configured.length > 0) {
+      return configured.map((o) => ({ label: formatWeightLabel(o.weight), value: String(o.weight) }));
+    }
+  }
+  return [
+    { label: '500g', value: '0.5' },
+    { label: '1kg', value: '1' },
+    { label: '2kg', value: '2' },
+    { label: '5kg', value: '5' },
+  ];
+}
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 interface ProductDetailClientProps {
@@ -46,9 +76,21 @@ export default function ProductDetailClient({ product, relatedProducts }: Produc
   const { toggleWishlist, isInWishlist } = useWishlist();
   const { t } = useTranslation();
 
+  const weightOptions = getWeightOptions(product);
+
   const [quantity, setQuantity] = useState(1);
-  const [selectedWeight, setSelectedWeight] = useState('1');
+  const [selectedWeight, setSelectedWeight] = useState(weightOptions[0]?.value || '1');
   const [showAddedOverlay, setShowAddedOverlay] = useState(false);
+
+  // Keep the selected weight valid if it navigates to a different product
+  // (client-side nav reuses this component instance) whose configured
+  // options don't include the previously selected one.
+  useEffect(() => {
+    if (!weightOptions.some((o) => o.value === selectedWeight)) {
+      setSelectedWeight(weightOptions[0]?.value || '1');
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [product.id]);
 
   // Real per-product rating badge (average + count of admin-approved
   // reviews only). This used to be a fixed "4.9 • 1,200+ Reviews" string
@@ -126,13 +168,6 @@ export default function ProductDetailClient({ product, relatedProducts }: Produc
     }
   };
 
-  const weightOptions = [
-    { label: '500g', value: '0.5' },
-    { label: '1kg', value: '1' },
-    { label: '2kg', value: '2' },
-    { label: '5kg', value: '5' }
-  ];
-
   return (
     <div className="min-h-screen bg-white">
       <Navbar />
@@ -190,7 +225,7 @@ export default function ProductDetailClient({ product, relatedProducts }: Produc
 
             <div className="flex flex-col mb-10 pb-10 border-b border-slate-100">
               <div className="flex items-baseline gap-4 mb-2">
-                <span className="text-6xl font-black text-primary">₹{product.price * parseFloat(selectedWeight)}</span>
+                <span className="text-6xl font-black text-primary">₹{getEffectiveLineTotal(product, parseFloat(selectedWeight) || 0)}</span>
                 {product.mrp && product.mrp > product.price && (
                   <span className="text-2xl font-bold text-slate-300 line-through">₹{product.mrp * parseFloat(selectedWeight)}</span>
                 )}

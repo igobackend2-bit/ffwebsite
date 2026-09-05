@@ -18,6 +18,7 @@ interface ProductCardProps {
     id: string;
     name: string;
     price: number;
+    mrp?: number;
     image_url: string;
     unit: string;
     category: string;
@@ -233,11 +234,22 @@ export default function ProductCard({ product, href }: ProductCardProps) {
             <div className="flex flex-col">
               <div className="flex items-center gap-2">
                 <span className="text-2xl font-black text-primary">₹{product.price}</span>
-                <span className="text-xs font-bold text-muted-foreground/60 line-through">₹{Math.round(product.price * 1.3)}</span>
+                {/* Was a hardcoded "×1.3 / save ×0.3" shown on every single
+                    card regardless of whether admin actually set a discount
+                    — a fake strikethrough price/savings badge unrelated to
+                    the real MRP field admin configures per product (which
+                    the product detail page and cart already use correctly).
+                    Now only shows when there's a real MRP above the current
+                    price, and reflects the actual saved amount. */}
+                {product.mrp && product.mrp > product.price && (
+                  <span className="text-xs font-bold text-muted-foreground/60 line-through">₹{Math.round(product.mrp)}</span>
+                )}
               </div>
-              <div className="bg-green-100 text-green-700 text-[9px] font-black px-1.5 py-0.5 rounded-md uppercase tracking-tighter w-fit">
-                {t('product.save_amount')}{Math.round(product.price * 0.3)}
-              </div>
+              {product.mrp && product.mrp > product.price && (
+                <div className="bg-green-100 text-green-700 text-[9px] font-black px-1.5 py-0.5 rounded-md uppercase tracking-tighter w-fit">
+                  {t('product.save_amount')}{Math.round(product.mrp - product.price)}
+                </div>
+              )}
             </div>
 
             {cartItem ? (
