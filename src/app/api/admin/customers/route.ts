@@ -172,7 +172,18 @@ export async function POST(req: Request) {
       console.warn('[admin/customers] name lookup for reset email skipped:', e);
     }
 
-    const emailRes = await fetch(`${origin}/api/send-email`, {
+    // Call /api/send-email over the container's own loopback address rather
+    // than its public origin. This route runs server-side, so this fetch is
+    // the app calling itself from inside its own Docker/Dokploy container —
+    // going out to the public https://famersfactory.com hostname and back in
+    // through the reverse proxy is exactly the kind of self-referencing
+    // request that fails in this hosting setup ("TypeError: fetch failed",
+    // with no HTTP response at all), even though the site is reachable fine
+    // from a real browser. server.js always binds to localhost:PORT (see
+    // that file), so this loopback URL is always valid inside the container,
+    // in both dev and this production deployment.
+    const internalOrigin = `http://localhost:${process.env.PORT || 3000}`;
+    const emailRes = await fetch(`${internalOrigin}/api/send-email`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
