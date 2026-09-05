@@ -418,9 +418,21 @@ export default function Checkout() {
       }).then(r => r.json()).catch((err: any) => ({ error: err?.message }));
       if (notifyRes?.error) console.warn('[Checkout] Notification create failed:', notifyRes.error);
 
-      import('@/lib/email').then(({ sendOrderConfirmation }) => {
-        sendOrderConfirmation(user.email || address.name, order.id, total, order.order_number);
-      });
+      // Only send the confirmation to a real email address. `user.email`
+      // should always be set (checkout requires a logged-in Supabase Auth
+      // account), but this used to fall back to `address.name` — a
+      // person's name, not an email — which would silently send the
+      // "order confirmation" to an invalid address instead of just
+      // skipping it. Guard instead, matching the `if (customerEmail)`
+      // pattern already used for status-update emails in
+      // src/app/admin/orders/page.tsx.
+      if (user.email) {
+        import('@/lib/email').then(({ sendOrderConfirmation }) => {
+          sendOrderConfirmation(user.email as string, order.id, total, order.order_number);
+        });
+      } else {
+        console.warn('[Checkout] No email on file for user — order confirmation email skipped.', user.id);
+      }
 
       router.push(`/checkout/success?id=${order.id}`);
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
