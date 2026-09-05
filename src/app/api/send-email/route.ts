@@ -130,9 +130,9 @@ function heroBanner(headline: string, subline: string,
 }
 
 // ─── Order Status Tracker ─────────────────────────────────────────────────────
-// activeStep: 0=Confirmed, 1=Shipped, 2=Out for Delivery, 3=Delivered
+// activeStep: 0=Confirmed, 1=Packed, 2=Shipped, 3=Out for Delivery, 4=Delivered
 function statusTracker(activeStep: number): string {
-  const steps = ['Confirmed', 'Shipped', 'Out for Delivery', 'Delivered'];
+  const steps = ['Confirmed', 'Packed', 'Shipped', 'Out for Delivery', 'Delivered'];
   const activeDot  = `width:18px;height:18px;border-radius:50%;background:${BRAND_PRIMARY};display:inline-block;box-shadow:0 0 0 4px rgba(231,81,41,0.18);`;
   const doneDot    = `width:18px;height:18px;border-radius:50%;background:${BRAND_PRIMARY};display:inline-block;`;
   const pendingDot = `width:18px;height:18px;border-radius:50%;background:#E0E0E0;display:inline-block;`;
@@ -662,7 +662,7 @@ function buildHtml(template: string, data: any, items: any[] = []): string {
           'Your order is being carefully packed by our team.')}
         ${greeting(customerName,
           `Great news! Your order <strong>#${orderNumber}</strong> is being packed and will be dispatched very soon.`)}
-        ${orderBody(0)}
+        ${orderBody(1)}
         ${whatHappensNext([
           'Your items are being packed with care.',
           "You'll receive a Shipped notification once it's on the way.",
@@ -682,7 +682,7 @@ function buildHtml(template: string, data: any, items: any[] = []): string {
           'Your package has been dispatched and is on its way!')}
         ${greeting(customerName,
           `Your order <strong>#${orderNumber}</strong> has been shipped! Our delivery team is heading to your doorstep.`)}
-        ${orderBody(1)}
+        ${orderBody(2)}
         ${whatHappensNext([
           'Your order is with our delivery partner.',
           'You\'ll receive an <strong>Out for Delivery</strong> update when it\'s nearby.',
@@ -702,7 +702,7 @@ function buildHtml(template: string, data: any, items: any[] = []): string {
           'Your package is out for delivery — arriving today!')}
         ${greeting(customerName,
           `Your package with order <strong>#${orderNumber}</strong> is out for delivery and will reach your doorstep within a few hours.`)}
-        ${orderBody(2)}
+        ${orderBody(3)}
         ${whatHappensNext([
           'Our delivery executive is on the way to your address.',
           'Please be available or arrange someone to receive the package.',
@@ -723,7 +723,7 @@ function buildHtml(template: string, data: any, items: any[] = []): string {
           `linear-gradient(135deg, ${BRAND_GREEN} 0%, #43A047 100%)`)}
         ${greeting(customerName,
           `Your order <strong>#${orderNumber}</strong> has been successfully delivered. We hope you enjoy the freshest harvest straight from our farms!`)}
-        ${orderBody(3)}
+        ${orderBody(4)}
         <tr>
           <td style="padding:4px 36px 20px;">
             <table width="100%" cellpadding="0" cellspacing="0" border="0"
