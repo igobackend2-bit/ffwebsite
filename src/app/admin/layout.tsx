@@ -113,6 +113,41 @@ export default function AdminLayout({
     }
   }, []);
 
+  // Loud, urgent alarm-style alert to grab the admin's attention when a
+  // new order comes in, played the moment the "New Order Received!" toast
+  // fires below. Three quick rising frequency sweeps, like a proper alert
+  // siren rather than a soft bell/chime. Uses the browser's own Web Audio
+  // API (same approach already used for the low-stock siren in
+  // admin/inventory/page.tsx) so no sound file needs to be added to the
+  // project.
+  const playNewOrderChime = () => {
+    try {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const ctx = new (window.AudioContext || (window as any).webkitAudioContext)();
+      const playSweep = (startTime: number) => {
+        const duration = 0.35;
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(600, ctx.currentTime + startTime);
+        osc.frequency.linearRampToValueAtTime(1400, ctx.currentTime + startTime + duration);
+        gain.gain.setValueAtTime(0.0001, ctx.currentTime + startTime);
+        gain.gain.exponentialRampToValueAtTime(0.5, ctx.currentTime + startTime + 0.02);
+        gain.gain.setValueAtTime(0.5, ctx.currentTime + startTime + duration - 0.05);
+        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + startTime + duration);
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start(ctx.currentTime + startTime);
+        osc.stop(ctx.currentTime + startTime + duration);
+      };
+      playSweep(0);
+      playSweep(0.42);
+      playSweep(0.84);
+    } catch (e) {
+      console.warn('Web Audio blocked:', e);
+    }
+  };
+
   React.useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setMounted(true);
@@ -156,6 +191,7 @@ export default function AdminLayout({
       .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'orders' }, (payload) => {
         const newOrder = payload.new;
         toast.success('New Order Received!', { icon: '🛍️', duration: 5000 });
+        playNewOrderChime();
       })
       .subscribe();
 
