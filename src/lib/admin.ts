@@ -26,11 +26,27 @@ export async function getAdminPassword() {
 }
 
 export async function updateAdminPassword(newPassword: string) {
-  const { error } = await supabase
-    .from('site_settings')
-    .upsert({ key: 'admin_password', value: newPassword });
-
-  return { success: !error, error };
+  // Routed through the existing service-role /api/admin/settings route
+  // instead of writing site_settings straight from the browser. That
+  // direct client-side upsert hits the exact same RLS problem documented
+  // on app/api/admin/settings/route.ts (the min_order_value save used to
+  // fail the same way) — this function was the one site_settings write
+  // that never got migrated to it, so saving a new admin password could
+  // silently do nothing while still showing "updated successfully".
+  try {
+    const res = await fetch('/api/admin/settings', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ key: 'admin_password', value: newPassword }),
+    });
+    const result = await res.json();
+    if (!result.success) {
+      return { success: false, error: result.error || 'Failed to save' };
+    }
+    return { success: true, error: null };
+  } catch (err) {
+    return { success: false, error: err instanceof Error ? err.message : 'Request failed' };
+  }
 }
 
 // Minimum cart subtotal (₹) required before a customer can place an order —
