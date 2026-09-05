@@ -112,7 +112,15 @@ export function WishlistProvider({ children }: { children: React.ReactNode }) {
         setLoading(false);
       }
     }
-  }, [user, authLoading]);
+    // NOTE: depends on user?.id (not the whole `user`/`session` object) on purpose.
+    // AuthContext hands out a brand-new user/session object on every auth event
+    // (INITIAL_SESSION, SIGNED_IN, TOKEN_REFRESHED, etc.), even when it's still the
+    // same logged-in person. Depending on the object identity caused this effect to
+    // re-fire repeatedly right after login/page load, firing a burst of concurrent
+    // Supabase requests that each had to acquire the auth lock -- overwhelming it
+    // and triggering refresh-token rate limiting, which could drop the session.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user?.id, authLoading]);
 
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
