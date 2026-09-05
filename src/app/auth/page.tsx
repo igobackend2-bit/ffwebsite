@@ -103,7 +103,15 @@ function AuthContent() {
       if (error) throw error;
       if (mode === 'login') {
         localStorage.setItem('ff_returning_customer', '1');
-        toast.success('Welcome back!'); router.push(redirectPath);
+        toast.success('Welcome back!');
+        // A plain router.push() here left the navbar still showing "Login"
+        // right after a successful sign-in — the session is real (that's
+        // why this toast fires at all), but AuthContext's user/session
+        // state doesn't reliably pick it up without a hard reload. This is
+        // the exact same reasoning signOut() in AuthContext.tsx already
+        // uses (window.location.href instead of a soft navigation) — that
+        // fix just never got applied to the sign-in side too.
+        window.location.href = redirectPath;
       }
       else {
         // If this mobile number already has a completed profile, tell the
@@ -112,7 +120,8 @@ function AuthContent() {
         if (u?.user_metadata?.full_name) {
           localStorage.setItem('ff_returning_customer', '1');
           toast.success('This mobile number is already registered — you are now logged in to your existing account.', { duration: 6000 });
-          router.push(redirectPath);
+          // Same hard-redirect fix as the login branch above.
+          window.location.href = redirectPath;
         } else {
           setStep('details'); toast.success('Phone verified!');
         }
@@ -137,7 +146,9 @@ function AuthContent() {
       if (error) throw new Error('Invalid email/mobile number or password');
       localStorage.setItem('ff_returning_customer', '1');
       toast.success('Welcome back!');
-      router.push(redirectPath);
+      // Hard redirect (see handleVerifyOTP above) so the navbar reliably
+      // shows as logged in right away instead of still saying "Login".
+      window.location.href = redirectPath;
     } catch (e: unknown) { toast.error((e as Error).message || 'Login failed'); }
     finally { setLoading(false); }
   };
@@ -174,7 +185,9 @@ function AuthContent() {
       try { await supabase.from('leads').insert({ name: fullName.trim(), email: email.trim(), phone, source: 'User Signup' }); } catch { /**/ }
       localStorage.setItem('ff_returning_customer', '1');
       toast.success('Welcome to Farmers Factory! 🌿');
-      router.push(redirectPath);
+      // Hard redirect (see handleVerifyOTP above) so the navbar reliably
+      // shows as logged in right away instead of still saying "Login".
+      window.location.href = redirectPath;
     } catch (e: unknown) { toast.error((e as Error).message || 'Signup failed'); }
     finally { setLoading(false); }
   };

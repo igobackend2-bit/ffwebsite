@@ -81,7 +81,14 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
     try {
       const { error } = await supabase.auth.verifyOtp({ phone: formattedPhone(), token: otp, type: 'sms' });
       if (error) throw error;
-      if (mode === 'login') { toast.success('Welcome back!'); onClose(); }
+      // Closing the modal alone left the navbar still showing "Login" right
+      // after a real, successful sign-in — same root cause as
+      // src/app/auth/page.tsx (see its handleVerifyOTP comment):
+      // AuthContext's user/session state doesn't reliably pick up a fresh
+      // sign-in without a hard reload. Reloading re-reads the now-real
+      // session on mount, same fix already used for signOut() in
+      // AuthContext.tsx.
+      if (mode === 'login') { toast.success('Welcome back!'); onClose(); window.location.reload(); }
       else { setStep('details'); toast.success('Phone verified!'); }
     } catch (e: unknown) { toast.error((e as Error).message || 'Invalid OTP'); }
     finally { setLoading(false); }
@@ -96,7 +103,9 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
       if (password) await supabase.auth.updateUser({ password });
       try { await supabase.from('leads').insert({ name: fullName.trim(), phone, source: 'User Signup' }); } catch { /**/ }
       toast.success('Welcome to Farmers Factory!');
+      // Same hard-reload fix as the login branch above.
       onClose();
+      window.location.reload();
     } catch (e: unknown) { toast.error((e as Error).message || 'Signup failed'); }
     finally { setLoading(false); }
   };
