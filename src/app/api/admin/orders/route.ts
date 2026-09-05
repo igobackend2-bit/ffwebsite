@@ -64,6 +64,37 @@ export async function GET() {
     const profiles = profilesRes.data || [];
     const users = usersRes.data || [];
 
+    // Fallback to the real Supabase Auth email for any customer whose
+    // `profiles.email` / `users.email` came back empty. Those two tables are
+    // denormalized copies that don't always get filled in at signup, but the
+    // customer's actual sign-in email always lives on their auth.users row —
+    // it's what checkout used to send the very first order-confirmation
+    // email. Without this fallback, every *later* email this admin panel
+    // triggers (a "Set Shipped"/"Set Packed" status update, or the
+    // post-delivery feedback request) silently has nowhere to send to, so
+    // the customer only ever sees that first confirmation email and nothing
+    // after it — looking exactly like "I marked it Shipped but the email
+    // still says Confirmed" / "Feedback email not sent: No customer email on
+    // file".
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const missingEmailIds = userIds.filter((id) => {
+      const prof: any = profiles.find((p: any) => p.id === id);
+      const usr: any = users.find((u: any) => u.id === id);
+      return !(prof?.email || usr?.email);
+    });
+    const authEmailById: Record<string, string> = {};
+    if (missingEmailIds.length > 0) {
+      await Promise.all(missingEmailIds.map(async (id) => {
+        try {
+          const { data } = await supabase.auth.admin.getUserById(id);
+          if (data?.user?.email) authEmailById[id] = data.user.email;
+        } catch {
+          // Best-effort — leave this customer's email blank rather than
+          // failing the whole orders list over one lookup.
+        }
+      }));
+    }
+
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const enriched = orders.map((order: any) => {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -84,7 +115,7 @@ export async function GET() {
           id: order.user_id,
           full_name: prof?.full_name || usr?.name || addrName || 'Guest Customer',
           avatar_url: prof?.avatar_url || '',
-          email: prof?.email || usr?.email || '',
+          email: prof?.email || usr?.email || authEmailById[order.user_id] || '',
           phone: prof?.phone || addrPhone || '',
           address: addrText,
         },
