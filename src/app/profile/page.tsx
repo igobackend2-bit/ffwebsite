@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, Suspense } from 'react';
 import Link from 'next/link';
-import { useSearchParams } from 'next/navigation';
+import { useSearchParams, useRouter } from 'next/navigation';
 import Navbar from '@/components/Navbar';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/context/AuthContext';
@@ -10,7 +10,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 import {
   User, Package, MapPin, Bell, LogOut,
   ChevronRight, Truck, Mail, Phone,
-  Settings, Inbox, Heart, HelpCircle, Wallet, ShoppingBag, Trash2
+  Settings, Inbox, Heart, HelpCircle, Wallet, ShoppingBag, Trash2,
+  Eye, EyeOff
 } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import OrderDetailModal from '@/components/OrderDetailModal';
@@ -66,6 +67,7 @@ function OrderCard({ order, onViewDetails }: { order: any, onViewDetails: (order
 function ProfileContent() {
   const { t } = useTranslation();
   const searchParams = useSearchParams();
+  const router = useRouter();
 
   const tabs = [
     { id: 'orders', label: t('profile.tab.orders'), icon: Package },
@@ -101,6 +103,8 @@ function ProfileContent() {
   // Password Reset States
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [showNewPassword, setShowNewPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [updatingPassword, setUpdatingPassword] = useState(false);
 
   // Delete Account States
@@ -178,6 +182,18 @@ function ProfileContent() {
         // eslint-disable-next-line react-hooks/set-state-in-effect
         setSelectedOrder(order);
         setIsOrderModalOpen(true);
+
+        // Strip the "order" param from the URL now that it's been handled.
+        // Without this, the background refresh below updates `orders` (a
+        // new array reference), which re-runs this effect (it depends on
+        // `orders`), which still finds "?order=..." in the URL and calls
+        // setIsOrderModalOpen(true) again a moment later — silently
+        // re-opening the modal right after the customer closes it, making
+        // it look stuck/impossible to close.
+        // eslint-disable-next-line react-hooks/immutability
+        const params = new URLSearchParams(searchParams.toString());
+        params.delete('order');
+        router.replace(`/profile?${params.toString()}`, { scroll: false });
 
         // This page's `orders` list is only fetched once (on load/user
         // change), not live. Clicking a notification link like
@@ -789,23 +805,41 @@ function ProfileContent() {
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                           <div className="space-y-2">
                             <label className="text-xs font-black text-slate-400 uppercase tracking-widest ml-1">New Password</label>
-                            <input 
-                              type="password" 
-                              value={newPassword}
-                              onChange={(e) => setNewPassword(e.target.value)}
-                              placeholder="At least 6 characters"
-                              className="w-full bg-slate-50 border border-slate-100 rounded-xl py-3 px-6 text-sm font-bold focus:ring-2 focus:ring-primary/20 outline-none" 
-                            />
+                            <div className="relative">
+                              <input
+                                type={showNewPassword ? 'text' : 'password'}
+                                value={newPassword}
+                                onChange={(e) => setNewPassword(e.target.value)}
+                                placeholder="At least 6 characters"
+                                className="w-full bg-slate-50 border border-slate-100 rounded-xl py-3 pl-6 pr-12 text-sm font-bold focus:ring-2 focus:ring-primary/20 outline-none"
+                              />
+                              <button
+                                type="button"
+                                onClick={() => setShowNewPassword(!showNewPassword)}
+                                className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+                              >
+                                {showNewPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                              </button>
+                            </div>
                           </div>
                           <div className="space-y-2">
                             <label className="text-xs font-black text-slate-400 uppercase tracking-widest ml-1">Confirm New Password</label>
-                            <input 
-                              type="password" 
-                              value={confirmPassword}
-                              onChange={(e) => setConfirmPassword(e.target.value)}
-                              placeholder="Repeat password"
-                              className="w-full bg-slate-50 border border-slate-100 rounded-xl py-3 px-6 text-sm font-bold focus:ring-2 focus:ring-primary/20 outline-none" 
-                            />
+                            <div className="relative">
+                              <input
+                                type={showConfirmPassword ? 'text' : 'password'}
+                                value={confirmPassword}
+                                onChange={(e) => setConfirmPassword(e.target.value)}
+                                placeholder="Repeat password"
+                                className="w-full bg-slate-50 border border-slate-100 rounded-xl py-3 pl-6 pr-12 text-sm font-bold focus:ring-2 focus:ring-primary/20 outline-none"
+                              />
+                              <button
+                                type="button"
+                                onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                                className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+                              >
+                                {showConfirmPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                              </button>
+                            </div>
                           </div>
                         </div>
                         <button
