@@ -208,7 +208,12 @@ export default function AdminCustomersPage() {
         </div>
 
         {/* Customers Table */}
-        <div className="bg-white rounded-[2.5rem] border border-border/50 shadow-sm overflow-hidden">
+        {/* overflow-hidden was clipping the rightmost Actions column icons
+            (Mail/Edit/Delete) whenever the table's rendered width exceeded
+            the container width. overflow-x-auto lets it scroll horizontally
+            instead of cutting content off, while keeping the rounded card
+            look for the visible portion. */}
+        <div className="bg-white rounded-[2.5rem] border border-border/50 shadow-sm overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead>
               <tr className="bg-[#F1F3F5]/50 text-[10px] font-black text-muted-foreground uppercase tracking-widest border-b border-border/50">
