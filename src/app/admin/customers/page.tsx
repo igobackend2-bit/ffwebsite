@@ -221,7 +221,7 @@ export default function AdminCustomersPage() {
                 <th className="px-8 py-5">Engagement</th>
                 <th className="px-8 py-5">Green Impact</th>
                 <th className="px-8 py-5">Loyalty Tier</th>
-                <th className="px-8 py-5 text-right">Actions</th>
+                <th className="px-4 py-5 text-right">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-border/30">
@@ -293,27 +293,27 @@ export default function AdminCustomersPage() {
                       </span>
                     </div>
                   </td>
-                  <td className="px-8 py-5">
-                    <div className="flex items-center justify-end gap-2">
-                      <button 
+                  <td className="px-4 py-5">
+                    <div className="flex items-center justify-end gap-1">
+                      <button
                         onClick={(e) => {
                           e.stopPropagation();
                           window.location.href = `mailto:${customer.email}`;
                         }}
-                        className="p-2 hover:bg-primary/10 text-primary rounded-xl transition-all"
+                        className="p-1.5 hover:bg-primary/10 text-primary rounded-xl transition-all"
                       >
                         <Mail size={18} />
                       </button>
-                      <button 
+                      <button
                         onClick={(e) => {
                           e.stopPropagation();
                           handleCustomerClick(customer);
                         }}
-                        className="p-2 hover:bg-muted text-muted-foreground rounded-xl transition-all"
+                        className="p-1.5 hover:bg-muted text-muted-foreground rounded-xl transition-all"
                       >
                         <Edit size={18} />
                       </button>
-                      <button 
+                      <button
                         onClick={async (e) => {
                           e.stopPropagation();
                           if (confirm('Are you sure you want to delete this customer profile? This action is permanent.')) {
@@ -326,7 +326,7 @@ export default function AdminCustomersPage() {
                             }
                           }
                         }}
-                        className="p-2 hover:bg-red-50 text-red-500 rounded-xl transition-all"
+                        className="p-1.5 hover:bg-red-50 text-red-500 rounded-xl transition-all"
                       >
                         <Trash2 size={18} />
                       </button>
